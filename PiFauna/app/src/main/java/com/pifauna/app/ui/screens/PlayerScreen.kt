@@ -23,6 +23,7 @@ import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.playback.PlaybackPhase
 import com.pifauna.app.playback.PlayerState
 import com.pifauna.app.safety.SafetyLimits
+import com.pifauna.app.ui.LayaswarnaSessionDial
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
@@ -124,11 +125,15 @@ fun PlayerScreen(
         )
         Spacer(Modifier.height(14.dp))
 
-        if (state.isPlaying) {
-            PfPrimaryCard(title = "Stop playback", danger = true, onClick = onStop)
-        } else {
-            PfPrimaryCard(title = "Start timed playback", onClick = onStart)
-        }
+        LayaswarnaSessionDial(
+            title = if (state.isPlaying) TimeFormat.clock(remaining) else "${state.durationMinutes}:00",
+            subtitle = if (state.isPlaying) "Time remaining" else "Timed sound session",
+            progress = if (state.isPlaying) {
+                remaining.toFloat() / (state.durationMinutes * 60_000f)
+            } else 1f,
+            isPlaying = state.isPlaying,
+            onClick = if (state.isPlaying) onStop else onStart
+        )
 
         if (state.isPlaying) {
             Spacer(Modifier.height(14.dp))
