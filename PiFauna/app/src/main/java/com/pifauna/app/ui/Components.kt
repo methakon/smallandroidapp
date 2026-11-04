@@ -264,7 +264,7 @@ fun PfBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
 fun ChakraMark(petals: Int, modifier: Modifier = Modifier) {
     val ink = PiFaunaColors.Accent
     val secondary = PiFaunaColors.Lotus
-    Canvas(modifier = modifier.semantics { contentDescription = "Decorative lotus symbol" }) {
+    Canvas(modifier = modifier) {
         val radius = size.minDimension * 0.43f
         val center = Offset(size.width / 2f, size.height / 2f)
         drawCircle(color = ink, radius = radius, center = center, style = Stroke(width = 1.5.dp.toPx()))
