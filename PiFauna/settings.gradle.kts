@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "PiFauna"
+rootProject.name = "Layaswarna"
 include(":app")
