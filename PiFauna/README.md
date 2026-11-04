@@ -142,6 +142,17 @@ PiFauna/
 └── gradlew, gradlew.bat
 ```
 
+## Launcher icon
+
+The Layaswarna launcher icon is an original lotus and audible soundwave design,
+using the same visual language as the modern-mystic app theme. The editable
+512px master is in [Figma](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=62-25),
+and the scalable source is [design/layaswarna-lotus-soundwave.svg](design/layaswarna-lotus-soundwave.svg).
+Android uses a separate gradient background, scalable full-color foreground and
+an outlined monochrome icon for themed launchers. See
+[icon specifications and provenance](docs/LAYASWARNA-APP-ICON.md).
+The launcher mask and Android device rendering still require visual QA.
+
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md)
