@@ -149,3 +149,11 @@ The approved design is now wired into Android Compose on `feat/pifauna-phone-aud
 - **Test coverage:** JUnit test for seven chakra tones and radial hit geometry; Android instrumented navigation/gesture tests added. GitHub Actions workflow compiles, unit-tests, assembles APK and runs lint; later revision also compiles `assembleDebugAndroidTest`. A core build [passed](https://github.com/methakon/smallandroidapp/actions/runs/41890856104). Latest commits require their own successful workflow run. Physical-device/TalkBack/gesture tests remain pending.
 
 **Clarification:** This is the implementation of the *current-release approved subset* of the redesign, not an assertion that planned noise synthesis, medically meaningful sound effects, calibrated loudness or advanced Figma animations have shipped.
+
+## 2026-11-05 — lotus-and-soundwave launcher icon
+
+- Reusable Figma icon master component created: [node `62:25`](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=62-25). It is an editable SVG-imported vector component, not a screenshot.
+- Canonical asset: `PiFauna/design/layaswarna-lotus-soundwave.svg`. Bright lotus petals, soundwave bars, resonance circles and subtle chakra beads, on deep-violet gradients.
+- Android adaptive launcher now uses `drawable/ic_launcher_foreground.xml`, `drawable/ic_launcher_background.xml`, `drawable/ic_launcher_monochrome.xml`, and both `mipmap-anydpi-v26/ic_launcher*.xml` resources. Manifest icon references remain valid.
+- This is a vector adaptation inspired by the earlier generated luminous raster, not its pixel-exact copy. The Figma SVG includes richer gradient fills; the Android VectorDrawable uses a contrast-optimized color simplification for crisp density-independent launch icons.
+- Adaptive shape masks, themed-icon contrast, small-device recognition and Google Play asset/export compliance require manual QA. See [LAYASWARNA-APP-ICON.md](LAYASWARNA-APP-ICON.md).
