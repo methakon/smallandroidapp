@@ -35,6 +35,7 @@ enum class PlaybackPhase { Idle, Playing, Completed, Refused }
 data class PlayerState(
     val phase: PlaybackPhase = PlaybackPhase.Idle,
     val profileId: String = SpeciesProfiles.all.first().id,
+    val displayName: String? = null,
     val startHz: Int = SpeciesProfiles.all.first().firstHz,
     val endHz: Int = SpeciesProfiles.all.first().lastHz,
     val mode: ToneMode = ToneMode.FIXED,
@@ -123,10 +124,30 @@ class PlayerController(context: Context) {
         val profile = SpeciesProfiles.byId(profileId)
         _state.value = _state.value.copy(
             profileId = profile.id,
+            displayName = null,
             startHz = profile.firstHz,
             endHz = profile.lastHz,
             phase = PlaybackPhase.Idle,
             statusMessage = "Ready — ${profile.name} band selected."
+        )
+    }
+
+    /**
+     * Prepare an audible meditation/relaxation tone without starting playback.
+     * Playback still runs through the same safety policy, audio focus and timer.
+     */
+    fun prepareExperimentalTone(label: String, startHz: Int, endHz: Int, mode: ToneMode) {
+        if (_state.value.isPlaying) return
+        val low = minOf(startHz, endHz).coerceIn(SafetyLimits.MIN_HZ, SafetyLimits.MAX_HZ)
+        val high = maxOf(startHz, endHz).coerceIn(SafetyLimits.MIN_HZ, SafetyLimits.MAX_HZ)
+        _state.value = _state.value.copy(
+            profileId = "custom",
+            displayName = label.take(60),
+            startHz = low,
+            endHz = high,
+            mode = mode,
+            phase = PlaybackPhase.Idle,
+            statusMessage = "Ready — experimental audible tone prepared; not yet playing."
         )
     }
 
