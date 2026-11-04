@@ -75,6 +75,7 @@ fun PiFaunaApp(
     var presets by remember { mutableStateOf(presetStore.load()) }
     var clearMessage by remember { mutableStateOf<String?>(null) }
     var selectedChakra by rememberSaveable { mutableStateOf("anahata") }
+    var selectedRelaxation by rememberSaveable { mutableStateOf("pink") }
     var selectedSpecies by rememberSaveable { mutableStateOf(settings.lastProfileId) }
 
     val current = stack.last()
@@ -237,6 +238,8 @@ fun PiFaunaApp(
                 )
 
                 Route.AnahataNada -> AnahataNadaScreen(
+                    selectedId = selectedRelaxation,
+                    onSelect = { selectedRelaxation = it },
                     onPrepare = { sound ->
                         if (!state.isPlaying && sound.playable) {
                             controller.prepareExperimentalTone(

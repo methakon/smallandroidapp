@@ -156,12 +156,13 @@ object RelaxationSounds {
 
 @Composable
 fun AnahataNadaScreen(
+    selectedId: String,
+    onSelect: (String) -> Unit,
     onPrepare: (RelaxationSound) -> Unit,
     enabled: Boolean
 ) {
-    var selected by remember { mutableStateOf("pink") }
     var notice by remember { mutableStateOf<String?>(null) }
-    val current = RelaxationSounds.byId(selected)
+    val current = RelaxationSounds.byId(selectedId)
 
     fun open(id: String) {
         val sound = RelaxationSounds.byId(id)
@@ -182,8 +183,8 @@ fun AnahataNadaScreen(
             options = RelaxationSounds.all.map {
                 RadialOption(it.id, it.label, if (it.playable) "Audible tone" else "Planned", it.symbol)
             },
-            selectedId = selected,
-            onSelect = { selected = it; notice = null },
+            selectedId = selectedId,
+            onSelect = { onSelect(it); notice = null },
             onActivate = ::open,
             actionLabel = if (current.playable) "Prepare ${current.label}" else "View ${current.label} status",
             enabled = true
