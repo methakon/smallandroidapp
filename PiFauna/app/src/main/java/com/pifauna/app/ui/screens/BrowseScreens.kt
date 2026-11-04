@@ -321,7 +321,7 @@ fun PfPrimaryCard(
 ) {
     val container = when {
         !enabled -> PiFaunaColors.Divider
-        danger -> PiFaunaColors.Danger
+        danger -> PiFaunaColors.Action
         else -> PiFaunaColors.Action
     }
     Box(
