@@ -124,3 +124,14 @@ The prior Home "Library" progress ring was visually misleading because a full pr
 - This is a navigation/category treatment, **not** an assertion that sounds repel or control animals. No audio or safety changes.
 - The user's screenshot is a layout reference only. No copied UI imagery, fonts, glyph vector packs or device mockups were added.
 - Verification still needed: Gradle compile/test, TalkBack reading order, emoji rendering on Android versions, screenshot/layout inspection at small width and large font scale.
+
+## 2026-11-05 — authoritative redesign status (supersedes older visual-status notes)
+
+**Read [LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md](LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md) before implementing any new Figma screen.** The opening 11-frame green token table and several historical notes above describe **earlier versions**, not the current approved design direction. In particular, the earlier Home "Library" ring was removed; the later two-column circular category tiles are the **current Android code**, not the newly approved one-wheel Figma design. The statement above that the Android package was unchanged is historical: the current Gradle application ID/namespace is `in.berhampore.dhar.layaswarna`, while Kotlin source packages still use `com.pifauna.app`.
+
+- **Figma:** 14 editable modern-mystic redesign frames (IDs `51:25` through `51:571`; see the linked audit for the exact mapping), alongside older originals and concepts. Seven radial screens were repaired after a four-dot placeholder regression; meaningful editable vector pictograms now replace those dots. The selected chakra details panel is intended to change with selection rather than repeat seven static frequency cards.
+- **Design behavior:** one circular selector with selected-node highlight, single-tap/rotation selection, stationary long-press or double-tap activation, center readout **not** center Open action, plus a visible accessible action fallback.
+- **Accessibility:** independent bottom navigation targets, system safe-area insets, >=14sp body target, readable evidence notes, TalkBack/keyboard alternatives and semantic icon names. These are **acceptance requirements**, not all proven Figma component or Android features.
+- **Visual direction:** newer dark-violet/amethyst/rose/gold modern-mystic proposal supersedes the older green and muted-terracotta **concept tokens**; Android Theme.kt is not yet migrated to this latest scheme.
+- **Safety:** no changed audio policy, clinical claims, continuous playback or approved overnight feature.
+- **Validation:** Figma concept screenshots inspected; Android Gradle build, instrumentation, device screenshots and gesture QA **not executed**.
