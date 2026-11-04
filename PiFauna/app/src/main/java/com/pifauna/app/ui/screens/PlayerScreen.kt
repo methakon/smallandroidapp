@@ -116,16 +116,19 @@ fun PlayerScreen(
             onClick = if (state.isPlaying) null else onOpenTimer
         )
 
+        // Status sits above the action: a refusal must be visible at the moment the
+        // user taps Start, not below the fold where the tap looks like a no-op.
+        StatusBanner(
+            message = state.statusMessage,
+            danger = state.phase == PlaybackPhase.Refused
+        )
+        Spacer(Modifier.height(14.dp))
+
         if (state.isPlaying) {
             PfPrimaryCard(title = "Stop playback", danger = true, onClick = onStop)
         } else {
             PfPrimaryCard(title = "Start timed playback", onClick = onStart)
         }
-
-        StatusBanner(
-            message = state.statusMessage,
-            danger = state.phase == PlaybackPhase.Refused
-        )
 
         if (state.isPlaying) {
             Spacer(Modifier.height(14.dp))

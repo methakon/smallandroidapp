@@ -124,6 +124,7 @@ PiFauna/
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Test plan and recorded results](docs/TESTING.md)
+- [Device validation report](docs/DEVICE-VALIDATION.md)
 - [Safety contract and claims policy](docs/SAFETY.md)
 - [Figma implementation status](docs/FIGMA-IMPLEMENTATION.md)
 

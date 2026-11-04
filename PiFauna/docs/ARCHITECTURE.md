@@ -64,6 +64,11 @@ directly.
   down (signal → `pause()` → `flush()` → `join(1500)`) and returns
   `StartResult.Busy` if that worker is still alive, so two audio threads can
   never exist at once.
+- `AudioTrack.play()` is called inside that same `start()` critical section, not
+  on the worker. An immediate `stop()` therefore cannot pause and flush the track
+  between `play()` and the first write — doing it on the worker produced
+  `start(): … mState = 4` and could revive a stream that teardown had already
+  closed.
 - `stop()` performs the same shutdown and returns only after the worker has
   released the `AudioTrack`.
 - The worker owns its `AudioTrack` and releases it in a `finally` block, so a

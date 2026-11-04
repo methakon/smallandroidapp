@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
@@ -15,8 +16,11 @@ import org.junit.runner.RunWith
  *
  * They deliberately do not start playback: running a real tone unattended on a
  * physical device is exactly what this app exists to prevent. Playback behaviour
- * is covered by unit tests of the synthesiser and safety policy plus the manual
- * device matrix in docs/TESTING.md.
+ * is covered by unit tests of the synthesiser and safety policy plus the device
+ * matrix in docs/TESTING.md.
+ *
+ * Screens are tall scrollable columns, so content below the fold is scrolled
+ * into view before a display assertion.
  */
 @RunWith(AndroidJUnit4::class)
 class MainActivityNavigationTest {
@@ -34,7 +38,10 @@ class MainActivityNavigationTest {
 
     @Test
     fun appLaunchesToAUsableScreen() {
-        compose.onNodeWithText("PiFauna", substring = true).assertIsDisplayed()
+        // Exact match: a substring match on "PiFauna" also hits prose such as
+        // "About PiFauna" and becomes ambiguous.
+        compose.onNodeWithText("PiFauna  ◉").assertIsDisplayed()
+        compose.onNodeWithText("Profiles").assertIsDisplayed()
     }
 
     @Test
@@ -45,7 +52,9 @@ class MainActivityNavigationTest {
         compose.onNodeWithText("Mosquito / insect").performClick()
         compose.waitForIdle()
 
-        compose.onNodeWithText("Start timed playback").assertIsDisplayed()
+        // The Figma artboard is 390x844; on this 640 dp screen the primary action
+        // sits below the fold, so it is scrolled into view before asserting.
+        compose.onNodeWithText("Start timed playback").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Stop playback").assertDoesNotExist()
     }
 
@@ -60,7 +69,7 @@ class MainActivityNavigationTest {
         compose.onNodeWithText("Settings").performClick()
         compose.waitForIdle()
         compose.onNodeWithText("Preferences").assertIsDisplayed()
-        compose.onNodeWithText("Background playback").assertIsDisplayed()
+        compose.onNodeWithText("Background playback").performScrollTo().assertIsDisplayed()
     }
 
     @Test
@@ -69,11 +78,13 @@ class MainActivityNavigationTest {
         compose.onNodeWithText("Settings").performClick()
         compose.waitForIdle()
 
-        compose.onNodeWithText("Sound & hearing safety").performClick()
+        compose.onNodeWithText("Sound & hearing safety").performScrollTo().performClick()
         compose.waitForIdle()
 
         compose.onNodeWithText("PLEASE READ").assertIsDisplayed()
-        compose.onNodeWithText("Effectiveness is not established").assertIsDisplayed()
+        compose.onNodeWithText("Effectiveness is not established")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test
@@ -86,7 +97,10 @@ class MainActivityNavigationTest {
         compose.waitForIdle()
 
         compose.onNodeWithText("Playback schedule").assertIsDisplayed()
-        compose.onNodeWithText("Continuous").assertIsDisplayed()
-        compose.onNodeWithText("Not offered").assertIsDisplayed()
+        // The continuous option must exist and be explicitly unavailable.
+        compose.onNodeWithText("Continuous").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Not offered — every session must end on its own")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 }

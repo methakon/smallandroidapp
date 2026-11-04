@@ -103,6 +103,17 @@ class SoundEngine {
             track = audio
             running.set(true)
 
+            // Start the track here, while holding the same lock that teardown takes.
+            // Doing it on the worker raced with an immediate stop(), which paused and
+            // flushed the track first and made play() log "start(): ... mState = 4".
+            val started = runCatching { audio.play() }.isSuccess
+            if (!started) {
+                running.set(false)
+                track = null
+                runCatching { audio.release() }
+                return StartResult.Unavailable
+            }
+
             val session = Thread({ runSession(audio, config, token, buffer, onFinished) }, "PiFaunaAudio")
             session.isDaemon = true
             session.priority = Thread.NORM_PRIORITY + 2
@@ -159,7 +170,8 @@ class SoundEngine {
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
             var rendered = 0L
             var phase = 0.0
-            audio.play()
+            // AudioTrack.play() already ran under the engine lock in start(), so no
+            // teardown can have paused this track between play() and the first write.
 
             session@ while (running.get() && rendered < config.totalFrames) {
                 val frames = min(CHUNK_FRAMES.toLong(), config.totalFrames - rendered).toInt()

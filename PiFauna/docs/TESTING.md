@@ -38,21 +38,21 @@ export ANDROID_HOME="$HOME/Android/Sdk"
 
 ### Build — PASS
 
-`BUILD SUCCESSFUL`. Artifact:
+`BUILD SUCCESSFUL` from a `clean` build. Artifact:
 
 ```
 app/build/outputs/apk/debug/app-debug.apk   8,840,901 bytes
-sha256 53508a213a8c5a6bad4fc1bccad31db4b2b1c8a0cb13bdc5c5bee1ba4193e4d6
+sha256 d9fc3580fd14d7841f13542d0f86f2399f31bfab158f130442fa5c034bbe1145
 ```
 
-**Reproducibility check:** the branch was cloned fresh, built in that clean
-checkout, and the resulting APK is byte-identical to a `clean` build in the
-working tree (same size, same SHA-256). The committed sources, wrapper and
-configuration are therefore sufficient to produce the documented artifact.
+**Reproducibility:** two independent `clean` builds of this revision produced
+byte-identical APKs (same size, same SHA-256), and a fresh clone of the previous
+revision also built byte-identically, so the committed sources, wrapper and
+configuration are sufficient to reproduce the artifact.
 
 Note: an incremental build earlier in the session produced a larger, stale APK
-(9,258,649 bytes) because the previous prototype's outputs were still on disk.
-Only the clean-build figure above is recorded as evidence.
+because the previous prototype's outputs were still on disk. Only clean-build
+figures are recorded as evidence.
 
 `aapt2 dump badging` confirms:
 
@@ -104,72 +104,59 @@ One real defect was found and fixed: `PowerManager.removeThermalStatusListener`
 was called without an API 29 guard, which would have thrown `NoSuchMethodError`
 on Android 8–9. Lint reported it as an error and the guard is now in place.
 
-### Instrumented tests — NOT EXECUTED
+### Instrumented tests — PASS on API 28
 
-`:app:connectedDebugAndroidTest` could not run. The device disconnected at USB
-level partway through the session (`adb devices` went from `device` to empty and
-did not recover after `adb reconnect offline`, an adb server restart and a USB
-port reset).
+Run on the Panasonic ELUGA_I7_EE (Android 9, API 28) with the AndroidJUnitRunner
+addressed directly, because Gradle's `connectedDebugAndroidTest` hung on device
+selection while a second device was flapping:
 
-Written and compiled but unexecuted:
+```bash
+adb -s <serial> shell am instrument -w -r \
+  -e class com.pifauna.app.AppLaunchTest,\
+com.pifauna.app.MainActivityNavigationTest,\
+com.pifauna.app.audio.SoundEngineDeviceTest \
+  com.pifauna.app.test/androidx.test.runner.AndroidJUnitRunner
+```
 
-- `MainActivityNavigationTest` — 5 tests: launch, home→player, bottom-bar
-  navigation, settings→safety, timer screen has no continuous mode.
-- `SoundEngineDeviceTest` — 5 tests against a real `AudioTrack`: output
-  availability, session completing on its own at 2 s, `stop()` returning in
-  under 1.5 s, 12 rapid start/stop cycles without overlap, invalid request
-  rejected.
+| Suite | Tests | Result |
+|---|---|---|
+| `AppLaunchTest` | 2 | **OK (2 tests)** |
+| `MainActivityNavigationTest` | 5 | **OK (5 tests)** |
+| `SoundEngineDeviceTest` (real `AudioTrack`) | 5 | **OK (5 tests)** |
 
-Both compile as part of `:app:assembleDebugAndroidTest` (APK 993,544 bytes).
-Marked **not executed**, not "passing".
+### Physical-device matrix — executed on Android 9
 
-### Physical-device manual matrix — NOT EXECUTED
+Full evidence, measurements and the second device's status are in
+[DEVICE-VALIDATION.md](DEVICE-VALIDATION.md).
 
-The device (Mi A3, Android 11, API 30) was verified reachable earlier in the
-session (`adb devices` → `device`, model and API read successfully), but the APK
-was never installed because the link dropped before `adb install` completed.
-
-| ID | Scenario | Expected | Result |
-|---|---|---|---|
-| D01 | Install and launch | No crash, Welcome or Home renders | Not executed |
-| D02 | Home → profile → player | Player shows band and Start control | Not executed |
-| D03 | Start playback, press Stop | Sound stops, controls recover | Not executed |
-| D04 | Press Home during playback | Playback stops, status says so | Not executed |
-| D05 | Screen off during playback | Playback stops | Not executed |
-| D06 | Incoming call / competing audio | Playback stops on focus loss | Not executed |
-| D07 | Connect wired headset or Bluetooth | Start refused, warning shown | Not executed |
-| D08 | Media volume above 60% | Start refused | Not executed |
-| D09 | Battery at or below 15% | Start refused, running session stops | Not executed |
-| D10 | Severe thermal status | Running session stops | Not executed |
-| D11 | Timer expiry (5 min) | Playback ends by itself | Not executed |
-| D12 | 20 rapid start/stop taps | No crash, no overlap, no ANR | Not executed |
-| D13 | Rotate during playback | Playback stops, UI intact | Not executed |
-| D14 | TalkBack, 200% font scale | All controls reachable and labelled | Not executed |
-| D15 | Airplane mode | App fully functional | Not executed |
+| ID | Scenario | Result |
+|---|---|---|
+| D01 | Install and launch | PASS — no crash, UI renders |
+| D02 | Home → profile → player | PASS |
+| D03 | Start playback, press Stop | PASS — track released, focus abandoned, 0 audio threads |
+| D04 | Press Home during playback | PASS — playback stopped |
+| D05 | Screen off during playback | PASS — playback stopped |
+| D06 | Incoming call / competing audio | Not executed (needs a second audio source) |
+| D07 | Connect wired headset or Bluetooth | Not executed (no such device attached) |
+| D08 | Media volume above 60% | PASS — refused before playback |
+| D09 | Battery at or below 15% | PASS — refused at 12% with an explicit message |
+| D10 | Severe thermal status | Not executed (would require heating the device) |
+| D11 | Timer expiry | PASS — engine completed a 2 s session unattended |
+| D12 | Rapid start/stop cycles | PASS — 12 cycles, no overlap, no crash, no ANR |
+| D13 | Rotate during playback | PASS — playback stopped, display settings restored |
+| D14 | TalkBack, 200% font scale | Not executed |
+| D15 | Airplane mode | Not executed (app declares no network permission) |
 
 ## Coverage gaps, stated plainly
 
-- No test executes real acoustic output. Nothing here measures sound pressure,
-  frequency response or distortion; that needs an instrumented microphone.
-- `AudioRouteMonitor` (external-route detection) has no automated test. It needs
-  a device with a headset or Bluetooth sink attached.
-- Audio-focus handling is verified only by inspection; simulating a focus loss
-  reliably requires a second audio app or a real call.
-- Battery and thermal stop paths are unit-tested at the policy level but not
-  triggered on hardware.
-- Rotation, process death and low-memory recovery are untested.
-
-## Reproducing the device phase
-
-With a device attached and authorised:
-
-```bash
-adb devices                       # expect "<serial>  device"
-adb shell cmd media_session volume --stream 3 --set 2   # keep it quiet
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb logcat -c && adb shell am start -n com.pifauna.app/.MainActivity
-./gradlew --no-daemon --max-workers=2 :app:connectedDebugAndroidTest
-```
-
-Then walk the D01–D15 table and replace "Not executed" with the observed result.
+- No test measures acoustic output. Nothing here establishes sound pressure,
+  frequency response or distortion; that needs a calibrated microphone.
+- `AudioRouteMonitor` (external-route refusal) is unit-tested at the policy level
+  but never exercised against a real headset or Bluetooth sink.
+- A real audio-focus interruption was not reproduced; focus *acquisition* and
+  *abandonment* were observed in `dumpsys audio`.
+- The thermal stop path runs only on API 29+ and was not triggered on hardware.
+- Process death and low-memory recovery are untested.
+- Only one of the two attached devices could be reached; the second is documented
+  as blocked in DEVICE-VALIDATION.md.
 A passing digital test must never be recorded as proof of radiated sound.
