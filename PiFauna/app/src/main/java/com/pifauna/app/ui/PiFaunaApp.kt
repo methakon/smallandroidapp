@@ -20,6 +20,7 @@ import com.pifauna.app.data.ChakraProfiles
 import com.pifauna.app.data.Preset
 import com.pifauna.app.data.PresetStore
 import com.pifauna.app.data.SettingsStore
+import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.playback.PlayerController
 import com.pifauna.app.ui.screens.AnahataNadaScreen
@@ -74,6 +75,7 @@ fun PiFaunaApp(
     var presets by remember { mutableStateOf(presetStore.load()) }
     var clearMessage by remember { mutableStateOf<String?>(null) }
     var selectedChakra by rememberSaveable { mutableStateOf("anahata") }
+    var selectedSpecies by rememberSaveable { mutableStateOf(settings.lastProfileId) }
 
     val current = stack.last()
 
@@ -94,6 +96,7 @@ fun PiFaunaApp(
 
     fun openProfile(profile: SpeciesProfile) {
         controller.selectProfile(profile.id)
+        selectedSpecies = profile.id
         settings.lastProfileId = profile.id
         push(Route.Player)
     }
@@ -122,6 +125,8 @@ fun PiFaunaApp(
 
                 Route.Home -> HomeScreen(
                     onProfileSelected = ::openProfile,
+                    selectedProfileId = selectedSpecies,
+                    onSelectProfile = { selectedSpecies = it },
                     onOpenLibrary = { stack = listOf(Route.Profiles) },
                     onOpenChakras = { push(Route.ChakraLibrary) },
                     onOpenAnahata = { push(Route.AnahataNada) }
@@ -155,6 +160,8 @@ fun PiFaunaApp(
 
                 Route.Profiles -> ProfilesScreen(
                     presets = presets,
+                    selectedProfileId = selectedSpecies,
+                    onSelectProfile = { selectedSpecies = it },
                     onProfileSelected = ::openProfile,
                     onPresetSelected = { preset ->
                         controller.selectProfile("custom")
@@ -255,6 +262,7 @@ fun PiFaunaApp(
                         settings.clearAll()
                         presetStore.save(emptyList())
                         presets = emptyList()
+                        selectedSpecies = SpeciesProfiles.all.first().id
                         clearMessage = "Saved settings and presets were deleted."
                     },
                     clearMessage = clearMessage
