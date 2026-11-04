@@ -2,7 +2,7 @@
 <resources>
 
     <!--
-        Dark, no-action-bar shell matching the Figma canvas (#0C211D) so there is
+        Dark, no-action-bar shell matching the current modern-mystic canvas (#0B0716) so there is
         no white flash before Compose draws its first frame.
     -->
     <style name="Theme.PiFauna" parent="@android:style/Theme.Material.NoActionBar">
