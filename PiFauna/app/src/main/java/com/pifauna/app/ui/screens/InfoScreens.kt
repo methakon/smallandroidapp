@@ -11,7 +11,7 @@ import com.pifauna.app.safety.SafetyLimits
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
-import com.pifauna.app.ui.LayaswarnaColors
+import com.pifauna.app.ui.PiFaunaColors
 import com.pifauna.app.ui.SectionLabel
 
 /** Figma 07 · Safety */
@@ -198,13 +198,13 @@ fun SettingsScreen(
         )
         clearMessage?.let {
             Spacer(Modifier.height(8.dp))
-            Text(it, fontSize = 13.sp, color = LayaswarnaColors.Muted)
+            Text(it, fontSize = 13.sp, color = PiFaunaColors.Muted)
         }
 
         Spacer(Modifier.height(20.dp))
         PfTextCard(
             heading = "About Layaswarna",
-            body = "Version 0.3.0. An offline acoustic experiment for Android 8.0 and " +
+            body = "Version 0.5.0. An offline acoustic experiment for Android 8.0 and " +
                 "later. Not a medical device and not a pest-control product."
         )
     }
