@@ -86,3 +86,11 @@ The current code is still named `PiFauna` internally; app/package rename to Laya
 | Original vector Chakra icons | To be authored in Figma from geometric primitives | Original work; final similarity review pending | UI prototypes; release only after review |
 
 This specification is design guidance, not legal advice or a certification of copyright clearance.
+
+## 9. 2026-11-05 design evolution — current decision overrides earlier aesthetic proposals
+
+The preceding temple-orange/terracotta palette and central Play/Open wheel suggestions record the **original specification**. The user subsequently approved a **modern-mystic** dark violet, rose, restrained gold and amethyst concept, with seven differentiated chakra-node colors. The current wheel's **center is a readout only**; long-press without rotation or double-tap on a selected symbol opens its details, and an independent visible action remains available for accessibility. For exact tokens, screen IDs, gesture rules and implementation gaps, see [LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md](LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md).
+
+The Figma Chakra Library now illustrates a **dynamic Chakra Insights** panel in place of a redundant seven-row name/Hz list. The example association list (396, 417, 528, 639, 741, 852, 963 Hz) is a **modern meditation convention only**, not validated chakra activation or a clinical protocol. The seven icon shapes are original geometric prototypes and require further authenticity, copyright, accessibility and visual review. The four-dot placeholder regression in the modern-mystic wheel was corrected on all seven radial redesign frames with editable vector pictograms.
+
+**Status correction:** the Android application ID/Gradle namespace has already changed to `in.berhampore.dhar.layaswarna` (Kotlin source packages have not moved). Existing Android Home/Profile screens still use separate circular tiles, **not** the approved single regulator. Chakra and Anahata concept routes are not implemented. Figma concept work is not an APK release or test pass.
