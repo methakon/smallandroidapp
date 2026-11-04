@@ -27,6 +27,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,16 +71,16 @@ fun PfScreen(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp)
+            .padding(horizontal = 24.dp)
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(20.dp))
         Text(
             text = "Layaswarna",
             color = PiFaunaColors.Accent,
             fontWeight = FontWeight.Bold,
             fontSize = 21.sp
         )
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(20.dp))
         if (title != null && subtitle != null) {
             HeroHeader(title = title, subtitle = subtitle)
         }
@@ -90,14 +94,14 @@ fun HeroHeader(title: String, subtitle: String, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(152.dp)
-            .background(PiFaunaColors.Hero, RoundedCornerShape(20.dp))
-            .padding(horizontal = 20.dp, vertical = 22.dp)
+            .defaultMinSize(minHeight = 122.dp)
+            .background(PiFaunaColors.Hero, RoundedCornerShape(24.dp))
+            .padding(horizontal = 20.dp, vertical = 20.dp)
     ) {
-        Column(modifier = Modifier.fillMaxWidth().padding(end = 66.dp)) {
+        Column(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineLarge.copy(fontFamily = FontFamily.Serif),
                 color = PiFaunaColors.BodyText,
                 maxLines = 2
             )
@@ -109,10 +113,6 @@ fun HeroHeader(title: String, subtitle: String, modifier: Modifier = Modifier) {
                 maxLines = 2
             )
         }
-        ChakraMark(
-            petals = 12,
-            modifier = Modifier.align(Alignment.TopEnd).size(54.dp)
-        )
     }
 }
 
@@ -175,7 +175,7 @@ fun PfCard(
                 Spacer(Modifier.height(3.dp))
                 Text(
                     text = subtitle,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     color = if (enabled) PiFaunaColors.Muted
                     else PiFaunaColors.Muted.copy(alpha = 0.45f)
                 )
@@ -207,7 +207,7 @@ fun PfTextCard(heading: String, body: String) {
     ) {
         Text(heading, fontSize = 16.sp, color = PiFaunaColors.BodyText)
         Spacer(Modifier.height(6.dp))
-        Text(body, fontSize = 13.sp, lineHeight = 19.sp, color = PiFaunaColors.Muted)
+        Text(body, fontSize = 14.sp, lineHeight = 21.sp, color = PiFaunaColors.Muted)
     }
     Spacer(Modifier.height(16.dp))
 }
@@ -227,46 +227,65 @@ fun StatusBanner(message: String, danger: Boolean, modifier: Modifier = Modifier
     ) {
         Text(
             text = message,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
+            fontSize = 14.sp,
+            lineHeight = 20.sp,
             color = if (danger) PiFaunaColors.Danger else PiFaunaColors.Accent
         )
     }
 }
 
-/** Bottom navigation matching the Figma footer: text glyphs, no icon pack needed. */
+/** Three independent Material 3 navigation targets with selected state and safe-area insets. */
 @Composable
 fun PfBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
-    Column(Modifier.fillMaxWidth().background(PiFaunaColors.Background)) {
-        HorizontalDivider(color = PiFaunaColors.Divider)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Tab.entries.forEach { tab ->
-                val active = tab == selected
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .defaultMinSize(minHeight = 48.dp)
-                        .clickable { onSelect(tab) }
-                        .padding(vertical = 6.dp)
-                        .semantics { role = Role.Tab },
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = tab.glyph,
-                        fontSize = 16.sp,
-                        color = if (active) PiFaunaColors.Accent else PiFaunaColors.Muted
-                    )
-                    Text(
-                        text = tab.label,
-                        fontSize = 12.sp,
-                        color = if (active) PiFaunaColors.Accent else PiFaunaColors.Muted,
-                        textAlign = TextAlign.Center
+    NavigationBar(containerColor = PiFaunaColors.Hero, tonalElevation = 0.dp) {
+        Tab.entries.forEach { tab ->
+            NavigationBarItem(
+                selected = selected == tab,
+                onClick = { onSelect(tab) },
+                icon = { NavigationSymbol(tab, selected == tab) },
+                label = { Text(tab.label, fontSize = 12.sp) },
+                alwaysShowLabel = true,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = PiFaunaColors.Accent,
+                    selectedTextColor = PiFaunaColors.Accent,
+                    unselectedIconColor = PiFaunaColors.Muted,
+                    unselectedTextColor = PiFaunaColors.Muted,
+                    indicatorColor = PiFaunaColors.Selected
+                )
+            )
+        }
+    }
+}
+
+/** Original vector geometry; never depends on Unicode glyph availability. */
+@Composable
+private fun NavigationSymbol(tab: Tab, active: Boolean) {
+    Canvas(Modifier.size(24.dp)) {
+        val ink = if (active) PiFaunaColors.Accent else PiFaunaColors.Muted
+        val s = size.minDimension
+        val width = 2.dp.toPx()
+        fun l(x: Float, y: Float, xx: Float, yy: Float) {
+            drawLine(ink, Offset(s * x, s * y), Offset(s * xx, s * yy), width, cap = StrokeCap.Round)
+        }
+        when (tab) {
+            Tab.Home -> {
+                l(.12f, .48f, .5f, .15f); l(.5f, .15f, .88f, .48f)
+                l(.23f, .43f, .23f, .86f); l(.77f, .43f, .77f, .86f)
+                l(.23f, .86f, .77f, .86f); l(.44f, .86f, .44f, .63f)
+            }
+            Tab.Profiles -> {
+                drawCircle(ink, radius = s * .32f, style = Stroke(width))
+                drawCircle(ink, radius = s * .12f, style = Stroke(width))
+                l(.5f, .05f, .5f, .18f); l(.5f, .82f, .5f, .95f)
+            }
+            Tab.Settings -> {
+                drawCircle(ink, radius = s * .23f, style = Stroke(width))
+                drawCircle(ink, radius = s * .06f)
+                repeat(8) { i ->
+                    val angle = 2 * Math.PI * i / 8
+                    l(
+                        (.5 + .33 * cos(angle)).toFloat(), (.5 + .33 * sin(angle)).toFloat(),
+                        (.5 + .44 * cos(angle)).toFloat(), (.5 + .44 * sin(angle)).toFloat()
                     )
                 }
             }
