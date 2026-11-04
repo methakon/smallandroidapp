@@ -38,12 +38,21 @@ export ANDROID_HOME="$HOME/Android/Sdk"
 
 ### Build — PASS
 
-`BUILD SUCCESSFUL in 58s`. Artifact:
+`BUILD SUCCESSFUL`. Artifact:
 
 ```
-app/build/outputs/apk/debug/app-debug.apk   9,258,649 bytes
-sha256 cd78c29a6323f1915f2ba3937114629581290bc83cf47facda0ab8fdae98cd76
+app/build/outputs/apk/debug/app-debug.apk   8,840,901 bytes
+sha256 53508a213a8c5a6bad4fc1bccad31db4b2b1c8a0cb13bdc5c5bee1ba4193e4d6
 ```
+
+**Reproducibility check:** the branch was cloned fresh, built in that clean
+checkout, and the resulting APK is byte-identical to a `clean` build in the
+working tree (same size, same SHA-256). The committed sources, wrapper and
+configuration are therefore sufficient to produce the documented artifact.
+
+Note: an incremental build earlier in the session produced a larger, stale APK
+(9,258,649 bytes) because the previous prototype's outputs were still on disk.
+Only the clean-build figure above is recorded as evidence.
 
 `aapt2 dump badging` confirms:
 
