@@ -80,23 +80,31 @@ fun PfScreen(
 
 @Composable
 fun HeroHeader(title: String, subtitle: String, modifier: Modifier = Modifier) {
-    Column(
+    Box(
         modifier = modifier
             .fillMaxWidth()
             .height(152.dp)
             .background(PiFaunaColors.Hero, RoundedCornerShape(20.dp))
             .padding(horizontal = 20.dp, vertical = 22.dp)
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineLarge,
-            color = PiFaunaColors.BodyText
-        )
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = subtitle,
-            fontSize = 15.sp,
-            color = PiFaunaColors.HeroSubtitle
+        Column(modifier = Modifier.fillMaxWidth().padding(end = 66.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineLarge,
+                color = PiFaunaColors.BodyText,
+                maxLines = 2
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                text = subtitle,
+                fontSize = 15.sp,
+                color = PiFaunaColors.HeroSubtitle,
+                maxLines = 2
+            )
+        }
+        ChakraMark(
+            petals = 12,
+            modifier = Modifier.align(Alignment.TopEnd).size(54.dp)
         )
     }
 }
