@@ -1,6 +1,11 @@
 package com.pifauna.app.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,7 +30,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.Color
 import kotlin.math.cos
 import kotlin.math.sin
@@ -285,5 +289,85 @@ fun ChakraMark(petals: Int, modifier: Modifier = Modifier) {
             drawCircle(color = secondary, radius = radius * 0.14f, center = Offset(px, py), style = Stroke(width = 1.dp.toPx()))
         }
         drawCircle(color = ink, radius = radius * 0.17f, center = center)
+    }
+}
+
+/**
+ * Calm circular session control, independently implemented from generic progress-ring geometry.
+ * Displayed time is the controller's monotonic countdown, never an independent playback timer.
+ * Ring uses a descriptive button label; decorative marks are not interactive.
+ */
+@Composable
+fun LayaswarnaSessionDial(
+    title: String,
+    subtitle: String,
+    progress: Float,
+    isPlaying: Boolean,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    val fraction = progress.coerceIn(0f, 1f)
+    val accent = PiFaunaColors.Accent
+    val track = PiFaunaColors.Divider
+    val action = if (isPlaying) "Stop playback" else "Start timed playback"
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .size(214.dp)
+                .semantics { role = Role.Button; contentDescription = "$action. $title" }
+                .clickable(enabled = enabled, onClick = onClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                val stroke = 9.dp.toPx()
+                val radius = size.minDimension / 2f - stroke
+                drawCircle(color = track, radius = radius, style = Stroke(width = stroke))
+                drawArc(
+                    color = accent,
+                    startAngle = -90f,
+                    sweepAngle = 360f * fraction,
+                    useCenter = false,
+                    style = Stroke(width = stroke, cap = StrokeCap.Round)
+                )
+                drawCircle(color = PiFaunaColors.Lotus, radius = radius * 0.80f, style = Stroke(width = 1.dp.toPx()))
+                // Four quiet, original carved-stone marker dots.
+                repeat(4) { index ->
+                    val angle = 2.0 * Math.PI * index / 4
+                    val marker = Offset(
+                        center.x + cos(angle).toFloat() * radius * 0.70f,
+                        center.y + sin(angle).toFloat() * radius * 0.70f
+                    )
+                    drawCircle(color = PiFaunaColors.Lotus, radius = 2.dp.toPx(), center = marker)
+                }
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = PiFaunaColors.BodyText,
+                    maxLines = 1
+                )
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = PiFaunaColors.Muted,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(9.dp))
+                Text(
+                    text = if (isPlaying) "■ Stop" else "▶ Start",
+                    color = PiFaunaColors.Accent,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            }
+        }
     }
 }
