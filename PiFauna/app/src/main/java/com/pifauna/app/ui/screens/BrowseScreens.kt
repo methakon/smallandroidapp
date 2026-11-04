@@ -33,6 +33,7 @@ import com.pifauna.app.data.Preset
 import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.safety.SafetyLimits
+import com.pifauna.app.ui.LayaswarnaSessionDial
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
@@ -80,6 +81,14 @@ fun HomeScreen(
         else -> "Good night"
     }
     PfScreen(title = greeting, subtitle = "Choose a sound profile") {
+        LayaswarnaSessionDial(
+            title = "Library",
+            subtitle = "Original Chakra sound controls",
+            progress = 1f,
+            isPlaying = false,
+            actionLabel = "Explore profiles",
+            onClick = onOpenLibrary
+        )
         SectionLabel("EXPLORE")
         SpeciesProfiles.all.take(4).forEach { profile ->
             PfCard(
