@@ -39,8 +39,7 @@ class MainActivityNavigationTest {
 
     @Test
     fun appLaunchesToAUsableScreen() {
-        // Exact match: a substring match on "PiFauna" also hits prose such as
-        // "About PiFauna" and becomes ambiguous.
+        // Exact brand match; avoids accidental matches in explanatory copy.
         compose.onNodeWithText("Layaswarna").assertIsDisplayed()
         compose.onNodeWithText("Profiles").assertIsDisplayed()
     }
@@ -91,7 +90,7 @@ class MainActivityNavigationTest {
     @Test
     fun timerScreenOffersNoContinuousMode() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Mosquito / insect").performClick()
+        compose.onNodeWithText("Open selected profile").performScrollTo().performClick()
         compose.waitForIdle()
 
         compose.onNodeWithText("Duration • 10 minutes").performClick()
