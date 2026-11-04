@@ -1,58 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Layaswarna: original lotus + woven soundwave foreground, 108dp adaptive icon.
-     Source: design/layaswarna-lotus-soundwave.svg; keep the petals inside the safe zone.
-     Background is a separate drawable, so launcher masks are controlled by Android. -->
+<!-- Layaswarna lotus + soundwave launcher, derived from editable Figma icon SVG.
+     Adaptive icon artwork is scaled within the central 72dp Android safe zone.
+     Vector paths are original; no third-party vector pack or emoji is used. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group android:pivotX="54" android:pivotY="54" android:scaleX="0.92" android:scaleY="0.92">
-        <path android:pathData="M54,16 a38,38 0,1 1,-0.01 0"
-            android:fillColor="@android:color/transparent"
-            android:strokeColor="#6E39B2" android:strokeWidth="2.3" android:strokeAlpha="0.40"/>
-        <path android:pathData="M54,17 a37,37 0,1 1,-0.01 0"
-            android:fillColor="@android:color/transparent"
-            android:strokeColor="#F8BD68" android:strokeWidth="0.9" android:strokeAlpha="0.85"/>
-        <path android:pathData="M54,23 a31,31 0,1 1,-0.01 0"
-            android:fillColor="@android:color/transparent"
-            android:strokeColor="#A459FF" android:strokeWidth="0.8" android:strokeAlpha="0.55"/>
-        <path android:pathData="M54,31 a24,24 0,1 1,-0.01 0"
-            android:fillColor="@android:color/transparent"
-            android:strokeColor="#D870D7" android:strokeWidth="0.6" android:strokeAlpha="0.50"/>
-        <!-- Outer petals. -->
-        <path android:pathData="M54,78 C37,76 25,63 20,51 C34,52 46,60 54,78 Z"
-            android:fillColor="#D746CF" android:strokeColor="#FFCE78" android:strokeWidth="1.2"/>
-        <path android:pathData="M54,78 C71,76 83,63 88,51 C74,52 62,60 54,78 Z"
-            android:fillColor="#D746CF" android:strokeColor="#FFCE78" android:strokeWidth="1.2"/>
-        <path android:pathData="M54,77 C40,74 31,58 35,40 C46,44 54,58 54,77 Z"
-            android:fillColor="#B62AE1" android:strokeColor="#FFE08A" android:strokeWidth="1.3"/>
-        <path android:pathData="M54,77 C68,74 77,58 73,40 C62,44 54,58 54,77 Z"
-            android:fillColor="#B62AE1" android:strokeColor="#FFE08A" android:strokeWidth="1.3"/>
-        <path android:pathData="M54,79 C40,69 43,43 54,29 C65,43 68,69 54,79 Z"
-            android:fillColor="#E954C6" android:strokeColor="#FFE08A" android:strokeWidth="1.35"/>
-        <path android:pathData="M54,75 C47,65 48,44 54,35 C60,44 61,65 54,75 Z"
-            android:fillColor="#FF8EBB" android:fillAlpha="0.55"/>
-        <!-- Lower lotus foundation. -->
-        <path android:pathData="M54,81 C39,70 29,73 19,71 C27,85 44,88 54,81 Z"
-            android:fillColor="#ED63BB" android:strokeColor="#FFCB75" android:strokeWidth="1.1"/>
-        <path android:pathData="M54,81 C69,70 79,73 89,71 C81,85 64,88 54,81 Z"
-            android:fillColor="#ED63BB" android:strokeColor="#FFCB75" android:strokeWidth="1.1"/>
-        <path android:pathData="M54,80 C43,72 37,67 34,60 C44,64 51,68 54,80 Z"
-            android:fillColor="#FFAA6E" android:fillAlpha="0.7"/>
-        <path android:pathData="M54,80 C65,72 71,67 74,60 C64,64 57,68 54,80 Z"
-            android:fillColor="#FFAA6E" android:fillAlpha="0.7"/>
-        <!-- Woven soundwave: resonance bars over the center petal. -->
-        <path android:pathData="M34,55 V54 M38,58 V50 M42,61 V47 M46,58 V50 M50,65 V43 M54,68 V40 M58,65 V43 M62,58 V50 M66,61 V47 M70,58 V50 M74,55 V54"
-            android:fillColor="@android:color/transparent" android:strokeColor="#FF8E55"
-            android:strokeWidth="3.0" android:strokeAlpha="0.45" android:strokeLineCap="round"/>
-        <path android:pathData="M34,55 V54 M38,58 V50 M42,61 V47 M46,58 V50 M50,65 V43 M54,68 V40 M58,65 V43 M62,58 V50 M66,61 V47 M70,58 V50 M74,55 V54"
-            android:fillColor="@android:color/transparent" android:strokeColor="#FFE7A3"
-            android:strokeWidth="1.9" android:strokeLineCap="round"/>
-        <!-- Small multi-hue beads link to the chakra-inspired design language. -->
-        <path android:pathData="M54,18.4 a1.6,1.6 0,1 0,0.01 0" android:fillColor="#B58CF0" android:strokeColor="#FFE0A8" android:strokeWidth="0.4"/>
-        <path android:pathData="M54,23.6 a1.4,1.4 0,1 0,0.01 0" android:fillColor="#5BB6E8" android:strokeColor="#FFF1B3" android:strokeWidth="0.4"/>
-        <path android:pathData="M54,84.6 a1.4,1.4 0,1 0,0.01 0" android:fillColor="#E8C872" android:strokeColor="#FFF1B3" android:strokeWidth="0.4"/>
-        <path android:pathData="M54,89.8 a1.2,1.2 0,1 0,0.01 0" android:fillColor="#C8483E" android:strokeColor="#FFE0A8" android:strokeWidth="0.35"/>
+    <group android:pivotX="54" android:pivotY="54" android:scaleX="0.80" android:scaleY="0.80">
+        <path android:fillColor="@android:color/transparent"
+            android:strokeColor="#AE55F6" android:strokeWidth="1.9"
+            android:pathData="M54,13 A40,40 0,1 1,53.99 13" />
+        <path android:fillColor="@android:color/transparent"
+            android:strokeColor="#FFC36B" android:strokeWidth="1.2"
+            android:pathData="M54,18 A35,35 0,1 1,53.99 18" />
+        <path android:fillColor="@android:color/transparent"
+            android:strokeColor="#D57AFF" android:strokeWidth="1.0"
+            android:pathData="M54,24 A29,29 0,1 1,53.99 24" />
+
+        <path android:fillColor="#A633E7" android:strokeColor="#FFE2A7"
+            android:strokeWidth="1.15"
+            android:pathData="M54,72 C38,79 26,73 16,63 C28,61 37,59 54,72 Z"/>
+        <path android:fillColor="#A633E7" android:strokeColor="#FFE2A7"
+            android:strokeWidth="1.15"
+            android:pathData="M54,72 C70,79 82,73 92,63 C80,61 71,59 54,72 Z"/>
+        <path android:fillColor="#E84BC7" android:strokeColor="#FFE6AB"
+            android:strokeWidth="1.2"
+            android:pathData="M54,70 C37,72 23,65 16,49 C28,46 42,48 54,70 Z"/>
+        <path android:fillColor="#E84BC7" android:strokeColor="#FFE6AB"
+            android:strokeWidth="1.2"
+            android:pathData="M54,70 C71,72 85,65 92,49 C80,46 66,48 54,70 Z"/>
+        <path android:fillColor="#A52BE1" android:strokeColor="#FFE6AE"
+            android:strokeWidth="1.25"
+            android:pathData="M52.8,73 C39,65 31,51 33,37 C47,39 52,49 54,70 Z"/>
+        <path android:fillColor="#A52BE1" android:strokeColor="#FFE6AE"
+            android:strokeWidth="1.25"
+            android:pathData="M55.2,73 C69,65 77,51 75,37 C61,39 56,49 54,70 Z"/>
+        <path android:fillColor="#F16ACA" android:strokeColor="#FFE8AF"
+            android:strokeWidth="1.5"
+            android:pathData="M54,73 C40,61 40,44 54,27 C68,44 68,61 54,73 Z"/>
+        <path android:fillColor="#BD25DC" android:fillAlpha=".30"
+            android:pathData="M54,71 C46,61 47,46 54,35 C61,46 62,61 54,71 Z"/>
+
+        <!-- Short luminous frequency spectrum nested in the central lotus. -->
+        <path android:fillColor="#FFE48C" android:pathData="
+            M35,53.4 L36.8,53.4 L36.8,58.2 L35,58.2 Z
+            M39.5,51 L41.2,51 L41.2,60.5 L39.5,60.5 Z
+            M44,48.5 L46,48.5 L46,63 L44,63 Z
+            M49,44 L51.4,44 L51.4,67 L49,67 Z
+            M53,41 L55.4,41 L55.4,69 L53,69 Z
+            M57.6,44 L60,44 L60,67 L57.6,67 Z
+            M62,48.5 L64,48.5 L64,63 L62,63 Z
+            M66.5,51 L68.2,51 L68.2,60.5 L66.5,60.5 Z
+            M71,53.4 L72.8,53.4 L72.8,58.2 L71,58.2 Z"/>
+        <path android:fillColor="#E783FF" android:pathData="M54,15.9 A2.1,2.1 0,1 0,54,20.1 A2.1,2.1 0,1 0,54,15.9"/>
+        <path android:fillColor="#40D1FA" android:pathData="M54,21.9 A1.4,1.4 0,1 0,54,24.7 A1.4,1.4 0,1 0,54,21.9"/>
+        <path android:fillColor="#8AE4B0" android:pathData="M54,26 A1,1 0,1 0,54,28 A1,1 0,1 0,54,26"/>
+        <path android:fillColor="#FFE57C" android:pathData="M54,79.1 A1.9,1.9 0,1 0,54,82.9 A1.9,1.9 0,1 0,54,79.1"/>
+        <path android:fillColor="#FFAC6B" android:pathData="M54,84.6 A1.4,1.4 0,1 0,54,87.4 A1.4,1.4 0,1 0,54,84.6"/>
+        <path android:fillColor="#FF637F" android:pathData="M54,89 A1,1 0,1 0,54,91 A1,1 0,1 0,54,89"/>
+        <path android:fillColor="#FFF0C5" android:pathData="M54,9 L54.7,12.2 L58,13 L54.7,13.8 L54,17 L53.3,13.8 L50,13 L53.3,12.2 Z" />
     </group>
 </vector>
