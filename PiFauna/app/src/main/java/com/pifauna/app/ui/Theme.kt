@@ -10,22 +10,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
- * Colour tokens lifted from the PiFauna Figma file
- * (https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX).
- *
- * The design defines a single dark canvas, so PiFauna ships one appearance.
+ * Low-glare Layaswarna palette from docs/LAYASWARNA-COLOR-ACCESSIBILITY.md.
+ * Visual theme only: does not change audio or safety behavior.
  */
 object PiFaunaColors {
-    val Background = Color(0xFF0C211D)
-    val Hero = Color(0xFF174338)
-    val Card = Color(0xFF18352F)
-    val Divider = Color(0xFF31574C)
-    val Accent = Color(0xFF75E2B8)
-    val BodyText = Color(0xFFF0FAF5)
-    val Muted = Color(0xFFA8C9BE)
-    val HeroSubtitle = Color(0xFFB6D9CA)
-    val Warning = Color(0xFFFFD08A)
-    val Danger = Color(0xFFFF9E9E)
+    val Background = Color(0xFF241D28)
+    val Hero = Color(0xFF65414A)
+    val Card = Color(0xFF40313F)
+    val Divider = Color(0xFF725A65)
+    val Accent = Color(0xFFD6A080)
+    val BodyText = Color(0xFFF4E8E3)
+    val Muted = Color(0xFFE6D1CB)
+    val HeroSubtitle = Color(0xFFE6D1CB)
+    val Warning = Color(0xFFE6BA85)
+    val Danger = Color(0xFFF0A6A6)
+    val Action = Color(0xFF78444F)
+    val OnAction = Color(0xFFFFFFFF)
+    val Lotus = Color(0xFFB67D91)
 }
 
 /**
