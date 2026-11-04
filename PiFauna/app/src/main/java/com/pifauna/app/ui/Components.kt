@@ -1,9 +1,11 @@
 package com.pifauna.app.ui
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -22,6 +24,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.Color
+import kotlin.math.cos
+import kotlin.math.sin
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -57,7 +64,7 @@ fun PfScreen(
     ) {
         Spacer(Modifier.height(24.dp))
         Text(
-            text = "PiFauna  ◉",
+            text = "Layaswarna",
             color = PiFaunaColors.Accent,
             fontWeight = FontWeight.Bold,
             fontSize = 21.sp
@@ -83,7 +90,7 @@ fun HeroHeader(title: String, subtitle: String, modifier: Modifier = Modifier) {
         Text(
             text = title,
             style = MaterialTheme.typography.headlineLarge,
-            color = androidx.compose.ui.graphics.Color.White
+            color = PiFaunaColors.BodyText
         )
         Spacer(Modifier.height(8.dp))
         Text(
@@ -118,6 +125,7 @@ fun PfCard(
     subtitle: String? = null,
     enabled: Boolean = true,
     trailing: (@Composable () -> Unit)? = null,
+    chakraPetals: Int? = null,
     onClick: (() -> Unit)? = null,
     content: (@Composable ColumnScope.() -> Unit)? = null
 ) {
@@ -165,6 +173,9 @@ fun PfCard(
         if (trailing != null) {
             Spacer(Modifier.width(12.dp))
             trailing()
+        } else if (chakraPetals != null) {
+            Spacer(Modifier.width(12.dp))
+            ChakraMark(petals = chakraPetals, modifier = Modifier.size(40.dp))
         }
     }
     Spacer(Modifier.height(16.dp))
@@ -245,5 +256,26 @@ fun PfBottomBar(selected: Tab, onSelect: (Tab) -> Unit) {
                 }
             }
         }
+    }
+}
+
+/** Original geometry drawn at runtime; no uploaded reference artwork or third-party asset. */
+@Composable
+fun ChakraMark(petals: Int, modifier: Modifier = Modifier) {
+    val ink = PiFaunaColors.Accent
+    val secondary = PiFaunaColors.Lotus
+    Canvas(modifier = modifier.semantics { contentDescription = "Decorative lotus symbol" }) {
+        val radius = size.minDimension * 0.43f
+        val center = Offset(size.width / 2f, size.height / 2f)
+        drawCircle(color = ink, radius = radius, center = center, style = Stroke(width = 1.5.dp.toPx()))
+        drawCircle(color = secondary, radius = radius * 0.63f, center = center, style = Stroke(width = 1.dp.toPx()))
+        val count = petals.coerceIn(2, 24)
+        repeat(count) { index ->
+            val angle = 2.0 * Math.PI * index / count
+            val px = center.x + cos(angle).toFloat() * radius * 0.76f
+            val py = center.y + sin(angle).toFloat() * radius * 0.76f
+            drawCircle(color = secondary, radius = radius * 0.14f, center = Offset(px, py), style = Stroke(width = 1.dp.toPx()))
+        }
+        drawCircle(color = ink, radius = radius * 0.17f, center = center)
     }
 }
