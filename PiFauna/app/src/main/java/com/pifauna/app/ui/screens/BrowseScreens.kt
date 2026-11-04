@@ -33,7 +33,7 @@ import com.pifauna.app.data.Preset
 import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.safety.SafetyLimits
-import com.pifauna.app.ui.LayaswarnaSessionDial
+import com.pifauna.app.ui.LayaswarnaProfileCircle
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
@@ -81,27 +81,33 @@ fun HomeScreen(
         else -> "Good night"
     }
     PfScreen(title = greeting, subtitle = "Choose a sound profile") {
-        LayaswarnaSessionDial(
-            title = "Library",
-            subtitle = "Original Chakra sound controls",
-            progress = 1f,
-            isPlaying = false,
-            actionLabel = "Explore profiles",
-            onClick = onOpenLibrary
+        SectionLabel("SOUND PROFILE CIRCLES")
+        PfTextCard(
+            heading = "Select a sound experiment",
+            body = "Choose a category to inspect its test frequency band. These are not proven animal repellents."
         )
-        SectionLabel("EXPLORE")
-        SpeciesProfiles.all.take(4).forEach { profile ->
-            PfCard(
-                title = profile.name,
-                subtitle = TimeFormat.band(profile.firstHz, profile.lastHz) + " · " + profile.summary,
-                chakraPetals = listOf(4, 6, 10, 12)[SpeciesProfiles.all.indexOf(profile) % 4],
-                onClick = { onProfileSelected(profile) }
-            )
+        SpeciesProfiles.all.filter { it.id != "custom" }.chunked(2).forEach { pair ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                pair.forEach { profile ->
+                    LayaswarnaProfileCircle(
+                        label = profile.name,
+                        symbol = profileSymbol(profile.id),
+                        description = TimeFormat.band(profile.firstHz, profile.lastHz),
+                        petals = profilePetals(profile.id),
+                        onClick = { onProfileSelected(profile) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
         }
         PfCard(
-            title = "Full profile library",
+            title = "All profiles and saved sounds",
+            subtitle = "Open full library",
             chakraPetals = 24,
-            subtitle = "All bands, cautions and your saved presets",
             onClick = onOpenLibrary
         )
     }
@@ -118,12 +124,23 @@ fun ProfilesScreen(
 ) {
     PfScreen(title = "Explore profiles", subtitle = "Sound presets") {
         SectionLabel("EXPLORE")
-        SpeciesProfiles.all.forEach { profile ->
-            PfCard(
-                title = profile.name,
-                subtitle = TimeFormat.band(profile.firstHz, profile.lastHz) + " · " + profile.summary,
-                onClick = { onProfileSelected(profile) }
-            )
+        SpeciesProfiles.all.chunked(2).forEach { pair ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                pair.forEach { profile ->
+                    LayaswarnaProfileCircle(
+                        label = profile.name,
+                        symbol = profileSymbol(profile.id),
+                        description = TimeFormat.band(profile.firstHz, profile.lastHz),
+                        petals = profilePetals(profile.id),
+                        onClick = { onProfileSelected(profile) },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
         }
 
         SectionLabel("PROFILE NOTES")
@@ -372,3 +389,23 @@ internal fun ToneMode.explanation(): String = when (this) {
 }
 
 
+
+/** Distinct category pictograms; these do not represent measured animal responses. */
+private fun profileSymbol(id: String): String = when (id) {
+    "mosquito" -> "🦟"
+    "insects" -> "🦋"
+    "rodent" -> "🐭"
+    "dogcat" -> "🐾"
+    "bird" -> "🐦"
+    "custom" -> "♫"
+    else -> "♪"
+}
+
+private fun profilePetals(id: String): Int = when (id) {
+    "mosquito" -> 6
+    "insects" -> 10
+    "rodent" -> 4
+    "dogcat" -> 12
+    "bird" -> 16
+    else -> 24
+}
