@@ -25,7 +25,7 @@ cd PiFauna
 | JVM unit tests | **33 tests, 0 failures, 0 errors** |
 | Debug APK | 8,890,081 bytes, `sha256 18b86f70…`, `in.berhampore.dhar.layaswarna` v0.5.0 |
 | Instrumentation compile | **passes** (`assembleDebugAndroidTest`) |
-| Android lint | **0 errors, 12 warnings** (dependency-currency and icon notes only) |
+| Android lint | **0 errors, 13 warnings** (8 dependency-currency, 1 unused resource, 1 old target API, 1 obsolete SDK qualifier, 1 backup-rules note, 1 icon note) |
 | CI | **passing** — [run 41903358930](https://github.com/methakon/smallandroidapp/actions/runs/41903358930) |
 
 ### Instrumented suite — 20 tests, both devices
