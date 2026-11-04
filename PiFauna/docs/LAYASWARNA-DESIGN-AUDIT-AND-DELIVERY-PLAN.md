@@ -115,3 +115,18 @@ Preserve: 100–18,000 Hz bounded audible output; <=8% digital full-scale peak; 
 7. Test: Gradle compile/unit/lint, UI navigation, screen readers, double tap vs long press vs rotation conflicts, touch cancellation, color contrast, 200% font scale, small-screen landscape, audio safety stops, emulator and representative real Android devices.
 
 **Verification:** Figma edits were visually inspected for sample Home, Chakra Library and Safety frames. No Android build, instrumented tests, real-device interaction tests, clinical validation or publication-rights clearance has been performed as part of this documentation update.
+
+## 9. Implementation checkpoint — 2026-11-05 (v0.5.0)
+
+Source changes have been pushed to `feat/pifauna-phone-audio`:
+
+- `ui/RadialSelector.kt`: Compose single-wheel, highlighted selection, original vector graphics; swipe rotation, single tap, stationary long press and double tap; accessible explicit action alternative; center readout is non-interactive.
+- `ui/Components.kt`, `ui/Theme.kt`: Material 3 navigation, updated dark-mystic colors, real status/navigation insets via Scaffold, readable body text and safe card spacing.
+- `ui/screens/BrowseScreens.kt`: profile, waveform and duration selectors integrated; shared profile selection persists through navigation.
+- `ui/screens/ConceptScreens.kt`, `data/ChakraProfiles.kt`: all three planned screens are now *navigable*; selected chakra details and tone associations update; short audible tone experiments can be prepared using existing guarded playback.
+- `playback/PlayerController.kt`: named experimental tone preparation, display label invalidated when user edits its frequency/waveform. **No auto-start.**
+- `app/src/test` and `app/src/androidTest`: mapping/catalog tests and Compose gesture/navigation smoke tests. The workflow validates debug APK, JVM tests, lint, and instrumented test compilation.
+
+**Known deliberate limitation:** Pink and white noise are visible as not yet implemented. The existing pure tone/sweep engine remains unchanged pending independent DSP, spectrum, device/thermal and power validation. No medical/chakra-specific efficacy claims or sleep-mode promises.
+
+**Verification snapshot:** A preceding core build passed [GitHub Actions](https://github.com/methakon/smallandroidapp/actions/runs/41890856104), but code added after that run must pass a newer CI run before being called fully build-verified. Running touch tests and assessing TalkBack/contrast on physical Android devices remains necessary.
