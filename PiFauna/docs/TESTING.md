@@ -26,6 +26,7 @@ cd PiFauna
 | Debug APK | 8,890,081 bytes, `sha256 18b86f70…`, `in.berhampore.dhar.layaswarna` v0.5.0 |
 | Instrumentation compile | **passes** (`assembleDebugAndroidTest`) |
 | Android lint | **0 errors, 12 warnings** (dependency-currency and icon notes only) |
+| CI | **passing** — [run 41903358930](https://github.com/methakon/smallandroidapp/actions/runs/41903358930) |
 
 ### Instrumented suite — 20 tests, both devices
 

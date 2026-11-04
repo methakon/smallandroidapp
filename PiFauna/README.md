@@ -89,10 +89,14 @@ different installed app ID from the original PiFauna; user data is **not**
 automatically migrated.
 
 CI workflow: [Layaswarna Android validation](../.github/workflows/layaswarna-android.yml)
-runs unit tests, debug APK assembly and lint. The first core redesign run passed:
-[GitHub Actions run 41890856104](https://github.com/methakon/smallandroidapp/actions/runs/41890856104).
-Later changes require their own successful run. Real-device navigation, gesture
-and TalkBack testing still needs a physical Android device.
+runs JVM unit tests, debug APK assembly, instrumentation compilation and lint.
+Current status: **passing** —
+[GitHub Actions run 41903358930](https://github.com/methakon/smallandroidapp/actions/runs/41903358930).
+
+The instrumented suite was also executed on two physical devices (Android 11 and
+Android 9), 20 tests green on each. Manual TalkBack, contrast and large-font
+review, and headset/Bluetooth route testing, still need a hands-on pass. See
+[docs/TESTING.md](docs/TESTING.md).
 
 ## Safety behaviour
 
