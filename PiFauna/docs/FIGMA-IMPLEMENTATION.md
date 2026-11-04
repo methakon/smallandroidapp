@@ -71,3 +71,18 @@ These are product decisions, not unfinished work.
 - The Figma status-bar mock ("9:41") is drawn by the system, not the app.
 - The decorative hero illustration referenced in earlier design notes is not
   bundled; the hero is a flat colour panel as in the current frames.
+
+
+## 2026-11-04 layout and Chakra-control audit
+
+Design source: https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX
+
+- Repositioned concept screens 12, 13, 14 into a dedicated fourth row (x=100, 550, 1000; y=2960), with non-overlapping 60px horizontal gutters.
+- Repositioned original Chakra control sheet to (1450,2960); moved large reference-art masters into a separate right-side area (x=2600,3680,4760,5840).
+- On all eleven implemented-route artboards, moved newly created original Chakra vector groups from overlapping hero content into the first selectable/action row.
+- Removed the previous first-row Chakra linework where it collided with the new symbol, and removed eleven decorative friezes that overlapped lower content/Anahata Nada links.
+- Constrained overflow-prone text widths, including mock status time, to the 390px artboard. Enabled artboard content clipping.
+- Captured updated screenshots of Home (node 1:15), Chakra Sound Console (13:23) and original icon sheet (15:5) after edits.
+- **Scope:** These are Figma composition edits, not changes to the Android app or guarantees of responsive layout. Visual QA on all 14 frames, text wrapping, accessible touch targets and actual interactive component variants remain pending.
+- Research requirements and claim-quality review: [LAYASWARNA-REQUIREMENTS-REVIEW.md](LAYASWARNA-REQUIREMENTS-REVIEW.md).
+- Original icon provenance/IP constraints: [LAYASWARNA-CHAKRA-DESIGN-SPEC.md](LAYASWARNA-CHAKRA-DESIGN-SPEC.md).
