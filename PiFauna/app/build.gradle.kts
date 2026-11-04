@@ -1,8 +1,32 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+
+/*
+ * Upload signing material is read from outside the repository. Point
+ * LAYASWARNA_KEYSTORE_PROPERTIES at a properties file, or leave it unset to use
+ * ~/.config/layaswarna/keystore.properties. Nothing here is ever committed, and
+ * a release build without that file stays unsigned rather than failing loudly in
+ * CI, which only builds debug variants.
+ */
+val keystorePropertiesFile: File =
+    providers.environmentVariable("LAYASWARNA_KEYSTORE_PROPERTIES").orNull
+        ?.let { file(it) }
+        ?: File(System.getProperty("user.home"), ".config/layaswarna/keystore.properties")
+
+val keystoreProperties: Properties? =
+    if (keystorePropertiesFile.isFile) {
+        Properties().apply { keystorePropertiesFile.inputStream().use { load(it) } }
+    } else {
+        logger.lifecycle(
+            "No signing properties at $keystorePropertiesFile — release output will be unsigned."
+        )
+        null
+    }
 
 android {
     namespace = "in.berhampore.dhar.layaswarna"
@@ -31,12 +55,24 @@ android {
         compose = true
     }
 
+    signingConfigs {
+        if (keystoreProperties != null) {
+            create("release") {
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
         }
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.findByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

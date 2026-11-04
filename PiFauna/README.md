@@ -74,6 +74,36 @@ export ANDROID_HOME="$HOME/Android/Sdk"
 
 Artifact: `app/build/outputs/apk/debug/app-debug.apk`.
 
+## Release signing and App Bundle
+
+The upload key lives **outside** the repository and is never committed. Gradle
+reads it from a properties file located by `LAYASWARNA_KEYSTORE_PROPERTIES`, or
+falls back to `~/.config/layaswarna/keystore.properties`:
+
+```properties
+storeFile=/absolute/path/to/upload-keystore.jks
+storePassword=…
+keyAlias=…
+keyPassword=…
+```
+
+Build the signed bundle:
+
+```bash
+./gradlew --no-daemon :app:bundleRelease
+# app/build/outputs/bundle/release/app-release.aab
+```
+
+If the properties file is absent, the release variant builds **unsigned** and
+Gradle logs a warning; it never falls back to a debug key.
+
+Losing the upload key means you can no longer update the app under the same
+identity without a Play App Signing key reset. Back up the `.jks` **and** the
+properties file (or the password) to at least two separate secure locations, for
+example a password manager entry plus an offline encrypted copy. Never store the
+keystore in git, in cloud storage without encryption, or in a CI secret that only
+exists in one place.
+
 ## Install
 
 ```bash
