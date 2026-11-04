@@ -58,7 +58,7 @@ fun WelcomeScreen(onGetStarted: () -> Unit, onLearnLimits: () -> Unit) {
         )
         PfTextCard(
             heading = "Before you begin",
-            body = "PiFauna generates short, low-level test tones through the built-in " +
+            body = "Layaswarna generates short, low-level test tones through the built-in " +
                 "speaker. It is not a repellent, it is not medically certified, and no " +
                 "frequency here is proven to affect insects or animals. Keep the volume " +
                 "low, stay away from ears, and stop if anyone feels discomfort."
@@ -85,11 +85,13 @@ fun HomeScreen(
             PfCard(
                 title = profile.name,
                 subtitle = TimeFormat.band(profile.firstHz, profile.lastHz) + " · " + profile.summary,
+                chakraPetals = listOf(4, 6, 10, 12)[SpeciesProfiles.all.indexOf(profile) % 4],
                 onClick = { onProfileSelected(profile) }
             )
         }
         PfCard(
             title = "Full profile library",
+            chakraPetals = 24,
             subtitle = "All bands, cautions and your saved presets",
             onClick = onOpenLibrary
         )
@@ -197,8 +199,8 @@ fun CustomSoundScreen(
                     onClick = { onModeChange(candidate) },
                     label = { Text(candidate.label(), fontSize = 12.sp) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = PiFaunaColors.Accent,
-                        selectedLabelColor = PiFaunaColors.Background,
+                        selectedContainerColor = PiFaunaColors.Action,
+                        selectedLabelColor = PiFaunaColors.OnAction,
                         labelColor = PiFaunaColors.BodyText,
                         containerColor = PiFaunaColors.Card
                     )
@@ -267,6 +269,7 @@ fun TimerScreen(
         SafetyLimits.DURATION_CHOICES_MIN.forEach { minutes ->
             PfCard(
                 title = "$minutes min",
+                chakraPetals = 6,
                 subtitle = if (minutes == selectedMinutes) "Selected" else "Tap to select",
                 onClick = { onSelect(minutes) }
             )
@@ -319,7 +322,7 @@ fun PfPrimaryCard(
     val container = when {
         !enabled -> PiFaunaColors.Divider
         danger -> PiFaunaColors.Danger
-        else -> PiFaunaColors.Accent
+        else -> PiFaunaColors.Action
     }
     Box(
         modifier = Modifier
@@ -334,7 +337,7 @@ fun PfPrimaryCard(
                 text = title,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
-                color = if (enabled) PiFaunaColors.Background else PiFaunaColors.Muted
+                color = if (enabled) PiFaunaColors.OnAction else PiFaunaColors.Muted
             )
         }
     }
