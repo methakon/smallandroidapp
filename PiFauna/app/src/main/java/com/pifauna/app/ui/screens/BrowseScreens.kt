@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +34,9 @@ import com.pifauna.app.data.Preset
 import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.safety.SafetyLimits
-import com.pifauna.app.ui.LayaswarnaProfileCircle
+import com.pifauna.app.ui.LayaswarnaRadialSelector
+import com.pifauna.app.ui.RadialOption
+import com.pifauna.app.ui.RadialSymbol
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
@@ -67,12 +70,30 @@ fun WelcomeScreen(onGetStarted: () -> Unit, onLearnLimits: () -> Unit) {
     }
 }
 
-/** Figma 02 · Home */
+private fun profileOptions(): List<RadialOption> = SpeciesProfiles.all.map { profile ->
+    RadialOption(
+        id = profile.id,
+        label = profile.name,
+        detail = TimeFormat.band(profile.firstHz, profile.lastHz),
+        symbol = when (profile.id) {
+            "mosquito" -> RadialSymbol.MOSQUITO
+            "insects" -> RadialSymbol.INSECT
+            "rodent" -> RadialSymbol.RODENT
+            "dogcat" -> RadialSymbol.PETS
+            "bird" -> RadialSymbol.BIRD
+            else -> RadialSymbol.CUSTOM
+        }
+    )
+}
+
+/** Figma 02 · One regulator, selected item highlight and optional alternate action. */
 @Composable
 fun HomeScreen(
     hourOfDay: Int = LocalTime.now().hour,
     onProfileSelected: (SpeciesProfile) -> Unit,
-    onOpenLibrary: () -> Unit
+    onOpenLibrary: () -> Unit,
+    onOpenChakras: () -> Unit,
+    onOpenAnahata: () -> Unit
 ) {
     val greeting = when (hourOfDay) {
         in 5..11 -> "Good morning"
@@ -80,40 +101,31 @@ fun HomeScreen(
         in 17..21 -> "Good evening"
         else -> "Good night"
     }
+    var selected by rememberSaveable { mutableStateOf("mosquito") }
+    val profile = SpeciesProfiles.byId(selected)
     PfScreen(title = greeting, subtitle = "Choose a sound profile") {
-        SectionLabel("SOUND PROFILE CIRCLES")
-        PfTextCard(
-            heading = "Select a sound experiment",
-            body = "Choose a category to inspect its test frequency band. These are not proven animal repellents."
+        SectionLabel("SOUND PROFILE REGULATOR")
+        LayaswarnaRadialSelector(
+            options = profileOptions(),
+            selectedId = selected,
+            onSelect = { selected = it },
+            onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
+            actionLabel = "Open selected profile"
         )
-        SpeciesProfiles.all.filter { it.id != "custom" }.chunked(2).forEach { pair ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                pair.forEach { profile ->
-                    LayaswarnaProfileCircle(
-                        label = profile.name,
-                        symbol = profileSymbol(profile.id),
-                        description = TimeFormat.band(profile.firstHz, profile.lastHz),
-                        petals = profilePetals(profile.id),
-                        onClick = { onProfileSelected(profile) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                if (pair.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-        PfCard(
-            title = "All profiles and saved sounds",
-            subtitle = "Open full library",
-            chakraPetals = 24,
-            onClick = onOpenLibrary
+        Spacer(Modifier.height(16.dp))
+        PfTextCard(heading = profile.name, body = profile.summary + ". " + profile.detail)
+        PfCard(title = "All profiles and saved sounds", subtitle = "Browse preset library", onClick = onOpenLibrary)
+        SectionLabel("MEDITATION")
+        PfCard(title = "Seven Chakra Library", subtitle = "Symbolic tone associations and listening insights", onClick = onOpenChakras)
+        PfCard(title = "Anahata Nada", subtitle = "Experimental relaxation sound studio", onClick = onOpenAnahata)
+        PfTextCard(
+            heading = "Experimental audio",
+            body = "Digital frequencies are not proof of acoustic output, animal repellency, or medical effects."
         )
     }
 }
 
-/** Figma 04 · Profile Library */
+/** Figma 04 · A single circular selector plus current profile notes and saved presets. */
 @Composable
 fun ProfilesScreen(
     presets: List<Preset>,
@@ -122,62 +134,36 @@ fun ProfilesScreen(
     onDeletePreset: (String) -> Unit,
     onCreateCustom: () -> Unit
 ) {
-    PfScreen(title = "Explore profiles", subtitle = "Sound presets") {
-        SectionLabel("EXPLORE")
-        SpeciesProfiles.all.chunked(2).forEach { pair ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                pair.forEach { profile ->
-                    LayaswarnaProfileCircle(
-                        label = profile.name,
-                        symbol = profileSymbol(profile.id),
-                        description = TimeFormat.band(profile.firstHz, profile.lastHz),
-                        petals = profilePetals(profile.id),
-                        onClick = { onProfileSelected(profile) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                if (pair.size == 1) Spacer(Modifier.weight(1f))
-            }
-        }
-
-        SectionLabel("PROFILE NOTES")
-        SpeciesProfiles.all.forEach { profile ->
-            PfTextCard(heading = profile.name, body = profile.detail)
-        }
-
-        PfCard(
-            title = "Create a custom sound",
-            subtitle = "Set any band inside ${SafetyLimits.MIN_HZ}–${SafetyLimits.MAX_HZ} Hz",
-            onClick = onCreateCustom
+    var selected by rememberSaveable { mutableStateOf("mosquito") }
+    val profile = SpeciesProfiles.byId(selected)
+    PfScreen(title = "Explore profiles", subtitle = "Experimental sound presets") {
+        SectionLabel("SELECT PROFILE")
+        LayaswarnaRadialSelector(
+            options = profileOptions(),
+            selectedId = selected,
+            onSelect = { selected = it },
+            onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
+            actionLabel = "Open selected profile"
         )
+        SectionLabel("SELECTED PROFILE INSIGHTS")
+        PfTextCard(heading = profile.name, body = profile.detail)
+        PfCard(title = "Create a custom sound", subtitle = "Set a frequency band and waveform", onClick = onCreateCustom)
 
         SectionLabel("YOUR PRESETS (${presets.size}/${SafetyLimits.MAX_PRESETS})")
         if (presets.isEmpty()) {
-            PfTextCard(
-                heading = "No saved presets",
-                body = "Custom bands you save appear here. Presets stay on this device."
-            )
+            PfTextCard("No saved presets", "Custom bands you save appear here. Presets stay on this device.")
         } else {
             presets.forEach { preset ->
                 PfCard(
                     title = preset.name,
                     subtitle = TimeFormat.band(preset.startHz, preset.endHz) +
-                        " · " + preset.mode.label() +
-                        " · " + (preset.gain * 100).toInt() + "% level",
-                    onClick = { onPresetSelected(preset) },
-                    trailing = {
-                        Text(
-                            text = "Delete",
-                            color = PiFaunaColors.Danger,
-                            fontSize = 12.sp,
-                            modifier = Modifier
-                                .clickable { onDeletePreset(preset.name) }
-                                .padding(8.dp)
-                        )
-                    }
+                        " · " + preset.mode.label() + " · " + (preset.gain * 100).toInt() + "% level",
+                    onClick = { onPresetSelected(preset) }
+                )
+                PfCard(
+                    title = "Delete ${preset.name}",
+                    subtitle = "Remove saved preset from this device",
+                    onClick = { onDeletePreset(preset.name) }
                 )
             }
         }
@@ -217,23 +203,26 @@ fun CustomSoundScreen(
                 "16 kHz, so a high setting can be nearly silent in the room."
         )
 
-        SectionLabel("SIGNAL")
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ToneMode.entries.forEach { candidate ->
-                FilterChip(
-                    selected = candidate == mode,
-                    onClick = { onModeChange(candidate) },
-                    label = { Text(candidate.label(), fontSize = 12.sp) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = PiFaunaColors.Action,
-                        selectedLabelColor = PiFaunaColors.OnAction,
-                        labelColor = PiFaunaColors.BodyText,
-                        containerColor = PiFaunaColors.Card
-                    )
+        SectionLabel("WAVEFORM REGULATOR")
+        LayaswarnaRadialSelector(
+            options = ToneMode.entries.map { candidate ->
+                RadialOption(
+                    id = candidate.name,
+                    label = candidate.label(),
+                    detail = "Audio waveform",
+                    symbol = when (candidate) {
+                        ToneMode.FIXED -> RadialSymbol.SINE
+                        ToneMode.SWEEP -> RadialSymbol.SWEEP
+                        ToneMode.PULSE -> RadialSymbol.PULSE
+                        ToneMode.HOP -> RadialSymbol.HOP
+                    }
                 )
-            }
-        }
-        Spacer(Modifier.height(16.dp))
+            },
+            selectedId = mode.name,
+            onSelect = { selected -> onModeChange(ToneMode.valueOf(selected)) },
+            onActivate = { selected -> onModeChange(ToneMode.valueOf(selected)) },
+            actionLabel = "Use selected waveform"
+        )
         PfTextCard(heading = mode.label(), body = mode.explanation())
 
         SectionLabel("OUTPUT LEVEL")
@@ -284,32 +273,25 @@ fun CustomSoundScreen(
     }
 }
 
-/** Figma 06 · Timer */
+/** Figma 06 · Selection stays tentative until confirmed. */
 @Composable
-fun TimerScreen(
-    selectedMinutes: Int,
-    onSelect: (Int) -> Unit
-) {
-    PfScreen(title = "Playback schedule", subtitle = "Choose a duration") {
-        SectionLabel("EXPLORE")
-        SafetyLimits.DURATION_CHOICES_MIN.forEach { minutes ->
-            PfCard(
-                title = "$minutes min",
-                chakraPetals = 6,
-                subtitle = if (minutes == selectedMinutes) "Selected" else "Tap to select",
-                onClick = { onSelect(minutes) }
-            )
-        }
-        PfCard(
-            title = "Continuous",
-            subtitle = "Not offered — every session must end on its own",
-            enabled = false
+fun TimerScreen(selectedMinutes: Int, onSelect: (Int) -> Unit) {
+    var tentative by rememberSaveable(selectedMinutes) { mutableStateOf(selectedMinutes.toString()) }
+    PfScreen(title = "Playback schedule", subtitle = "Choose a bounded duration") {
+        SectionLabel("SESSION TIMER")
+        LayaswarnaRadialSelector(
+            options = SafetyLimits.DURATION_CHOICES_MIN.map {
+                RadialOption(it.toString(), "$it min", "Timed session", RadialSymbol.DURATION)
+            },
+            selectedId = tentative,
+            onSelect = { tentative = it },
+            onActivate = { onSelect(it.toInt()) },
+            actionLabel = "Confirm ${tentative} minute timer"
         )
+        Spacer(Modifier.height(12.dp))
         PfTextCard(
-            heading = "Why there is no continuous mode",
-            body = "Playback always ends: on the timer, when the app leaves the " +
-                "foreground, on audio-focus loss, at 15% battery or on a severe thermal " +
-                "warning. Unattended sound is exactly the case this app refuses to support."
+            "No continuous playback",
+            "Every session ends after a timed limit or earlier on backgrounding, audio-focus loss, low battery or severe thermal warning."
         )
     }
 }
@@ -390,22 +372,3 @@ internal fun ToneMode.explanation(): String = when (this) {
 
 
 
-/** Distinct category pictograms; these do not represent measured animal responses. */
-private fun profileSymbol(id: String): String = when (id) {
-    "mosquito" -> "🦟"
-    "insects" -> "🦋"
-    "rodent" -> "🐭"
-    "dogcat" -> "🐾"
-    "bird" -> "🐦"
-    "custom" -> "♫"
-    else -> "♪"
-}
-
-private fun profilePetals(id: String): Int = when (id) {
-    "mosquito" -> 6
-    "insects" -> 10
-    "rodent" -> 4
-    "dogcat" -> 12
-    "bird" -> 16
-    else -> 24
-}
