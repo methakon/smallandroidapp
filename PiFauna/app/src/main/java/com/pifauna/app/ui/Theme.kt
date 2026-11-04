@@ -9,6 +9,31 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
+/** Modern-mystic Layaswarna palette. Visual effects never relax audio-safety policy. */
+object PiFaunaColors {
+    val Background = Color(0xFF0B0716)
+    val BackgroundBottom = Color(0xFF1A0F2E)
+    val Hero = Color(0xFF2A203B)
+    val Card = Color(0xFF241B35)
+    val Divider = Color(0xFF594B68)
+    val Accent = Color(0xFFE8C872)
+    val BodyText = Color(0xFFF4EEFF)
+    val Muted = Color(0xFFB9AFD1)
+    val HeroSubtitle = Color(0xFFB9AFD1)
+    val Warning = Color(0xFFFFD390)
+    val Danger = Color(0xFFFFA9B2)
+    val Action = Color(0xFF62456A)
+    val OnAction = Color(0xFFF4EEFF)
+    val Lotus = Color(0xFFD69AA8)
+    val Glow = Color(0xFF8B6CFF)
+    val Selected = Color(0xFF514069)
+    val Chakra = listOf(
+        Color(0xFFC8483E), Color(0xFFE07B39), Color(0xFFE8C872),
+        Color(0xFF5FCB9A), Color(0xFF5BB6E8), Color(0xFF6F63E0),
+        Color(0xFFB58CF0)
+    )
+}
+
 /**
  * Android system serif is used for headings until a release-cleared
  * Cormorant Garamond asset is available; body uses the device's sans serif.
