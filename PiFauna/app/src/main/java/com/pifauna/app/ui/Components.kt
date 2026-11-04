@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +33,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.border
 import kotlin.math.cos
 import kotlin.math.sin
 import androidx.compose.ui.Modifier
@@ -370,5 +373,69 @@ fun LayaswarnaSessionDial(
                 )
             }
         }
+    }
+}
+
+/**
+ * Reusable circular category button, not a playback or sensor dial.
+ * The entire 128dp tile is clickable and announces the category and frequency band.
+ * The center symbol is a generic Unicode pictograph, not third-party vector art.
+ */
+@Composable
+fun LayaswarnaProfileCircle(
+    label: String,
+    symbol: String,
+    description: String,
+    petals: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .defaultMinSize(minHeight = 152.dp)
+            .semantics(mergeDescendants = true) {
+                role = Role.Button
+                contentDescription = "$label. $description"
+            }
+            .clickable(onClick = onClick)
+            .padding(horizontal = 6.dp, vertical = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .size(108.dp)
+                .background(PiFaunaColors.Card, RoundedCornerShape(54.dp))
+                .border(2.dp, PiFaunaColors.Divider, RoundedCornerShape(54.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            ChakraMark(
+                petals = petals,
+                modifier = Modifier.size(94.dp)
+            )
+            Box(
+                modifier = Modifier
+                    .size(54.dp)
+                    .background(PiFaunaColors.Background, RoundedCornerShape(27.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = symbol, fontSize = 29.sp)
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(
+            text = label,
+            color = PiFaunaColors.BodyText,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 2
+        )
+        Text(
+            text = description,
+            color = PiFaunaColors.Muted,
+            fontSize = 11.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 2
+        )
     }
 }
