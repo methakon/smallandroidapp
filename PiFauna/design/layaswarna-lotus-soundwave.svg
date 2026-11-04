@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 108 108">
+<defs>
+<radialGradient id="bg" cx=".5" cy=".5" r=".7"><stop stop-color="#32104E"/><stop offset=".66" stop-color="#210638"/><stop offset="1" stop-color="#0B0716"/></radialGradient>
+<linearGradient id="petal" x1=".12" y1="1" x2=".85" y2="0"><stop stop-color="#FFBE51"/><stop offset=".24" stop-color="#FF7A94"/><stop offset=".65" stop-color="#CE28DD"/><stop offset="1" stop-color="#8B43FF"/></linearGradient>
+<linearGradient id="center" x1=".5" y1="0" x2=".5" y2="1"><stop stop-color="#FFDE79"/><stop offset=".22" stop-color="#FD60D5"/><stop offset=".77" stop-color="#9A1FC8"/><stop offset="1" stop-color="#FF9B64"/></linearGradient>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFF5BD"/><stop offset=".40" stop-color="#FFE07D"/><stop offset="1" stop-color="#FF994F"/></linearGradient>
+</defs>
+<rect width="108" height="108" rx="25" fill="url(#bg)"/>
+<circle cx="54" cy="54" r="38" fill="none" stroke="#AA42FF" stroke-width="2.3" opacity=".34"/>
+<circle cx="54" cy="54" r="37" fill="none" stroke="url(#gold)" stroke-width=".85" opacity=".85"/>
+<circle cx="54" cy="54" r="31" fill="none" stroke="#A459FF" stroke-width=".75" opacity=".5"/>
+<circle cx="54" cy="55" r="24" fill="none" stroke="#D870D7" stroke-width=".6" opacity=".45"/>
+<path d="M54 78 C37 76 25 63 20 51 C34 52 46 60 54 78 Z" fill="url(#petal)" stroke="url(#gold)" stroke-width="1.15"/>
+<path d="M54 78 C71 76 83 63 88 51 C74 52 62 60 54 78 Z" fill="url(#petal)" stroke="url(#gold)" stroke-width="1.15"/>
+<path d="M54 77 C40 74 31 58 35 40 C46 44 54 58 54 77 Z" fill="url(#petal)" stroke="url(#gold)" stroke-width="1.15"/>
+<path d="M54 77 C68 74 77 58 73 40 C62 44 54 58 54 77 Z" fill="url(#petal)" stroke="url(#gold)" stroke-width="1.15"/>
+<path d="M54 79 C40 69 43 43 54 29 C65 43 68 69 54 79 Z" fill="url(#center)" stroke="url(#gold)" stroke-width="1.25"/>
+<path d="M54 81 C39 70 29 73 19 71 C27 85 44 88 54 81 Z" fill="url(#petal)" stroke="url(#gold)" stroke-width="1"/>
+<path d="M54 81 C69 70 79 73 89 71 C81 85 64 88 54 81 Z" fill="url(#petal)" stroke="url(#gold)" stroke-width="1"/>
+<path d="M54 80 C43 72 37 67 34 60 C44 64 51 68 54 80 Z" fill="#FD5899" opacity=".75"/>
+<path d="M54 80 C65 72 71 67 74 60 C64 64 57 68 54 80 Z" fill="#FD5899" opacity=".75"/>
+<g stroke="#FFCD6E" stroke-linecap="round" fill="none" stroke-width="2.6" opacity=".36">
+<path d="M34 55 V54 M38 58 V50 M42 61 V47 M46 58 V50 M50 65 V43 M54 68 V40 M58 65 V43 M62 58 V50 M66 61 V47 M70 58 V50 M74 55 V54"/>
+</g>
+<g stroke="url(#gold)" stroke-linecap="round" fill="none" stroke-width="1.8">
+<path d="M34 55 V54 M38 58 V50 M42 61 V47 M46 58 V50 M50 65 V43 M54 68 V40 M58 65 V43 M62 58 V50 M66 61 V47 M70 58 V50 M74 55 V54"/>
+</g>
+<circle cx="54" cy="20" r="1.65" fill="#B58CF0" stroke="#FFE0A8" stroke-width=".45"/>
+<circle cx="54" cy="25" r="1.45" fill="#5BB6E8" stroke="#FFF1B3" stroke-width=".4"/>
+<circle cx="54" cy="86" r="1.45" fill="#E8C872" stroke="#FFF1B3" stroke-width=".4"/>
+<circle cx="54" cy="91" r="1.2" fill="#C8483E" stroke="#FFE0A8" stroke-width=".35"/>
+</svg>
