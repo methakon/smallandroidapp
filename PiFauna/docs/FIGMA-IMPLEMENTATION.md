@@ -111,3 +111,16 @@ Implemented directly on `feat/pifauna-phone-audio`:
 - The user's two reference images are **inspiration only**, not bundled, traced, or redistributed.
 - These are functional Compose components but **not** full reproductions of the Figma three concept routes or the pictured environmental-sensor dashboard. No microphone, sensor readings or extra permissions were added.
 - Gradle build, tests, APK install, visual screenshots and contrast checks **remain unverified** in this environment.
+
+
+## 2026-11-04 correction: meaningful circular category controls
+
+The prior Home "Library" progress ring was visually misleading because a full progress indicator implied playback/session state when the action only navigated. **Removed that ring from Home**. The timed playback ring remains only in the Sound Player, where its countdown has genuine meaning.
+
+- Added `LayaswarnaProfileCircle` reusable 108dp circular icon in a 152dp+ clickable category tile, with muted rose/sandstone Chakra petal outline and a category-specific Unicode pictogram.
+- Home uses a responsive 2-column circular category grid for actual profiles (mosquito, general insects, rodents, dog/cat, birds). Each opens its existing profile detail/playback path.
+- Profile Library uses the same grid for all six profiles, including Custom band. Existing preset and profile-notes sections remain.
+- The icon-to-profile mapping is based on stable profile IDs, not arbitrary list positions; descriptions show the actual profile test-frequency range.
+- This is a navigation/category treatment, **not** an assertion that sounds repel or control animals. No audio or safety changes.
+- The user's screenshot is a layout reference only. No copied UI imagery, fonts, glyph vector packs or device mockups were added.
+- Verification still needed: Gradle compile/test, TalkBack reading order, emoji rendering on Android versions, screenshot/layout inspection at small width and large font scale.
