@@ -137,3 +137,7 @@ including radial tap / long-press / double-tap / drag-rotation / rotation-cancel
 long-press and the real-AudioTrack playback tests. Details in
 [TESTING.md](TESTING.md). Manual TalkBack, contrast and large-font review, plus
 headset/Bluetooth route refusal, are still outstanding.
+
+## 2026-11-05 — branding/icon implementation
+
+The approved bright lotus + integrated soundwave mark is stored in Figma as editable master component [`62:25`](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=62-25) and in GitHub as `PiFauna/design/layaswarna-lotus-soundwave.svg`. Android foreground/background/monochrome adaptive resources have been updated accordingly; no UI-navigation or audio safety policy was altered. See [icon implementation and QA checklist](LAYASWARNA-APP-ICON.md).
