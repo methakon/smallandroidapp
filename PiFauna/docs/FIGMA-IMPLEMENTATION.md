@@ -86,3 +86,16 @@ Design source: https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX
 - **Scope:** These are Figma composition edits, not changes to the Android app or guarantees of responsive layout. Visual QA on all 14 frames, text wrapping, accessible touch targets and actual interactive component variants remain pending.
 - Research requirements and claim-quality review: [LAYASWARNA-REQUIREMENTS-REVIEW.md](LAYASWARNA-REQUIREMENTS-REVIEW.md).
 - Original icon provenance/IP constraints: [LAYASWARNA-CHAKRA-DESIGN-SPEC.md](LAYASWARNA-CHAKRA-DESIGN-SPEC.md).
+
+
+## 2026-11-04 Android implementation (Layaswarna visual pass)
+
+Implemented directly on `feat/pifauna-phone-audio`:
+- `ui/Theme.kt`: replaced the older green PiFauna palette with the muted Layaswarna Figma tokens (midnight plum, rose terracotta, sandstone, ivory); retained the Material 3 dark color scheme.
+- `ui/Components.kt`: Layaswarna wordmark, original Compose Canvas lotus/Chakra medallion, decorative hero medallion on all 11 existing routes, optional action-row symbol, bounded title area to avoid hero icon/text collision. Decorative icons have no independent accessibility announcement; their parent button retains a spoken text label.
+- `ui/screens/BrowseScreens.kt`: original geometric Chakra symbols in profile and timer controls; softened selected chips and primary/stop action backgrounds.
+- `ui/screens/InfoScreens.kt`: changed user-facing PiFauna references to Layaswarna.
+- `res/values/strings.xml`: changed Android launcher label to Layaswarna.
+- **Unchanged:** Kotlin package/application ID, 11-route navigation, audio engine, battery/thermal/volume/route guards, foreground-only and session-duration policy.
+- **Not implemented:** Three concept routes (Chakra Sound Console, Seven Chakra Library, Anahata Nada Studio), AI raster artwork as app assets, original Figma vector path replication, theme switching, extended sleep playback.
+- **Validation status:** GitHub commits confirmed; Gradle build, unit tests, emulator/device screenshots and runtime accessibility tests **not executed in this session**. Run `cd PiFauna && ./gradlew testDebugUnitTest assembleDebug` on a machine with Android SDK and Java configured, and inspect all 11 routes before merging.
