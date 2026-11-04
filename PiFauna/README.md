@@ -1,9 +1,9 @@
-# PiFauna
+# Layaswarna (formerly PiFauna)
 
 An offline Android tone generator for short, supervised listening experiments.
 Kotlin + Jetpack Compose, minSdk 26, targetSdk 35.
 
-PiFauna is **not** a pest repellent, a medical device or an ultrasonic emitter.
+Layaswarna is **not** a pest repellent, a medical device or an ultrasonic emitter.
 It produces short, low-level digital tones through the phone's own speaker and
 tells you plainly what that does and does not mean.
 
@@ -11,9 +11,18 @@ tells you plainly what that does and does not mean.
 
 ## What the app does
 
-- Eleven screens matching the Figma design: Welcome, Home, Sound Player, Profile
-  Library, Custom Sound, Timer, Safety, Settings, Device Protection, Battery
-  Saver, Playback Safety.
+- Fourteen navigable screens: the original eleven routes plus Chakra Sound Console,
+  Seven Chakra Library and Anahata Nada. Navigation uses separate Material 3
+  targets; selection screens share one circular regulator with original vector icons.
+- Wheel gestures: single tap or drag/rotate to select, stationary long-press or
+  double-tap to activate, plus a labeled accessible button. The selected item is
+  highlighted; the center is an information readout, not an Open button.
+- Seven symbolic chakra-tone associations (396–963 Hz) with context and evidence
+  cautions. Selecting a meditation tone only prepares the Player; sound is never
+  started automatically.
+- Anahata Nada currently supports preparing short **audible** soft-tone/sweep
+  experiments. Pink/white noise remain explicitly marked unavailable until
+  audio synthesis and power/thermal validation; they are not mislabeled as tones.
 - Frequency control from 100 Hz to 18,000 Hz, with four signal shapes
   (steady sine, triangle sweep, pulse, deterministic hop).
 - Fixed session lengths of 5, 10, 15 or 30 minutes. There is no continuous mode.
@@ -69,8 +78,21 @@ Artifact: `app/build/outputs/apk/debug/app-debug.apk`.
 
 ```bash
 adb install -r app/build/outputs/apk/debug/app-debug.apk
-adb shell am start -n com.pifauna.app/.MainActivity
+adb shell am start -n in.berhampore.dhar.layaswarna/com.pifauna.app.MainActivity
 ```
+
+## Application ID and verification
+
+Android application ID/Gradle namespace: `in.berhampore.dhar.layaswarna`.
+The current Kotlin source code retains its `com.pifauna.app` packages. This is a
+different installed app ID from the original PiFauna; user data is **not**
+automatically migrated.
+
+CI workflow: [Layaswarna Android validation](../.github/workflows/layaswarna-android.yml)
+runs unit tests, debug APK assembly and lint. The first core redesign run passed:
+[GitHub Actions run 41890856104](https://github.com/methakon/smallandroidapp/actions/runs/41890856104).
+Later changes require their own successful run. Real-device navigation, gesture
+and TalkBack testing still needs a physical Android device.
 
 ## Safety behaviour
 
@@ -130,5 +152,5 @@ PiFauna/
 
 ## Design source
 
-Figma: <https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX> (11 frames).
-Colour and layout tokens are reproduced in `ui/Theme.kt` and `ui/Components.kt`.
+Figma: <https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX>. The modern-mystic redesign set has 14 screens in addition to earlier concepts and archives.
+Current theme uses dark violet, accessible light text, gold/rose accents and muted seven-chakra node colors. See [design audit and implementation plan](docs/LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md).
