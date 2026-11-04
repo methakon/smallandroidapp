@@ -304,12 +304,13 @@ fun LayaswarnaSessionDial(
     progress: Float,
     isPlaying: Boolean,
     enabled: Boolean = true,
+    actionLabel: String? = null,
     onClick: () -> Unit
 ) {
     val fraction = progress.coerceIn(0f, 1f)
     val accent = PiFaunaColors.Accent
     val track = PiFaunaColors.Divider
-    val action = if (isPlaying) "Stop playback" else "Start timed playback"
+    val action = actionLabel ?: if (isPlaying) "Stop playback" else "Start timed playback"
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -362,7 +363,7 @@ fun LayaswarnaSessionDial(
                 )
                 Spacer(Modifier.height(9.dp))
                 Text(
-                    text = if (isPlaying) "■ Stop" else "▶ Start",
+                    text = actionLabel ?: if (isPlaying) "■ Stop" else "▶ Start",
                     color = PiFaunaColors.Accent,
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp
