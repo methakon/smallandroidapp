@@ -1,6 +1,7 @@
 package com.pifauna.app
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
@@ -40,7 +41,7 @@ class MainActivityNavigationTest {
     fun appLaunchesToAUsableScreen() {
         // Exact match: a substring match on "PiFauna" also hits prose such as
         // "About PiFauna" and becomes ambiguous.
-        compose.onNodeWithText("PiFauna  ◉").assertIsDisplayed()
+        compose.onNodeWithText("Layaswarna").assertIsDisplayed()
         compose.onNodeWithText("Profiles").assertIsDisplayed()
     }
 
@@ -49,13 +50,13 @@ class MainActivityNavigationTest {
         dismissWelcomeIfShown()
         compose.onNodeWithText("Choose a sound profile").assertIsDisplayed()
 
-        compose.onNodeWithText("Mosquito / insect").performClick()
+        compose.onNodeWithText("Open selected profile").performScrollTo().performClick()
         compose.waitForIdle()
 
         // The Figma artboard is 390x844; on this 640 dp screen the primary action
         // sits below the fold, so it is scrolled into view before asserting.
-        compose.onNodeWithText("Start timed playback").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Stop playback").assertDoesNotExist()
+        compose.onNodeWithText("▶ Start").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("■ Stop").assertDoesNotExist()
     }
 
     @Test
@@ -97,10 +98,16 @@ class MainActivityNavigationTest {
         compose.waitForIdle()
 
         compose.onNodeWithText("Playback schedule").assertIsDisplayed()
-        // The continuous option must exist and be explicitly unavailable.
-        compose.onNodeWithText("Continuous").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Not offered — every session must end on its own")
-            .performScrollTo()
-            .assertIsDisplayed()
+        // The continuous option must not be offered as an action.
+        compose.onNodeWithText("No continuous playback").performScrollTo().assertIsDisplayed()
     }
+    @Test
+    fun chakraLibraryIsReachableAndDoesNotStartSound() {
+        dismissWelcomeIfShown()
+        compose.onNodeWithText("Seven Chakra Library").performScrollTo().performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Open Anahata details").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("CHAKRA INSIGHTS").performScrollTo().assertIsDisplayed()
+    }
+
 }
