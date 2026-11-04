@@ -129,4 +129,11 @@ Source changes have been pushed to `feat/pifauna-phone-audio`:
 
 **Known deliberate limitation:** Pink and white noise are visible as not yet implemented. The existing pure tone/sweep engine remains unchanged pending independent DSP, spectrum, device/thermal and power validation. No medical/chakra-specific efficacy claims or sleep-mode promises.
 
-**Verification snapshot:** A preceding core build passed [GitHub Actions](https://github.com/methakon/smallandroidapp/actions/runs/41890856104), but code added after that run must pass a newer CI run before being called fully build-verified. Running touch tests and assessing TalkBack/contrast on physical Android devices remains necessary.
+**Verification snapshot:** the release-review command
+(`clean testDebugUnitTest assembleDebug assembleDebugAndroidTest lintDebug`)
+passes: 33 JVM tests, 0 lint errors, debug APK built. The instrumented suite runs
+20 tests green on both an Android 11 (API 30) and an Android 9 (API 28) device,
+including radial tap / long-press / double-tap / drag-rotation / rotation-cancels-
+long-press and the real-AudioTrack playback tests. Details in
+[TESTING.md](TESTING.md). Manual TalkBack, contrast and large-font review, plus
+headset/Bluetooth route refusal, are still outstanding.

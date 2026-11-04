@@ -4,6 +4,69 @@ Recorded 2026-11-04 on the machine and device listed below. Nothing in this file
 is estimated: every number comes from a Gradle run, a test XML or a device
 command.
 
+## Layaswarna 0.5.0 — current verification
+
+App ID `in.berhampore.dhar.layaswarna`, versionCode 5. This section supersedes
+the PiFauna-era results further down for anything touched by the Layaswarna
+redesign; the older sections are kept as the record of that phase.
+
+Command (exactly as specified for release review):
+
+```bash
+cd PiFauna
+./gradlew --no-daemon \
+  :app:clean :app:testDebugUnitTest :app:assembleDebug \
+  :app:assembleDebugAndroidTest :app:lintDebug
+```
+
+| Check | Result |
+|---|---|
+| Clean build | **BUILD SUCCESSFUL** |
+| JVM unit tests | **33 tests, 0 failures, 0 errors** |
+| Debug APK | 8,890,081 bytes, `sha256 18b86f70…`, `in.berhampore.dhar.layaswarna` v0.5.0 |
+| Instrumentation compile | **passes** (`assembleDebugAndroidTest`) |
+| Android lint | **0 errors, 12 warnings** (dependency-currency and icon notes only) |
+
+### Instrumented suite — 20 tests, both devices
+
+`adb -s <serial> shell am instrument -w -r in.berhampore.dhar.layaswarna.test/androidx.test.runner.AndroidJUnitRunner`
+
+| Device | Android | Result |
+|---|---|---|
+| Xiaomi Mi A3 | 11 (API 30) | **OK (20 tests)** |
+| Panasonic ELUGA_I7_EE | 9 (API 28) | **OK (20 tests)** |
+
+| Class | Tests | Covers |
+|---|---|---|
+| `AppLaunchTest` | 2 | launch to RESUMED, activity recreation |
+| `MainActivityNavigationTest` | 5 | wordmark, home→player, bottom bar, settings→safety, timer has no continuous mode |
+| `RadialGestureTest` | 7 | tap selects only, press highlights immediately, long press activates once, double tap activates once, **drag rotation changes selection without activating**, **rotation cancels a pending long press**, centre readout is not an action |
+| `SoundEngineDeviceTest` | 5 | real `AudioTrack` output, session completes on its own, stop returns promptly, 12 rapid start/stop cycles, invalid request rejected |
+
+### Defects found and fixed in this pass
+
+1. **CI red.** Three instrumented-test imports did not resolve
+   (`assertDoesNotExist`, `longClick`, `doubleClick`) so `assembleDebugAndroidTest`
+   failed on CI while the app itself built. Fixed; the workflow compiles
+   instrumentation, which is why the app-only local build had missed it.
+2. **Selection latency.** With `onDoubleClick` set, `combinedClickable` cannot
+   report a single tap until the double-tap window expires, so every node tap
+   applied its highlight roughly 300 ms late. The selector now also selects on
+   pointer-down.
+3. **Anahata Nada selection reset.** The chosen relaxation sound was held in
+   screen-local state and reset on navigation. It is now hoisted beside the
+   profile and chakra selections and survives route changes.
+
+### Verified by inspection, not by test
+
+- TalkBack traversal order and spoken labels, 200 % font scale, and contrast
+  ratios need a manual accessibility pass; the semantics are present
+  (role, selected state, content description, labelled action button) but were
+  not assessed with a screen reader.
+- Wired-headset, Bluetooth and USB-audio refusal, and a real audio-focus
+  interruption, remain untested on hardware.
+- Small-screen landscape layout is unverified.
+
 ## Environment
 
 | Item | Value |
