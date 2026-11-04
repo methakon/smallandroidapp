@@ -2,6 +2,7 @@ package com.pifauna.app.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,15 +11,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import com.pifauna.app.audio.ToneMode
+import com.pifauna.app.data.ChakraProfiles
 import com.pifauna.app.data.Preset
 import com.pifauna.app.data.PresetStore
 import com.pifauna.app.data.SettingsStore
 import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.playback.PlayerController
+import com.pifauna.app.ui.screens.AnahataNadaScreen
+import com.pifauna.app.ui.screens.ChakraConsoleScreen
+import com.pifauna.app.ui.screens.ChakraLibraryScreen
 import com.pifauna.app.ui.screens.BatterySaverScreen
 import com.pifauna.app.ui.screens.CustomSoundScreen
 import com.pifauna.app.ui.screens.DeviceProtectionScreen
@@ -43,7 +49,10 @@ enum class Route(val tab: Tab?) {
     Settings(Tab.Settings),
     DeviceProtection(null),
     BatterySaver(null),
-    PlaybackSafety(null)
+    PlaybackSafety(null),
+    ChakraLibrary(null),
+    ChakraConsole(null),
+    AnahataNada(null)
 }
 
 /**
@@ -64,6 +73,7 @@ fun PiFaunaApp(
     var stack by remember { mutableStateOf(listOf(startRoute)) }
     var presets by remember { mutableStateOf(presetStore.load()) }
     var clearMessage by remember { mutableStateOf<String?>(null) }
+    var selectedChakra by rememberSaveable { mutableStateOf("anahata") }
 
     val current = stack.last()
 
@@ -91,14 +101,14 @@ fun PiFaunaApp(
     Scaffold(
         containerColor = PiFaunaColors.Background,
         bottomBar = {
-            val tab = current.tab ?: Tab.Home
+            val tab = stack.asReversed().firstNotNullOfOrNull { it.tab } ?: Tab.Home
             PfBottomBar(selected = tab, onSelect = ::openTab)
         }
     ) { innerPadding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(PiFaunaColors.Background)
+                .background(Brush.verticalGradient(listOf(PiFaunaColors.Background, PiFaunaColors.BackgroundBottom)))
                 .padding(innerPadding)
         ) {
             when (current) {
@@ -112,7 +122,9 @@ fun PiFaunaApp(
 
                 Route.Home -> HomeScreen(
                     onProfileSelected = ::openProfile,
-                    onOpenLibrary = { stack = listOf(Route.Profiles) }
+                    onOpenLibrary = { stack = listOf(Route.Profiles) },
+                    onOpenChakras = { push(Route.ChakraLibrary) },
+                    onOpenAnahata = { push(Route.AnahataNada) }
                 )
 
                 Route.Player -> PlayerScreen(
@@ -145,6 +157,7 @@ fun PiFaunaApp(
                     presets = presets,
                     onProfileSelected = ::openProfile,
                     onPresetSelected = { preset ->
+                        controller.selectProfile("custom")
                         controller.setRange(preset.startHz, preset.endHz)
                         controller.setMode(preset.mode)
                         controller.setGain(preset.gain)
@@ -191,6 +204,44 @@ fun PiFaunaApp(
                         settings.lastDurationMinutes = minutes
                         pop()
                     }
+                )
+
+                Route.ChakraLibrary -> ChakraLibraryScreen(
+                    selectedId = selectedChakra,
+                    onSelect = { selectedChakra = it },
+                    onOpen = { selectedChakra = it; push(Route.ChakraConsole) }
+                )
+
+                Route.ChakraConsole -> ChakraConsoleScreen(
+                    selectedId = selectedChakra,
+                    onSelect = { selectedChakra = it },
+                    onUseTone = { chakra ->
+                        if (!state.isPlaying) {
+                            controller.prepareExperimentalTone(
+                                label = "${chakra.name} · symbolic meditation tone",
+                                startHz = chakra.toneHz,
+                                endHz = chakra.toneHz,
+                                mode = ToneMode.FIXED
+                            )
+                            push(Route.Player)
+                        }
+                    },
+                    enabled = !state.isPlaying
+                )
+
+                Route.AnahataNada -> AnahataNadaScreen(
+                    onPrepare = { sound ->
+                        if (!state.isPlaying && sound.playable) {
+                            controller.prepareExperimentalTone(
+                                label = "Anahata Nada · ${sound.label}",
+                                startHz = requireNotNull(sound.startHz),
+                                endHz = requireNotNull(sound.endHz),
+                                mode = requireNotNull(sound.mode)
+                            )
+                            push(Route.Player)
+                        }
+                    },
+                    enabled = !state.isPlaying
                 )
 
                 Route.Safety -> SafetyScreen()
