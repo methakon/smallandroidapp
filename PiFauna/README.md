@@ -149,6 +149,7 @@ PiFauna/
 - [Device validation report](docs/DEVICE-VALIDATION.md)
 - [Safety contract and claims policy](docs/SAFETY.md)
 - [Figma implementation status](docs/FIGMA-IMPLEMENTATION.md)
+- [Lotus + Soundwave app icon — Figma, SVG and adaptive Android resources](docs/APP-ICON.md)
 
 ## Design source
 
