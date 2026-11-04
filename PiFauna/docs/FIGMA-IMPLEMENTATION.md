@@ -135,3 +135,17 @@ The prior Home "Library" progress ring was visually misleading because a full pr
 - **Visual direction:** newer dark-violet/amethyst/rose/gold modern-mystic proposal supersedes the older green and muted-terracotta **concept tokens**; Android Theme.kt is not yet migrated to this latest scheme.
 - **Safety:** no changed audio policy, clinical claims, continuous playback or approved overnight feature.
 - **Validation:** Figma concept screenshots inspected; Android Gradle build, instrumentation, device screenshots and gesture QA **not executed**.
+
+## 2026-11-05 — implemented Android design pass (v0.5.0)
+
+The approved design is now wired into Android Compose on `feat/pifauna-phone-audio`:
+
+- **Shared wheel:** `ui/RadialSelector.kt` implements one radial regulator with original Canvas pictograms, highlighted selected item, center readout (never an Open button), tap or drag/rotate selection, stationary long-press or double-tap activation, and a visible labeled fallback button.
+- **Existing routes upgraded:** `ui/screens/BrowseScreens.kt` uses the wheel for Home, Profile Library, Custom Sound waveform selection, and Timer. Home/Profile selection is hoisted into `PiFaunaApp.kt` so the highlight survives navigation.
+- **Concept routes made navigable:** `ui/screens/ConceptScreens.kt` adds Chakra Library, Chakra Sound Console and Anahata Nada. `data/ChakraProfiles.kt` contains seven symbolic associations and the dynamic insights copy. `PlayerController.prepareExperimentalTone` configures existing audible tone modes and **does not start playback**.
+- **Anahata scope:** Current Sound Player can prepare soft audible tones and an audible 400–500 Hz sweep. Pink/white noise are **visibly marked planned/unavailable** and are not represented by a mislabeled sine wave. No new waveform engine, background service, extended duration or overnight playback.
+- **Visuals/navigation:** `ui/Theme.kt` uses dark-violet, gold, rose and chakra-node accents; `ui/Components.kt` uses independent vector-icon Material 3 navigation targets, readable informational cards and larger typography; `res/values/colors.xml` matches the new startup background.
+- **Safety and application ID:** Existing audio limits and lifecycle stops remain in place; Gradle namespace/application ID remains `in.berhampore.dhar.layaswarna`, with existing `com.pifauna.app` Kotlin source packages.
+- **Test coverage:** JUnit test for seven chakra tones and radial hit geometry; Android instrumented navigation/gesture tests added. GitHub Actions workflow compiles, unit-tests, assembles APK and runs lint; later revision also compiles `assembleDebugAndroidTest`. A core build [passed](https://github.com/methakon/smallandroidapp/actions/runs/41890856104). Latest commits require their own successful workflow run. Physical-device/TalkBack/gesture tests remain pending.
+
+**Clarification:** This is the implementation of the *current-release approved subset* of the redesign, not an assertion that planned noise synthesis, medically meaningful sound effects, calibrated loudness or advanced Figma animations have shipped.
