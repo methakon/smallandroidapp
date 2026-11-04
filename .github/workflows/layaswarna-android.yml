@@ -45,7 +45,7 @@ jobs:
       - name: Validate unit tests, APK and lint
         run: |
           chmod +x ./gradlew
-          ./gradlew --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug :app:lintDebug
+          ./gradlew --no-daemon --stacktrace :app:testDebugUnitTest :app:assembleDebug :app:assembleDebugAndroidTest :app:lintDebug
       - name: Publish validation reports
         if: always()
         uses: actions/upload-artifact@v4
