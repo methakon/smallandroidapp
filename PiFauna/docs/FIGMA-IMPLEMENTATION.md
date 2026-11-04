@@ -99,3 +99,15 @@ Implemented directly on `feat/pifauna-phone-audio`:
 - **Unchanged:** Kotlin package/application ID, 11-route navigation, audio engine, battery/thermal/volume/route guards, foreground-only and session-duration policy.
 - **Not implemented:** Three concept routes (Chakra Sound Console, Seven Chakra Library, Anahata Nada Studio), AI raster artwork as app assets, original Figma vector path replication, theme switching, extended sleep playback.
 - **Validation status:** GitHub commits confirmed; Gradle build, unit tests, emulator/device screenshots and runtime accessibility tests **not executed in this session**. Run `cd PiFauna && ./gradlew testDebugUnitTest assembleDebug` on a machine with Android SDK and Java configured, and inspect all 11 routes before merging.
+
+
+## 2026-11-04 circular dashboard and Android identifier update
+
+- Android `applicationId` and Gradle `namespace` changed from `com.pifauna.app` to **`in.berhampore.dhar.layaswarna`**. Android manifest uses fully qualified `com.pifauna.app.MainActivity` because the Kotlin source packages have **not yet been migrated**. The launcher label is Layaswarna; the root Gradle project is Layaswarna.
+- **Compatibility warning:** This is a **different installed Android app** from `com.pifauna.app`. Existing locally saved preferences and presets do not automatically migrate, and an update over the old package is not possible. Plan explicit export/migration before any public release.
+- Added original Compose circular dial inspired by generic timer/progress-ring interaction principles (not copied from reference screenshots), with calm sandstone progress stroke, plum track, restrained lotus details and descriptive TalkBack action.
+- Player dial shows controller-backed countdown, and its tap invokes the **existing** `onStart`/`onStop` handlers. No audio-policy change.
+- Home circular dial navigates to the **existing** profile library; it does not pretend to display measured audio or environmental data.
+- The user's two reference images are **inspiration only**, not bundled, traced, or redistributed.
+- These are functional Compose components but **not** full reproductions of the Figma three concept routes or the pictured environmental-sensor dashboard. No microphone, sensor readings or extra permissions were added.
+- Gradle build, tests, APK install, visual screenshots and contrast checks **remain unverified** in this environment.
