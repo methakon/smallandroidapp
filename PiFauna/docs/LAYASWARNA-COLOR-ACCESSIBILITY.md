@@ -34,3 +34,11 @@ No neon orange, fluorescent pink or green is introduced. Historical/heritage det
 - https://www.w3.org/TR/WCAG22/
 
 **QA note:** Screenshots were regenerated for Home, Sound Player and Anahata Nada Studio after recoloring. Full device-level contrast and visual regression review remains required.
+
+## 2026-11-05 update: modern-mystic concept palette and accessibility gate
+
+The muted temple palette above is **historical and remains relevant to the current Android implementation**, but the newer Figma **redesign proposal** uses a `#0B0716` to `#1A0F2E` dark-violet backdrop, `#E8C872` gold accent, `#8B6CFF` restrained amethyst glow, `#D69AA8` brand rose, `#F4EEFF` primary and `#B9AFD1` secondary text. The seven muted chakra-node colors are listed in [LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md](LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md). The proposed translucent glass surface and blur **require composited contrast testing**; token contrast alone is insufficient.
+
+Audit acceptance: body text >=14sp, captions preferably >=11–12sp, >=48dp effective tap targets, 24dp horizontal gutters, Android system insets, semantic non-Unicode vector icons, selected state beyond color, accessible alternatives to wheel gestures, and real independent Material 3 bottom navigation. The new Figma set illustrates these directions but **does not yet demonstrate a fully constrained component library or WCAG/Android accessibility pass**. Avoid animated glow or pulse when reduced motion is requested; never use flashing effects.
+
+The earlier statement that Android code was not yet updated applied to the *earlier* palette. Android now has the muted Layaswarna palette, **not** the newer modern-mystic palette. The audio safety contract remains unchanged.
