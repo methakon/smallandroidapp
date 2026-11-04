@@ -11,7 +11,7 @@ import com.pifauna.app.safety.SafetyLimits
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
-import com.pifauna.app.ui.PiFaunaColors
+import com.pifauna.app.ui.LayaswarnaColors
 import com.pifauna.app.ui.SectionLabel
 
 /** Figma 07 · Safety */
@@ -34,7 +34,7 @@ fun SafetyScreen() {
         PfTextCard(
             heading = "Effectiveness is not established",
             body = "Electronic and ultrasonic pest repellents have a weak evidence base. " +
-                "Controlled reviews have not shown that they prevent bites. PiFauna makes " +
+                "Controlled reviews have not shown that they prevent bites. Layaswarna makes " +
                 "no repellency claim of any kind."
         )
         PfTextCard(
@@ -75,7 +75,7 @@ fun DeviceProtectionScreen() {
         )
         PfTextCard(
             heading = "Headphone safety",
-            body = "PiFauna plays through the built-in speaker only. Wired headsets, " +
+            body = "Layaswarna plays through the built-in speaker only. Wired headsets, " +
                 "Bluetooth, USB audio, hearing aids and line outputs are refused before " +
                 "playback and interrupt a session the moment they appear."
         )
@@ -140,7 +140,7 @@ fun PlaybackSafetyScreen() {
         )
         PfTextCard(
             heading = "No proven repellent claim",
-            body = "Effectiveness varies and is unverified. PiFauna is an acoustic " +
+            body = "Effectiveness varies and is unverified. Layaswarna is an acoustic " +
                 "experiment, not a pest-control device."
         )
         PfTextCard(
@@ -161,7 +161,7 @@ fun SettingsScreen(
     onClearData: () -> Unit,
     clearMessage: String?
 ) {
-    PfScreen(title = "Preferences", subtitle = "Personalize PiFauna") {
+    PfScreen(title = "Preferences", subtitle = "Personalize Layaswarna") {
         SectionLabel("EXPLORE")
         PfCard(
             title = "Dark appearance",
@@ -198,12 +198,12 @@ fun SettingsScreen(
         )
         clearMessage?.let {
             Spacer(Modifier.height(8.dp))
-            Text(it, fontSize = 13.sp, color = PiFaunaColors.Muted)
+            Text(it, fontSize = 13.sp, color = LayaswarnaColors.Muted)
         }
 
         Spacer(Modifier.height(20.dp))
         PfTextCard(
-            heading = "About PiFauna",
+            heading = "About Layaswarna",
             body = "Version 0.3.0. An offline acoustic experiment for Android 8.0 and " +
                 "later. Not a medical device and not a pest-control product."
         )
