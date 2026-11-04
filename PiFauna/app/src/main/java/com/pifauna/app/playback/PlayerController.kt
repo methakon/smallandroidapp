@@ -155,12 +155,21 @@ class PlayerController(context: Context) {
         if (_state.value.isPlaying) return
         val low = minOf(startHz, endHz).coerceIn(SafetyLimits.MIN_HZ, SafetyLimits.MAX_HZ)
         val high = maxOf(startHz, endHz).coerceIn(SafetyLimits.MIN_HZ, SafetyLimits.MAX_HZ)
-        _state.value = _state.value.copy(startHz = low, endHz = high)
+        _state.value = _state.value.copy(
+            startHz = low,
+            endHz = high,
+            displayName = if (low == _state.value.startHz && high == _state.value.endHz) {
+                _state.value.displayName
+            } else null
+        )
     }
 
     fun setMode(mode: ToneMode) {
         if (_state.value.isPlaying) return
-        _state.value = _state.value.copy(mode = mode)
+        _state.value = _state.value.copy(
+            mode = mode,
+            displayName = if (mode == _state.value.mode) _state.value.displayName else null
+        )
     }
 
     fun setGain(gain: Float) {
