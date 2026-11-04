@@ -104,11 +104,12 @@ One real defect was found and fixed: `PowerManager.removeThermalStatusListener`
 was called without an API 29 guard, which would have thrown `NoSuchMethodError`
 on Android 8–9. Lint reported it as an error and the guard is now in place.
 
-### Instrumented tests — PASS on API 28
+### Instrumented tests — PASS on both devices
 
-Run on the Panasonic ELUGA_I7_EE (Android 9, API 28) with the AndroidJUnitRunner
-addressed directly, because Gradle's `connectedDebugAndroidTest` hung on device
-selection while a second device was flapping:
+Run on the Panasonic ELUGA_I7_EE (Android 9, API 28) and the Xiaomi Mi A3
+(Android 11, API 30) with the AndroidJUnitRunner addressed directly, because
+Gradle's `connectedDebugAndroidTest` hung on device selection while one device
+was reconnecting:
 
 ```bash
 adb -s <serial> shell am instrument -w -r \
@@ -118,13 +119,13 @@ com.pifauna.app.audio.SoundEngineDeviceTest \
   com.pifauna.app.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
-| Suite | Tests | Result |
-|---|---|---|
-| `AppLaunchTest` | 2 | **OK (2 tests)** |
-| `MainActivityNavigationTest` | 5 | **OK (5 tests)** |
-| `SoundEngineDeviceTest` (real `AudioTrack`) | 5 | **OK (5 tests)** |
+| Suite | Tests | Android 9 (API 28) | Android 11 (API 30) |
+|---|---|---|---|
+| `AppLaunchTest` | 2 | **OK (2)** | **OK (2)** |
+| `MainActivityNavigationTest` | 5 | **OK (5)** | **OK (5)** |
+| `SoundEngineDeviceTest` (real `AudioTrack`) | 5 | **OK (5)** | **OK (5)** |
 
-### Physical-device matrix — executed on Android 9
+### Physical-device matrix — executed on both devices
 
 Full evidence, measurements and the second device's status are in
 [DEVICE-VALIDATION.md](DEVICE-VALIDATION.md).

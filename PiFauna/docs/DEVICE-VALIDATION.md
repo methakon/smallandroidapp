@@ -48,11 +48,12 @@ it. Anything that did not execute is marked as not executed.
 
 ### Conclusion
 
-Host identity is stable, so the repeated prompts are not a key-rotation symptom.
-Two mechanisms fit the evidence: duplicate/mixed ADB servers causing repeated
-reconnect churn, and the Mi A3's own `adbd` going unresponsive on each reconnect,
-which re-arms the authorisation dialog on that device. The host side was cleaned
-up; the device side could not be, because the phone stops answering ADB entirely.
+Host identity is stable, so the repeated prompts are **not** a key-rotation
+symptom. Both causes were host-side and both were fixed: a stale ADB server
+registry for that serial, plus a snap/Wine process opening the same USB device
+node. With the consumer stopped and the server replaced, the Mi A3 has stayed
+connected and passed its whole suite. Every drop re-arms the authorisation
+dialog on the phone, which is what produced the repeated prompts.
 
 ## Device 1 — Panasonic ELUGA_I7_EE
 
@@ -108,34 +109,62 @@ state.
 | Property | Value |
 |---|---|
 | Serial | `edd53dbd04de` |
-| Android | 11 (API 30) |
-| USB state | enumerates as `2717:ff08`, `authorized=1`, ADB interface `ff/42/01` present, configuration named `adb` |
-| Stability | **unstable** — registers as `device` for seconds, then disappears; interface left with no driver bound |
-| Tests executed | **none** — never reachable long enough to install |
+| Android | 11 (API 30), 5.7 GB RAM |
+| USB state | `2717:ff08`, `authorized=1`, ADB interface `ff/42/01`, configuration named `adb` |
+| Battery during tests | 95–96%, 35.1–35.6 °C |
+| Stability | **flapped for most of the session, then stable** — see below |
 
-### What was tried, in order
+### Recovery sequence
+
+The device spent roughly two hours cycling between `offline`, absent, and a brief
+`device` state. Each step below was tried in order; the last two together
+restored it.
 
 | Action | Outcome |
 |---|---|
 | `adb reconnect offline` | device dropped from the list entirely |
 | ADB server restart (`kill-server`/`start-server`, and by PID) | no change |
 | USB port reset via `USBDEVFS_RESET` ioctl | accepted; device did not re-enumerate |
-| Stop the competing Wine/libUSB consumer | removed one interference source; device still unstable |
-| Fresh side-port server | listed the device as `device` **once**, then not again |
+| Side-port server (`adb -P 5047 devices`) | listed the device as `device` **once**, then lost it again |
+| Stop the competing Wine/libUSB consumer | disconnects became rarer but did not stop |
+| ADB server killed and replaced while the device was enumerated and the consumer was gone | **stable**; `transport_id` then constant across every subsequent command |
 
-The failure is phone-side: USB enumerates and authorises, but `adbd` stops
-answering, so no host-side action recovers it.
+The two host-side causes — a server whose USB registry had gone stale for that
+serial, and the Notepad++/Wine `libusb_event` thread repeatedly opening the same
+device — explain the symptoms without invoking a phone fault. The flapping also
+explains the avalanche of "Allow USB debugging?" prompts: every drop and
+re-enumeration re-arms the dialog, while the host key itself never changed.
 
-### Minimum physical actions required
+### Results
 
-1. Reboot the phone.
-2. Different USB port and a different cable (the adjacent port is proven stable).
-3. Developer options → toggle "USB debugging" off then on.
-4. Only if all of the above fail: "Revoke USB debugging authorizations", then
+Run with `adb -s edd53dbd04de shell am instrument -w -r -e class … com.pifauna.app.test/androidx.test.runner.AndroidJUnitRunner`, media volume 5/15 on the speaker.
+
+| Suite | Tests | Result |
+|---|---|---|
+| `AppLaunchTest` | 2 | **OK (2 tests)** |
+| `MainActivityNavigationTest` | 5 | **OK (5 tests)** |
+| `SoundEngineDeviceTest` (real `AudioTrack`) | 5 | **OK (5 tests)** |
+
+| Check | Method | Result |
+|---|---|---|
+| Real audio output | started a session at 96% battery, 33% volume | **PASS** — 1 active `AudioTrack` for `com.pifauna.app`; UI "Playing 200–800 Hz …", countdown 9:54 |
+| Home stops playback | pressed HOME during playback | **PASS** — 1 → 0 tracks; "Stopped: the app left the foreground." |
+| Thread cleanup | `ps -T` after the session | **PASS** — 0 `PiFaunaAudio` threads |
+| Crashes / ANRs | `logcat` across the whole run | **PASS** — 0 |
+| `AudioTrack start()` errors | `logcat` | **PASS** — 0 (the lock fix removed the burst seen on the other device) |
+
+### If it flaps again
+
+1. Confirm no snap/Wine process is opening the USB nodes, then restart the ADB
+   server once and re-enumerate.
+2. Reboot the phone.
+3. Different USB port and cable.
+4. Developer options → toggle "USB debugging" off then on.
+5. Only if all of the above fail: "Revoke USB debugging authorizations", then
    approve once.
 
-A factory reset is **not** recommended: the fault is not in user data, and the
-evidence does not implicate the key store.
+A factory reset is **not** recommended: nothing in the evidence implicates user
+data or the key store.
 
 ## Bugs found and fixed in this phase
 
@@ -157,10 +186,9 @@ unit test could detect it; only installing on API 28 exposed it.
 
 ## Not executed
 
-- Any test on the Mi A3.
-- Wired-headset, Bluetooth and USB-audio route refusal (no such device attached;
-  attaching headphones to a phone during automated playback is a physical action
-  and an acoustic-exposure risk).
+- Wired-headset, Bluetooth and USB-audio route refusal: no such device was
+  attached, and plugging headphones into a phone during automated playback is a
+  physical action and an acoustic-exposure risk.
 - A real audio-focus interruption (needs a second audio app or an incoming call;
   not reproducible unattended).
 - Thermal stop path on hardware (requires heating the device — deliberately not
