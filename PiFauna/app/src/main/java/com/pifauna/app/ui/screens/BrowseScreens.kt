@@ -91,6 +91,8 @@ private fun profileOptions(): List<RadialOption> = SpeciesProfiles.all.map { pro
 fun HomeScreen(
     hourOfDay: Int = LocalTime.now().hour,
     onProfileSelected: (SpeciesProfile) -> Unit,
+    selectedProfileId: String,
+    onSelectProfile: (String) -> Unit,
     onOpenLibrary: () -> Unit,
     onOpenChakras: () -> Unit,
     onOpenAnahata: () -> Unit
@@ -101,14 +103,13 @@ fun HomeScreen(
         in 17..21 -> "Good evening"
         else -> "Good night"
     }
-    var selected by rememberSaveable { mutableStateOf("mosquito") }
-    val profile = SpeciesProfiles.byId(selected)
+    val profile = SpeciesProfiles.byId(selectedProfileId)
     PfScreen(title = greeting, subtitle = "Choose a sound profile") {
         SectionLabel("SOUND PROFILE REGULATOR")
         LayaswarnaRadialSelector(
             options = profileOptions(),
-            selectedId = selected,
-            onSelect = { selected = it },
+            selectedId = selectedProfileId,
+            onSelect = onSelectProfile,
             onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
             actionLabel = "Open selected profile"
         )
@@ -129,19 +130,20 @@ fun HomeScreen(
 @Composable
 fun ProfilesScreen(
     presets: List<Preset>,
+    selectedProfileId: String,
+    onSelectProfile: (String) -> Unit,
     onProfileSelected: (SpeciesProfile) -> Unit,
     onPresetSelected: (Preset) -> Unit,
     onDeletePreset: (String) -> Unit,
     onCreateCustom: () -> Unit
 ) {
-    var selected by rememberSaveable { mutableStateOf("mosquito") }
-    val profile = SpeciesProfiles.byId(selected)
+    val profile = SpeciesProfiles.byId(selectedProfileId)
     PfScreen(title = "Explore profiles", subtitle = "Experimental sound presets") {
         SectionLabel("SELECT PROFILE")
         LayaswarnaRadialSelector(
             options = profileOptions(),
-            selectedId = selected,
-            onSelect = { selected = it },
+            selectedId = selectedProfileId,
+            onSelect = onSelectProfile,
             onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
             actionLabel = "Open selected profile"
         )
