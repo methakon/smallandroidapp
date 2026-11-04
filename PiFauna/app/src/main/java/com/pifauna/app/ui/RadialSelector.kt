@@ -48,6 +48,17 @@ import kotlin.math.hypot
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+/** Nearest clockwise wheel item; the central readout is never selectable. */
+internal fun radialIndexAt(x: Float, y: Float, width: Float, height: Float, count: Int): Int? {
+    if (count !in 2..8 || width <= 0f || height <= 0f) return null
+    val dx = x - width / 2f
+    val dy = y - height / 2f
+    if (hypot(dx, dy) < minOf(width, height) * 0.24f) return null
+    val angle = atan2(dy, dx).toDouble() + PI / 2
+    val turns = ((angle / (2 * PI) + 1.0) % 1.0)
+    return (turns * count).roundToInt() % count
+}
+
 /** Each symbol is drawn from elementary geometry, not emoji, screenshots or third-party artwork. */
 enum class RadialSymbol {
     MOSQUITO, INSECT, RODENT, PETS, BIRD, CUSTOM,
@@ -100,12 +111,10 @@ fun LayaswarnaRadialSelector(
                             val dx = change.position.x - size.width / 2f
                             val dy = change.position.y - size.height / 2f
                             // Avoid changing selection while interacting with the centre readout.
-                            if (hypot(dx, dy) >= size.minDimension * 0.24f) {
-                                val angle = atan2(dy, dx) + (PI / 2).toFloat()
-                                val turns = ((angle / (2 * PI) + 1.0) % 1.0)
-                                val index = (turns * options.size).roundToInt() % options.size
-                                onSelect(options[index].id)
-                            }
+                            radialIndexAt(
+                                change.position.x, change.position.y,
+                                size.width.toFloat(), size.height.toFloat(), options.size
+                            )?.let { onSelect(options[it].id) }
                             // Drag detector crosses touch slop before consuming movement.
                             // Node combinedClickable long-press is then cancelled by rotation.
                             change.consume()
