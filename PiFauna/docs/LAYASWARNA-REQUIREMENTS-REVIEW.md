@@ -65,3 +65,9 @@ Relevant primary documentation for **future** independent review:
 - Potential adverse effects of overnight pink noise: https://pmc.ncbi.nlm.nih.gov/articles/PMC10722168/
 
 **Scope of this review:** internal consistency, known API behavior and evidence-quality assessment of the supplied text; not an exhaustive live fact-check of every cited paper. No clinical efficacy or copyright clearance is certified.
+
+## 5. 2026-11-05 implementation-status note
+
+The Figma-only Chakra Sound Console, Seven Chakra Library and Anahata Nada concepts are now **navigable in the Android app**, but this is not approval for additional medical, sleep or continuous audio claims. Seven symbolic chakra tones (396–963 Hz) can be prepared as ordinary audible fixed tones, subject to all existing playback gates. A selected chakra's traditional association, optional listening practice and evidence note appear in an informational panel. Supported short-session Anahata audible tone/sweep options are distinct from the **unimplemented** pink/white noise options; no clinical or overnight playback has been added.
+
+User-approved radial gestures and selected-state highlighting have been authored in Compose with an explicit accessible action alternative. A core Gradle build passed; newest commits must be checked separately. Physical-device, gesture and TalkBack verification are still required. See [the delivery plan](LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md).
