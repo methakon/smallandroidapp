@@ -64,7 +64,7 @@ fun PlayerScreen(
     }
 
     PfScreen(
-        title = profile.name,
+        title = state.displayName ?: profile.name,
         subtitle = if (needsRange) {
             "Band • ${TimeFormat.band(state.startHz, state.endHz)}"
         } else {
@@ -163,9 +163,9 @@ fun PlayerScreen(
         )
         PfTextCard(
             heading = "What this does not prove",
-            body = "A rendered 16 kHz signal is not a measured 16 kHz in the room. Phone " +
-                "speakers attenuate high frequencies heavily and none of them emit " +
-                "ultrasound. Nothing here has been shown to repel insects or animals."
+            body = "A selected digital frequency does not establish measured speaker output, " +
+                "repellent effects or chakra-specific physiological effects. Phone " +
+                "speakers vary significantly, especially at high frequencies."
         )
     }
 }
