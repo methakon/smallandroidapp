@@ -200,3 +200,7 @@ The launcher mask and Android device rendering still require visual QA.
 
 Figma: <https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX>. The modern-mystic redesign set has 14 screens in addition to earlier concepts and archives.
 Current theme uses dark violet, accessible light text, gold/rose accents and muted seven-chakra node colors. See [design audit and implementation plan](docs/LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md).
+
+### Latest Mystic UI implementation
+
+The Android screen layouts have been synchronized with the newer Figma Mystic variants (seven exact Chakra VectorDrawable icons, illuminated wheel, grouped insights, updated headers and actions). See [Figma implementation status](docs/FIGMA-IMPLEMENTATION.md) for exact node IDs and safety-preserving differences. **The versionCode 7 AAB previously built by the worker predates this UI update and must be rebuilt before it can contain these changes.**

@@ -157,3 +157,20 @@ The approved design is now wired into Android Compose on `feat/pifauna-phone-aud
 - Android adaptive launcher now uses `drawable/ic_launcher_foreground.xml`, `drawable/ic_launcher_background.xml`, `drawable/ic_launcher_monochrome.xml`, and both `mipmap-anydpi-v26/ic_launcher*.xml` resources. Manifest icon references remain valid.
 - This is a vector adaptation inspired by the earlier generated luminous raster, not its pixel-exact copy. The Figma SVG includes richer gradient fills; the Android VectorDrawable uses a contrast-optimized color simplification for crisp density-independent launch icons.
 - Adaptive shape masks, themed-icon contrast, small-device recognition and Google Play asset/export compliance require manual QA. See [LAYASWARNA-APP-ICON.md](LAYASWARNA-APP-ICON.md).
+
+## 2026-11-05 — Figma Mystic screen-to-Compose integration
+
+The newest detailed Mystic reference frames are **50:2** (Chakra Library), **72:2** (Home), **72:82** (Profile Library), **73:2** (Chakra Console), and **73:101** (Anahata Nada). The earlier 14-screen design study is retained as the shared reference for Welcome, Player, Custom Sound, Timer and informational screens.
+
+The Android source on `feat/pifauna-phone-audio` has now been updated to follow those designs:
+
+- `ui/Components.kt`: flat dark-violet Mystic header, 24dp gutter, serif heading, rounded translucent-looking panels, optional grouped insight sections, and a separate gold full-width primary action after the contextual information. These changes apply to all routes through the shared `PfScreen`.
+- `ui/RadialSelector.kt`: slightly larger responsive radial wheel, static amethyst glow, gold orbit lines, subtle stars, highlighted selected item, enlarged center label, and no center Open target. The previously verified single-tap, rotary/drag selection, stationary long-press and double-tap behavior is retained.
+- `app/src/main/res/drawable/ic_chakra_*.xml`: seven **exact 24×24 Figma icon path geometries** translated from `50:33`, `50:37`, `50:40`, `50:45`, `50:49`, `50:53`, `50:57` into Android VectorDrawable resources. The interactive node still provides the accessibility label, not the decorative icon.
+- `screens/BrowseScreens.kt`: Home, Profiles, waveform and timer now place a dynamically selected information card between the wheel and a visible accessible action. Saved presets and navigation to meditation concepts remain discoverable below the main design.
+- `screens/ConceptScreens.kt`: the selected Chakra Insights are grouped in one compact panel (traditional association, listening practice, short session and evidence note). Chakra Console retains a **Prepare** action rather than falsely implying auto-play; Anahata Nada uses a sound selector, per-sound status panel, and existing bounded duration choices.
+- `PiFaunaApp.kt`: Anahata duration chips are connected to the existing `PlayerController` limits and setting persistence; they cannot lengthen a live session.
+
+**Safety-preserving deviations from the Figma mockups:** the mock Anahata 45-minute chip remains **excluded** (30-minute hard cap); pink/white noise are still shown as **planned/unavailable**, rather than playing mislabeled tones; the Chakra Console action prepares but does not start audio; the Android status and navigation bars are real system controls, not fake UI glyphs; Home's animated emojis are replaced by original vector/Canvas pictograms. No photos, Figma screenshot bitmaps or temporary Figma URLs were embedded as app assets.
+
+**Build/release boundary:** the worker's previous API-36 signed `versionCode 7` AAB was produced **before these screen commits**. Rebuild and re-sign from the updated GitHub head before uploading a bundle intended to include this Mystic pass. The signing keys, SDK 36 settings, and all audio policy code were not modified here. The GitHub Actions build on the latest UI commit must succeed; actual Android 16 visual comparison, 200% font scale, TalkBack and real external-route tests remain release QA.
