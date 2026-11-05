@@ -2,7 +2,11 @@ package com.pifauna.app.ui.screens
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,12 +19,15 @@ import com.pifauna.app.audio.ToneMode
 import com.pifauna.app.data.ChakraProfile
 import com.pifauna.app.data.ChakraProfiles
 import com.pifauna.app.ui.LayaswarnaRadialSelector
+import com.pifauna.app.ui.MysticInsightCard
+import com.pifauna.app.ui.MysticActionButton
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
 import com.pifauna.app.ui.PiFaunaColors
 import com.pifauna.app.ui.RadialOption
 import com.pifauna.app.ui.RadialSymbol
 import com.pifauna.app.ui.SectionLabel
+import com.pifauna.app.safety.SafetyLimits
 
 private val chakraSymbols = listOf(
     RadialSymbol.ROOT, RadialSymbol.SACRAL, RadialSymbol.SOLAR,
@@ -39,20 +46,21 @@ private fun chakraOptions(): List<RadialOption> = ChakraProfiles.all.mapIndexed 
 
 @Composable
 private fun ChakraInsights(profile: ChakraProfile) {
-    SectionLabel("CHAKRA INSIGHTS")
-    PfTextCard(heading = "Traditional association", body = profile.traditionalAssociation)
-    PfTextCard(heading = "Listening practice", body = profile.listeningPractice)
-    PfTextCard(
-        heading = "Suggested short session",
-        body = "Try 5–10 minutes at a comfortable volume, if you enjoy the sound. " +
-            "Stop if you or anyone nearby experiences discomfort."
+    MysticInsightCard(
+        title = "Chakra insights · ${profile.name}",
+        sections = listOf(
+            "Traditional association" to profile.traditionalAssociation,
+            "Listening practice" to profile.listeningPractice,
+            "Suggested session" to "5–10 minutes at a comfortable volume; stop if uneasy.",
+            "Evidence note" to "No established chakra-specific effect of ${profile.toneHz} Hz."
+        )
     )
     Text(
-        text = ChakraProfiles.evidenceNote,
+        text = "These are modern symbolic tone associations, not a medical treatment.",
         color = PiFaunaColors.Muted,
-        fontSize = 14.sp
+        fontSize = 12.sp
     )
-    Spacer(Modifier.height(14.dp))
+    Spacer(Modifier.height(16.dp))
 }
 
 /** The wheel selects a symbolic chakra; a hold/double-tap opens its details. */
@@ -65,17 +73,19 @@ fun ChakraLibraryScreen(
     val profile = ChakraProfiles.byId(selectedId)
     PfScreen(
         title = "Seven Chakra Library",
-        subtitle = "Modern symbolic sound associations"
+        subtitle = "Tap or rotate to explore symbolic meditation tones"
     ) {
-        SectionLabel("CHAKRA REGULATOR")
         LayaswarnaRadialSelector(
             options = chakraOptions(),
             selectedId = selectedId,
             onSelect = onSelect,
             onActivate = onOpen,
-            actionLabel = "Open ${profile.name} details"
+            actionLabel = "Open ${profile.name}",
+            showActionButton = false
         )
+        Spacer(Modifier.height(16.dp))
         ChakraInsights(profile)
+        MysticActionButton("Open ${profile.name}") { onOpen(selectedId) }
     }
 }
 
@@ -90,23 +100,35 @@ fun ChakraConsoleScreen(
     val profile = ChakraProfiles.byId(selectedId)
     PfScreen(
         title = "Chakra Sound Console",
-        subtitle = "Choose an optional meditation tone"
+        subtitle = "Choose an optional symbolic meditation tone"
     ) {
-        SectionLabel("SYMBOLIC TONES")
         LayaswarnaRadialSelector(
             options = chakraOptions(),
             selectedId = selectedId,
             onSelect = onSelect,
             onActivate = { onUseTone(ChakraProfiles.byId(it)) },
-            actionLabel = "Prepare ${profile.toneHz} Hz in Sound Player",
-            enabled = enabled
+            actionLabel = "Prepare ${profile.toneHz} Hz",
+            enabled = enabled,
+            showActionButton = false
         )
-        ChakraInsights(profile)
-        PfTextCard(
-            heading = "Playback remains supervised",
-            body = "Preparing the selected tone does not start sound. You must " +
-                "start a timed session in the Sound Player, subject to its volume, " +
-                "battery, audio-route and thermal checks."
+        Spacer(Modifier.height(16.dp))
+        MysticInsightCard(
+            title = "Selected chakra tone",
+            sections = listOf(
+                profile.name to "${profile.toneHz} Hz · modern symbolic association",
+                "Suggested session" to "5–10 minutes of supervised listening.",
+                "Listening information" to profile.listeningPractice
+            )
+        )
+        MysticActionButton(
+            label = "Prepare ${profile.toneHz} Hz in Sound Player",
+            enabled = enabled
+        ) { onUseTone(profile) }
+        Text(
+            "Preparing a tone does not start playback. There is no established " +
+                "chakra-specific physiological or therapeutic effect.",
+            color = PiFaunaColors.Muted,
+            fontSize = 14.sp
         )
     }
 }
@@ -159,6 +181,8 @@ fun AnahataNadaScreen(
     selectedId: String,
     onSelect: (String) -> Unit,
     onPrepare: (RelaxationSound) -> Unit,
+    selectedMinutes: Int,
+    onDurationSelect: (Int) -> Unit,
     enabled: Boolean
 ) {
     var notice by remember { mutableStateOf<String?>(null) }
@@ -177,8 +201,10 @@ fun AnahataNadaScreen(
         }
     }
 
-    PfScreen(title = "Anahata Nada", subtitle = "Experimental sound studio") {
-        SectionLabel("SOUND REGULATOR")
+    PfScreen(
+        title = "Anahata Nada",
+        subtitle = "Experimental relaxation audio · short supervised sessions"
+    ) {
         LayaswarnaRadialSelector(
             options = RelaxationSounds.all.map {
                 RadialOption(it.id, it.label, if (it.playable) "Audible tone" else "Planned", it.symbol)
@@ -187,19 +213,45 @@ fun AnahataNadaScreen(
             onSelect = { onSelect(it); notice = null },
             onActivate = ::open,
             actionLabel = if (current.playable) "Prepare ${current.label}" else "View ${current.label} status",
-            enabled = true
+            showActionButton = false
         )
-        SectionLabel("SELECTED SOUND")
-        PfTextCard(heading = current.label, body = current.description)
+        Spacer(Modifier.height(16.dp))
+        MysticInsightCard(
+            title = "Selected · ${current.label}",
+            sections = listOf(
+                "Listening experience" to current.description,
+                "Availability" to if (current.playable) "Audible tone experiment" else "Planned, not implemented"
+            )
+        )
+        SectionLabel("SESSION TIMER")
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SafetyLimits.DURATION_CHOICES_MIN.forEach { duration ->
+                FilterChip(
+                    selected = selectedMinutes == duration,
+                    onClick = { onDurationSelect(duration) },
+                    label = { Text("${duration} min", fontSize = 12.sp) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = PiFaunaColors.Accent,
+                        selectedLabelColor = PiFaunaColors.Background,
+                        labelColor = PiFaunaColors.BodyText,
+                        containerColor = PiFaunaColors.Card
+                    )
+                )
+            }
+        }
+        Spacer(Modifier.height(14.dp))
+        MysticActionButton(
+            label = if (current.playable) "Prepare ${current.label}" else "View ${current.label} status"
+        ) { open(selectedId) }
         notice?.let {
             Text(it, color = PiFaunaColors.Warning, fontSize = 14.sp)
             Spacer(Modifier.height(12.dp))
         }
-        PfTextCard(
-            heading = "Short sessions only",
-            body = "Audible sounds are experiments, not verified sleep stimulation. " +
-                "All playback uses the normal Sound Player and its 5/10/15/30-minute limit. " +
-                "No overnight or background playback."
+        Text(
+            "Experimental relaxation audio, not medical or sleep therapy. " +
+                "No overnight or background playback.",
+            color = PiFaunaColors.Muted,
+            fontSize = 12.sp
         )
     }
 }
