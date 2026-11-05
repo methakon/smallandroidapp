@@ -53,8 +53,9 @@ left as the newest internal build. Version 6 never reached testers.
 ## How it was published
 
 Play Developer API v3, authenticated with Application Default Credentials from
-the `gcloud` CLI and a quota project (`homeguardian-ai-web-portal`, where
-`androidpublisher.googleapis.com` was enabled). Sequence:
+the `gcloud` CLI and a quota project dedicated to this app,
+`layaswarna-play` (where `androidpublisher.googleapis.com` is enabled and which
+is also set as the ADC quota project). Sequence:
 
 ```
 POST   /applications/{pkg}/edits                    -> edit id
