@@ -72,10 +72,20 @@ fun WelcomeScreen(onGetStarted: () -> Unit, onLearnLimits: () -> Unit) {
     }
 }
 
+/** Compact visual labels match the Figma wheel; full names remain in the insights. */
+private fun profileLabel(profile: SpeciesProfile): String = when (profile.id) {
+    "mosquito" -> "Mosquito"
+    "insects" -> "Insects"
+    "rodent" -> "Rodents"
+    "dogcat" -> "Cats & dogs"
+    "bird" -> "Birds"
+    else -> "Custom"
+}
+
 private fun profileOptions(): List<RadialOption> = SpeciesProfiles.all.map { profile ->
     RadialOption(
         id = profile.id,
-        label = profile.name,
+        label = profileLabel(profile),
         detail = TimeFormat.band(profile.firstHz, profile.lastHz),
         symbol = when (profile.id) {
             "mosquito" -> RadialSymbol.MOSQUITO
@@ -115,7 +125,7 @@ fun HomeScreen(
             selectedId = selectedProfileId,
             onSelect = onSelectProfile,
             onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
-            actionLabel = "Open ${profile.name}",
+            actionLabel = "Open ${profileLabel(profile)}",
             showActionButton = false
         )
         Spacer(Modifier.height(16.dp))
@@ -127,7 +137,7 @@ fun HomeScreen(
                 "About this profile" to profile.detail
             )
         )
-        MysticActionButton("Open ${profile.name}") { onProfileSelected(profile) }
+        MysticActionButton("Open ${profileLabel(profile)}") { onProfileSelected(profile) }
         PfCard(
             title = "All profiles and saved sounds",
             subtitle = "Browse preset library",
@@ -173,7 +183,7 @@ fun ProfilesScreen(
             selectedId = selectedProfileId,
             onSelect = onSelectProfile,
             onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
-            actionLabel = "Open ${profile.name}",
+            actionLabel = "Open ${profileLabel(profile)}",
             showActionButton = false
         )
         Spacer(Modifier.height(16.dp))
@@ -185,7 +195,7 @@ fun ProfilesScreen(
                 "Listening information" to profile.detail
             )
         )
-        MysticActionButton("Open ${profile.name}") { onProfileSelected(profile) }
+        MysticActionButton("Open ${profileLabel(profile)}") { onProfileSelected(profile) }
         PfCard(
             title = "Create a custom sound",
             subtitle = "Set a frequency band and waveform",
