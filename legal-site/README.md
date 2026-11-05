@@ -55,19 +55,32 @@ Permissions-Policy: camera=(), microphone=(), geolocation=()
 `default-src 'none'` means the pages cannot load scripts even if one were
 injected. No CSP exception is needed because the site ships no JS.
 
-## Deployment — blocked on Cloudflare credentials
+## Deployment status
 
-Not deployed. No usable Cloudflare authentication exists on this machine:
+Wrangler OAuth (device flow) is authenticated for `bapay.9@gmail.com` (account `e4ae43fa115c44698297dce679f06428`).
 
-- `wrangler` is not installed and `npx wrangler` is not authenticated.
-- No `CLOUDFLARE_API_TOKEN` in the environment, no `~/.wrangler` config.
-- `~/.cloudflared/global-api-key` exists but Cloudflare rejects it:
-  `GET /client/v4/user/tokens/verify` returns HTTP 401, code 1000,
-  "Invalid API Token". It is not a tunnel token either.
+| Host | URL | Status | Notes |
+|---|---|---|---|
+| Pages project | `layaswarna-legal` → https://layaswarna-legal.pages.dev/ | **live** | direct upload, 8 files, `_headers` uploaded |
+| Custom domain | `layaswarna.berhampore.in` | **pending** | Pages `status=pending`, `validation_data.method=http`, `verification_data.error_message: CNAME record not set` |
 
-DNS is already on Cloudflare (`asa.ns.cloudflare.com`,
-`norman.ns.cloudflare.com`), and `layaswarna.berhampore.in` has no A or CNAME
-record yet, so the subdomain is free to point at Pages.
+Verified on the live Pages deployment (all **HTTP 200**): `/`, `/privacy/`, `/terms/`, `/safety/`. Response headers include `Content-Security-Policy` (`default-src 'none'`), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy: camera=(), microphone=(), geolocation=()`.
+
+## Remaining step: the CNAME record
+
+The Pages custom-domain registration succeeded, but the OAuth token's DNS-record endpoints return `10000 Authentication error` in this environment (Pages/DNS listing). Add **one** record in Cloudflare DNS for `berhampore.in`:
+
+- Type: `CNAME`
+- Name: `layaswarna`
+- Target: `layaswarna-legal.pages.dev`
+- Proxy: on (orange cloud), TTL: Auto
+
+Do not change nameservers and do not touch the existing `MX mail.berhampore.in` or the SPF TXT. Once the record exists, Cloudflare/Pages will validate and issue the Google-managed certificate; recheck:
+
+```bash
+dig +short layaswarna.berhampore.in CNAME
+curl -I https://layaswarna.berhampore.in/privacy/
+```
 
 To finish, either:
 
