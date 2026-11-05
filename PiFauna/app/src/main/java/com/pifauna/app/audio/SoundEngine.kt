@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Process
+import android.os.SystemClock
 import android.util.Log
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.min
@@ -28,7 +29,12 @@ sealed interface StartResult {
  *  - [stop] unblocks the writer with `flush()` and joins the worker, so
  *    resources are released before `stop()` returns;
  *  - one render buffer is allocated per engine and reused for every session;
- *  - `onFinished` is invoked on the audio worker thread, never on the caller's.
+ *  - `onFinished` is invoked on the audio worker thread, never on the caller's;
+ *  - a session that reaches its end is DRAINED, not flushed: the queued tail,
+ *    which contains the kernel's 25 ms fade-out, is allowed to play before the
+ *    track is released;
+ *  - [stop] mutes the track and lets the mixer ramp the gain to zero before
+ *    pausing, so an interrupted tone fades instead of being cut mid-cycle.
  *
  * This class does not choose the audio route. Deciding whether the current
  * route is acceptable is the caller's job (see [AudioRouteMonitor]).
@@ -137,6 +143,9 @@ class SoundEngine {
 
         val audio = track
         if (audio != null) {
+            // Ramp to silence first. Pausing a sine at an arbitrary phase is an
+            // abrupt step in the waveform, which is audible as a click.
+            muteWithRamp(audio)
             // pause() stops consumption and flush() discards queued frames, which
             // is what unblocks a writer parked in write(..., WRITE_BLOCKING).
             runCatching { if (audio.playState == AudioTrack.PLAYSTATE_PLAYING) audio.pause() }
@@ -166,9 +175,9 @@ class SoundEngine {
         onFinished: (FinishReason, Long) -> Unit
     ) {
         var reason = FinishReason.STOPPED
+        var rendered = 0L
         try {
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
-            var rendered = 0L
             var phase = 0.0
             // AudioTrack.play() already ran under the engine lock in start(), so no
             // teardown can have paused this track between play() and the first write.
@@ -202,10 +211,21 @@ class SoundEngine {
             Log.w(TAG, "session ended with error", error)
             reason = FinishReason.ERROR
         } finally {
-            running.set(false)
-            runCatching { audio.pause() }
-            runCatching { audio.flush() }
-            runCatching { audio.stop() }
+            // A natural completion must play out what is still queued. flush() here
+            // used to discard up to a full buffer (~40 ms), which contains the
+            // fade-out, so every session ended with a hard cut. Stops and errors
+            // still tear down immediately.
+            val drain = reason == FinishReason.COMPLETED && running.get()
+            if (drain) {
+                runCatching { awaitDrain(audio, config, rendered) }
+                running.set(false)
+                runCatching { audio.stop() }
+            } else {
+                running.set(false)
+                runCatching { audio.pause() }
+                runCatching { audio.flush() }
+                runCatching { audio.stop() }
+            }
             runCatching { audio.release() }
             if (track === audio) track = null
             if (worker === Thread.currentThread()) worker = null
@@ -214,11 +234,55 @@ class SoundEngine {
         }
     }
 
+    /**
+     * Drops the track gain to zero and waits long enough for the mixer to ramp
+     * there. AudioFlinger smooths gain changes across a mix cycle, so this turns
+     * a hard cut into a short fade. If a device does not ramp, the result is no
+     * worse than the previous immediate pause.
+     */
+    private fun muteWithRamp(audio: AudioTrack) {
+        try {
+            if (audio.playState != AudioTrack.PLAYSTATE_PLAYING) return
+            audio.setVolume(0f)
+            Thread.sleep(STOP_RAMP_MS)
+        } catch (interrupted: InterruptedException) {
+            Thread.currentThread().interrupt()
+        } catch (ignored: Exception) {
+            // Track already released by the worker: nothing left to fade.
+        }
+    }
+
+    /**
+     * Blocks until the hardware has consumed every frame written, or until a
+     * deadline derived from the buffer length expires. Returns early if a stop
+     * is requested, in which case [shutdownLocked] owns the teardown.
+     */
+    private fun awaitDrain(audio: AudioTrack, config: ToneConfig, framesWritten: Long) {
+        val bufferMs = audio.bufferSizeInFrames * 1000L / config.sampleRate
+        val deadline = SystemClock.elapsedRealtime() + bufferMs + DRAIN_MARGIN_MS
+        while (running.get() && SystemClock.elapsedRealtime() < deadline) {
+            // playbackHeadPosition is an unsigned 32-bit frame counter.
+            val played = audio.playbackHeadPosition.toLong() and 0xFFFF_FFFFL
+            if (played >= framesWritten) break
+            Thread.sleep(DRAIN_POLL_MS)
+        }
+        // The head position runs slightly ahead of the speaker; cover the output latency.
+        if (running.get()) Thread.sleep(DRAIN_TAIL_MS)
+    }
+
     private companion object {
         const val TAG = "PiFaunaEngine"
 
         /** 1024 frames ≈ 21 ms at 48 kHz: small enough to stop promptly, large enough to be cheap. */
         const val CHUNK_FRAMES = 1024
         const val JOIN_TIMEOUT_MS = 1500L
+
+        /** Time for the mixer to ramp a muted track to silence before pausing. */
+        const val STOP_RAMP_MS = 30L
+
+        /** Slack beyond the buffer length before giving up on a drain. */
+        const val DRAIN_MARGIN_MS = 250L
+        const val DRAIN_POLL_MS = 5L
+        const val DRAIN_TAIL_MS = 40L
     }
 }
