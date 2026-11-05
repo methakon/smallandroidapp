@@ -1,7 +1,7 @@
 # Layaswarna (formerly PiFauna)
 
 An offline Android tone generator for short, supervised listening experiments.
-Kotlin + Jetpack Compose, minSdk 26, targetSdk 35.
+Kotlin + Jetpack Compose, minSdk 26, targetSdk 36.
 
 Layaswarna is **not** a pest repellent, a medical device or an ultrasonic emitter.
 It produces short, low-level digital tones through the phone's own speaker and
@@ -39,11 +39,11 @@ at all** — the manifest declares none.
 | Component | Version used for the recorded build |
 |---|---|
 | JDK | OpenJDK 17 (`/usr/lib/jvm/java-17-openjdk-amd64`) |
-| Gradle | 8.9, pinned by the committed wrapper |
-| Android Gradle plugin | 8.7.3 |
+| Gradle | 8.13, pinned by the committed wrapper |
+| Android Gradle plugin | 8.13.2 |
 | Kotlin | 2.0.21 |
-| Android SDK Platform | 35 (`compileSdk` / `targetSdk`) |
-| Build tools | 35.0.0 or newer (34.0.0+ accepted by AGP 8.7) |
+| Android SDK Platform | 36 (`compileSdk` / `targetSdk`) |
+| Build tools | 36.0.0 |
 | Android device | 8.0 (API 26) or newer |
 
 Point Gradle at your SDK with a machine-local `local.properties` (git-ignored):
@@ -169,7 +169,7 @@ PiFauna/
 │       ├── test/java/com/pifauna/app/      JVM unit tests
 │       └── androidTest/java/com/pifauna/app/  instrumented tests
 ├── docs/                                   architecture, testing, safety, Figma mapping
-├── gradle/wrapper/                         committed Gradle 8.9 wrapper
+├── gradle/wrapper/                         committed Gradle 8.13 wrapper
 ├── build.gradle.kts
 ├── settings.gradle.kts
 ├── gradle.properties

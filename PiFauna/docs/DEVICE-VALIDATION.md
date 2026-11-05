@@ -12,7 +12,7 @@ it. Anything that did not execute is marked as not executed.
 | ADB used for all work | `/home/…/Android/Sdk/platform-tools/adb` — 1.0.41 / 37.0.1 |
 | Conflicting ADB on the host | `/usr/bin/adb` → `/usr/lib/android-sdk/platform-tools/adb` — 1.0.41 / **34.0.4** |
 | Host ADB key | single pair in `~/.android/`, created 2026-08-24, unchanged for the session |
-| JDK / Gradle / AGP | 17.0.20.1 / 8.9 / 8.7.3 |
+| JDK / Gradle / AGP | 17.0.20.1 / 8.13 / 8.13.2 |
 
 ## ADB investigation
 

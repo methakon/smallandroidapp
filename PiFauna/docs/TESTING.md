@@ -4,7 +4,88 @@ Recorded 2026-11-04 on the machine and device listed below. Nothing in this file
 is estimated: every number comes from a Gradle run, a test XML or a device
 command.
 
-## Layaswarna 0.5.0 — current verification
+## Layaswarna 0.5.0 — versionCode 7, Android API 36 (current)
+
+Recorded 2026-11-05. Google Play rejected versionCode 6 because it targeted
+API 35; Play now requires API 36. This section covers the rebuild.
+
+### Toolchain change
+
+| Item | Before | After | Why |
+|---|---|---|---|
+| compileSdk / targetSdk | 35 / 35 | **36 / 36** | Play requirement |
+| Android Gradle plugin | 8.7.3 | **8.13.2** | AGP 8.9.1+ is required to compile against API 36 |
+| Gradle wrapper | 8.9 | **8.13** | AGP 8.13 requires Gradle 8.13 |
+| Kotlin | 2.0.21 | 2.0.21 (unchanged) | no need to move |
+| minSdk | 26 | 26 (unchanged) | — |
+
+Gradle was upgraded because AGP versions declare a minimum Gradle; it is not
+optional decoration. `--warning-mode all` produced **no** deprecation output on
+the new pair.
+
+### Results
+
+| Check | Result |
+|---|---|
+| `:app:testDebugUnitTest` | **33 tests, 0 failures, 0 errors** |
+| `:app:lintDebug` | **0 errors, 23 warnings** (all version-available / KTX / unused-resource notices) |
+| `:app:assembleDebug` | success — `app-debug.apk`, 8,909,191 bytes |
+| `:app:assembleDebugAndroidTest` | success |
+| `:app:bundleRelease` | success — `app-release.aab`, 6,253,463 bytes |
+| `bundletool validate` | pass (exit 0) |
+| `jarsigner -verify` | pass, 0 unsigned entries |
+| Instrumented tests, API 28 (ELUGA) | **OK (20 tests)** |
+| Instrumented tests, API 30 (Mi A3) | **OK (20 tests)** |
+| Fatal exceptions in logcat | 0 on both devices |
+
+### Android 16 behaviour review
+
+- **Edge-to-edge is no longer optional** for targetSdk 36. `MainActivity` now
+  calls `enableEdgeToEdge(...)` with light system-bar icons on transparent
+  bars, so the layout does not shift when a device updates to Android 16.
+  `Scaffold` already applied `innerPadding`, so content stays clear of the
+  bars; screens inside `PfScreen` scroll vertically and survive the shorter
+  viewport.
+- **Predictive back is on by default** and `onBackPressed` is no longer
+  dispatched. The manifest sets `android:enableOnBackInvokedCallback="true"`;
+  navigation uses Compose `BackHandler`, which registers through
+  `OnBackInvokedDispatcher`, so back still pops the stack.
+- **Orientation restrictions are ignored on large screens.** The app never
+  declares `screenOrientation`, so nothing to remove. All screens are
+  scrollable columns, which keeps content reachable in landscape.
+- **Audio behaviour:** no targeting-36 audio change applies. The existing
+  focus/lifecycle/route rules are untouched.
+
+### Native symbols and deobfuscation
+
+The bundle ships four `libandroidx.graphics.path.so` entries — prebuilt,
+stripped libraries from AndroidX, not code compiled here. The release block now
+declares `ndk { debugSymbolLevel = "SYMBOL_TABLE" }`, which is the correct
+setting for any native code this project compiles; because the only `.so`
+arrive prebuilt, AGP produces no symbol metadata for them and Play's
+"add debug symbols" note remains informational, not blocking. Deobfuscation is
+not a factor: `isMinifyEnabled = false`, so no obfuscated names exist and no
+mapping file is expected.
+
+### What this build could not test
+
+- **No Android 16 / API 36 device is attached.** Both test phones are API 28
+  and API 30, so the enforced edge-to-edge and predictive-back behaviour was
+  reasoned from the documented rules and the code, not observed on Android 16
+  hardware. This is the main residual risk and should be checked on an API 36
+  device or emulator before production.
+- Thermal-status gating (`POWERManager` thermal listener) needs API 29+, so it
+  runs on the Mi A3 but not the ELUGA.
+
+### Harness note
+
+Instrumented tests require the screen to be on. On the Mi A3 the display was
+`Dozing` / `state=OFF` at the start of a run and 10 Compose tests failed with
+`IllegalStateException: No compose hierarchies found`; the identical APK passed
+all 20 once `svc power stayon true` plus `KEYCODE_WAKEUP` held the screen awake.
+Treat that message as a device-state signal, not a code defect.
+
+## Layaswarna 0.5.0 — versionCode 5 (historical)
 
 App ID `in.berhampore.dhar.layaswarna`, versionCode 5. This section supersedes
 the PiFauna-era results further down for anything touched by the Layaswarna
@@ -74,12 +155,12 @@ cd PiFauna
 |---|---|
 | OS | Ubuntu, kernel 7.0.0-42-generic |
 | JDK | OpenJDK 17.0.20.1 (`/usr/lib/jvm/java-17-openjdk-amd64`) |
-| Gradle | 8.9 (committed wrapper) |
-| Android Gradle plugin | 8.7.3 |
-| Kotlin | 2.0.21 (KGP); Gradle's embedded Kotlin 1.9.23 |
-| compileSdk / targetSdk / minSdk | 35 / 35 / 26 |
+| Gradle | 8.13 (committed wrapper) |
+| Android Gradle plugin | 8.13.2 |
+| Kotlin | 2.0.21 (KGP) |
+| compileSdk / targetSdk / minSdk | 36 / 36 / 26 |
 | Android SDK platforms installed | android-27, 34, 35, 36 |
-| Build tools | 34.0.0 and 36.0.0 (AGP selected the platform default) |
+| Build tools | 36.0.0 |
 | Test device | Xiaomi Mi A3 (`laurel_sprout`), Android 11, API 30, 5.7 GB RAM |
 | Device connection | USB ADB (`edd53dbd04de`) |
 

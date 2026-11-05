@@ -1,8 +1,10 @@
 package com.pifauna.app
 
 import android.os.Bundle
+import androidx.activity.SystemBarStyle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import com.pifauna.app.data.PresetStore
 import com.pifauna.app.data.SettingsStore
 import com.pifauna.app.playback.PlayerController
@@ -28,6 +30,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Android 16 enforces edge-to-edge for apps targeting API 36. Opting in
+        // explicitly keeps the layout identical on older releases instead of
+        // shifting once the device is updated. The UI is always dark, so the
+        // system bar icons must stay light on the transparent bars.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+        )
 
         controller = PlayerController(this)
         settings = SettingsStore(this)

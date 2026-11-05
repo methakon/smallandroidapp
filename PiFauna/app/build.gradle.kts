@@ -30,13 +30,13 @@ val keystoreProperties: Properties? =
 
 android {
     namespace = "in.berhampore.dhar.layaswarna"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "in.berhampore.dhar.layaswarna"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 6
+        targetSdk = 36
+        versionCode = 7
         versionName = "0.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -73,6 +73,12 @@ android {
         release {
             isMinifyEnabled = false
             signingConfig = signingConfigs.findByName("release")
+            // Play warns when an app ships native libraries without symbols.
+            // This app has no C/C++ of its own; the only .so comes from an AndroidX
+            // dependency, so a symbol table is enough to resolve the warning.
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

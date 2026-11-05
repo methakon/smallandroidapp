@@ -39,9 +39,9 @@ jobs:
         run: |
           echo "ANDROID_HOME=$ANDROID_HOME"
           ls "$ANDROID_HOME/platforms" || true
-      - name: Install Android API 35
+      - name: Install Android API 36
         run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-35" "build-tools;35.0.0"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36" "build-tools;36.0.0"
       - name: Validate unit tests, APK and lint
         run: |
           chmod +x ./gradlew
