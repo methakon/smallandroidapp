@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Faithful vector translation of Layaswarna Figma node 50:53, 24 x 24 viewport. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M12 3L21 12L12 21L3 12L12 3Z" android:fillColor="@android:color/transparent" android:strokeColor="#7A6FF0" android:strokeWidth="1.75" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    <path android:pathData="M12 14.1998C13.215 14.1998 14.2 13.2148 14.2 11.9998C14.2 10.7848 13.215 9.7998 12 9.7998C10.785 9.7998 9.8 10.7848 9.8 11.9998C9.8 13.2148 10.785 14.1998 12 14.1998Z" android:fillColor="@android:color/transparent" android:strokeColor="#7A6FF0" android:strokeWidth="1.75" android:strokeLineCap="round" android:strokeLineJoin="round" />
+</vector>
