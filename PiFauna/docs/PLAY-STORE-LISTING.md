@@ -1,6 +1,6 @@
 # Layaswarna — Google Play Store listing
 
-Last updated: 2026-11-05. Separate **committed assets**, **worker-reported API publication** and **remaining tasks** below.
+Last updated: 2026-11-05. Branch: `feat/pifauna-phone-audio`. Separates **committed/verified assets**, **worker-reported API publication**, and **remaining tasks**.
 
 ## Identity and copy
 
@@ -8,7 +8,7 @@ Last updated: 2026-11-05. Separate **committed assets**, **worker-reported API p
 |---|---|
 | App name | Layaswarna |
 | Package | `in.berhampore.dhar.layaswarna` |
-| Current release | v0.5.0 / **versionCode 9** on Internal testing (per worker Play API read-back) |
+| Current release | v0.5.0 / **versionCode 9** on Internal testing (Play API read-back: `completed`) |
 | Suggested app category | **Music & Audio** |
 | Default locale | **English (India), en-IN** |
 | Product | Offline, audible experimental sound generator; not medically validated or a proven repellent |
@@ -29,42 +29,51 @@ Last updated: 2026-11-05. Separate **committed assets**, **worker-reported API p
 >
 > IMPORTANT: Layaswarna is a sound experiment, not a medical treatment, sleep therapy or proven animal or insect repellent. Phone speakers vary. Some frequencies may be inaudible or uncomfortable. Keep volume moderate, do not direct sound at people or animals, and stop if anyone experiences discomfort. Pink and white noise are planned features and are not playable in this version.
 
-**Status:** Worker reports `en-IN` app-name/icon/banner edits committed via API; short/full description save **not evidenced** by latest report. Enter/review the actual descriptions in Console before marking them published.
+**Status:** `en-IN` icon/feature graphic reported committed via Play Developer API; short/full description save **not evidenced** — enter/review the actual descriptions in Console before marking published.
 
-## Figma originals — committed to this Git branch
+## Figma / graphic assets — committed
 
-| Play asset | Source file | Dimensions / data |
-|---|---|---|
-| App icon | [`layaswarna-play-icon-512.png`](../store-assets/figma/layaswarna-play-icon-512.png) | 512×512, 228,464 bytes, PNG, alpha allowed for icon |
-| Feature graphic | [`layaswarna-feature-graphic-1024x500.jpg`](../store-assets/figma/layaswarna-feature-graphic-1024x500.jpg) | 1024×500, 284,698 bytes, opaque RGB JPEG |
-| Editable SVG | [`layaswarna-icon-master.svg`](../store-assets/figma/layaswarna-icon-master.svg) | 9,612 bytes; design source, not Play-upload format |
+| Play asset | Source file | Dimensions / data | Play status |
+|---|---|---|---|
+| App icon | [`layaswarna-play-icon-512.png`](../store-assets/figma/layaswarna-play-icon-512.png) | 512×512, PNG (alpha allowed) | **Uploaded** to en-IN (API edit `03965603996939416137`, HTTP 200 / read-back) |
+| Feature graphic | [`layaswarna-feature-graphic-1024x500.jpg`](../store-assets/figma/layaswarna-feature-graphic-1024x500.jpg) | 1024×500, opaque RGB JPEG | **Uploaded** to en-IN (read-back present) |
+| Editable SVG | [`layaswarna-icon-master.svg`](../store-assets/figma/layaswarna-icon-master.svg) | design source, not Play-upload format | n/a |
 
-Sources: Figma icon [62:25](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=62-25); Figma feature graphic [87:2](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=87-2).
+Figma sources: icon [62:25](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=62-25); feature graphic [87:2](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=87-2). No release rebuild needed for artwork.
 
-**Uploaded, worker-reported:** Both icon (SHA-1 starts `1db0a48c8`) and feature graphic (SHA-1 starts `f5dc41049`) uploaded to the default `en-IN` listing and committed through Play Developer API edit `03965603996939416137`; worker reports HTTP 200/read-back. No release rebuild needed for artwork.
+## Phone screenshots (en-IN `phoneScreenshots`) — **IN PROGRESS / NOT COMPLETE**
 
-## Actual app screenshots: report vs Git branch
+**Device (verified):** Xiaomi Mi A3, ADB `edd53dbd04de` (Android 11 / API 30). App **`in.berhampore.dhar.layaswarna` versionCode 9** (installed; no rebuild). Device config **restored and verified:** Physical 720×1560, density 320, no `wm` overrides.
 
-Worker reports capturing **five real Android 11 Mi A3 screenshots (720×1560)**, converting them to opaque RGB JPEG:
-`01-home.jpg`, `02-profiles.jpg`, `03-chakra-library.jpg`, `03-settings-safety.jpg`, `04-player-timer.jpg`.
+**Native captures (authentic, preserved locally, uncommitted):** 7 real screens via `adb exec-out screencap -p` → `PiFauna/store-assets/screenshots/originals/` (720×1560 RGBA PNGs):
+1. `01-home-orig.png` — Home / interactive circular sound profile regulator
+2. `02-profiles-orig.png` — Profile Library
+3. `03-chakra-library-orig.png` — Chakra Library / seven chakra-inspired tones
+4. `04-chakra-console-orig.png` — Chakra Sound Console / selected tone & listening info
+5. `05-custom-sound-orig.png` — Custom Sound / frequency & waveform controls
+6. `06-anahata-nada-orig.png` — Anahata Nada / audible sounds & timer choices (shows “Planned” for unavailable sounds — accurate)
+7. `07-player-timer-orig.png` — Sound Player / timed playback controls & safety info
 
-**Important discrepancy:** Worker says they were committed under `PiFauna/store-assets/screenshots/`, but this directory returned **404** on the Git branch as checked immediately before this documentation update. Verify the commit/branch or re-push the screenshots before citing repository links. Worker expressly says **none of the five were uploaded to Play**. Upload only after verifying files, real capture provenance, legibility, dimensions and aspect ratios.
+**Not done (blocking):** inspect & crop each original **720×1560 → exact 720×1280 (9:16, portrait, RGB/no alpha, < 8 MB)** preserving controls/text (no stretching/fabrication); export finals as `01-home.jpg`–`07-player-timer.jpg`; verify programmatically; commit+push; **upload all 7** to en-IN `phoneScreenshots` via Play Developer API (quota `layaswarna-play`), commit Play edit, **read back** to confirm acceptance. Any older top-level JPGs present locally (720×1560 / wrong names) are **not** the compliant final set.
+
+**Play status:** **0** new compliant screenshots uploaded for this task (API read-back showed `phoneScreenshots: 0`; icon/feature present). **Accepted screenshots (verified): 0.**
 
 ## Promo video
 
-An editable 24-second Figma Motion preview and completed MP4 export exist. The video is **not a real-device recording** and has **not been uploaded to YouTube or entered in Play**. See [MARKETING-VIDEO.md](MARKETING-VIDEO.md). It is optional.
+Optional. A 24-second Figma Motion preview/MP4 exists — **not a real-device recording**, **not uploaded to YouTube/Play**. See [MARKETING-VIDEO.md](MARKETING-VIDEO.md).
 
 ## Translations
 
-Initial drafts for **en-IN, Bengali (bn), Hindi (hi), Assamese (as)** were generated as a ZIP in conversation; they have not been confirmed published. See [LOCALIZATION.md](LOCALIZATION.md).
+Drafts for **en-IN, bn, hi, as** exist locally (`~/Downloads/Layaswarna-Play-Translations.zip`); not confirmed published. See [LOCALIZATION.md](LOCALIZATION.md).
 
 ## Outstanding publishing metadata
 
-- [ ] Verify full/short `en-IN` descriptions are saved.
-- [x] Icon and feature graphic reported uploaded to `en-IN` via Play API.
-- [ ] Confirm five genuine screenshots are available in the **Git branch**.
-- [ ] Upload and verify at least two real phone screenshots (five prepared according to worker).
-- [ ] Optional Figma promo → reviewed video → authorized YouTube upload → Play YouTube URL.
-- [ ] Make the canonical privacy-policy URL publicly accessible and set it in Google Play Console; see [LEGAL-SITE-HOSTING.md](LEGAL-SITE-HOSTING.md).
-- [ ] Configure internal testers; existing worker report said tester list was empty.
-- [ ] Review category, pricing, Data safety, store contact email and locale-specific listings.
+- [ ] Verify full/short `en-IN` descriptions are saved in Console.
+- [x] Icon and feature graphic uploaded to `en-IN` (API, read-back).
+- [ ] Produce **7 compliant** real screenshots (720×1280, 9:16, RGB, <8 MB) and commit.
+- [ ] Upload & **read-back verify** 7 `phoneScreenshots` (en-IN).
+- [ ] Optional: reviewed real-device/approved promo → authorized YouTube → Play URL.
+- [ ] **Cloudflare DNS:** add `CNAME layaswarna -> layaswarna-legal.pages.dev` (zone `berhampore.in`, proxy on); verify HTTPS 200 for `/`, `/privacy/`, `/terms/`, `/safety/` on `layaswarna.berhampore.in` (currently 530/pending).
+- [ ] Set Play **Privacy Policy URL** (use `https://layaswarna-legal.pages.dev/privacy/` now or canonical custom domain after DNS 200).
+- [ ] Configure internal testers (list currently empty).
+- [ ] Review category, pricing, Data safety, store contact email, locale listings.
