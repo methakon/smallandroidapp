@@ -35,6 +35,8 @@ import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.safety.SafetyLimits
 import com.pifauna.app.ui.LayaswarnaRadialSelector
+import com.pifauna.app.ui.MysticInsightCard
+import com.pifauna.app.ui.MysticActionButton
 import com.pifauna.app.ui.RadialOption
 import com.pifauna.app.ui.RadialSymbol
 import com.pifauna.app.ui.PfCard
@@ -104,24 +106,48 @@ fun HomeScreen(
         else -> "Good night"
     }
     val profile = SpeciesProfiles.byId(selectedProfileId)
-    PfScreen(title = greeting, subtitle = "Choose a sound profile") {
-        SectionLabel("SOUND PROFILE REGULATOR")
+    PfScreen(
+        title = "Sound profile regulator",
+        subtitle = "$greeting · Tap or rotate to select a sound"
+    ) {
         LayaswarnaRadialSelector(
             options = profileOptions(),
             selectedId = selectedProfileId,
             onSelect = onSelectProfile,
             onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
-            actionLabel = "Open selected profile"
+            actionLabel = "Open ${profile.name}",
+            showActionButton = false
         )
         Spacer(Modifier.height(16.dp))
-        PfTextCard(heading = profile.name, body = profile.summary + ". " + profile.detail)
-        PfCard(title = "All profiles and saved sounds", subtitle = "Browse preset library", onClick = onOpenLibrary)
+        MysticInsightCard(
+            title = "Selected sound profile",
+            sections = listOf(
+                profile.name to profile.summary,
+                "Experimental frequency" to TimeFormat.band(profile.firstHz, profile.lastHz),
+                "About this profile" to profile.detail
+            )
+        )
+        MysticActionButton("Open ${profile.name}") { onProfileSelected(profile) }
+        PfCard(
+            title = "All profiles and saved sounds",
+            subtitle = "Browse preset library",
+            onClick = onOpenLibrary
+        )
         SectionLabel("MEDITATION")
-        PfCard(title = "Seven Chakra Library", subtitle = "Symbolic tone associations and listening insights", onClick = onOpenChakras)
-        PfCard(title = "Anahata Nada", subtitle = "Experimental relaxation sound studio", onClick = onOpenAnahata)
-        PfTextCard(
-            heading = "Experimental audio",
-            body = "Digital frequencies are not proof of acoustic output, animal repellency, or medical effects."
+        PfCard(
+            title = "Seven Chakra Library",
+            subtitle = "Symbolic tone associations and listening insights",
+            onClick = onOpenChakras
+        )
+        PfCard(
+            title = "Anahata Nada",
+            subtitle = "Experimental relaxation sound studio",
+            onClick = onOpenAnahata
+        )
+        Text(
+            "Experimental audio: no proven repellency or medical effects.",
+            color = PiFaunaColors.Muted,
+            fontSize = 14.sp
         )
     }
 }
@@ -138,18 +164,33 @@ fun ProfilesScreen(
     onCreateCustom: () -> Unit
 ) {
     val profile = SpeciesProfiles.byId(selectedProfileId)
-    PfScreen(title = "Explore profiles", subtitle = "Experimental sound presets") {
-        SectionLabel("SELECT PROFILE")
+    PfScreen(
+        title = "Profile library regulator",
+        subtitle = "Tap or rotate to explore experimental sound presets"
+    ) {
         LayaswarnaRadialSelector(
             options = profileOptions(),
             selectedId = selectedProfileId,
             onSelect = onSelectProfile,
             onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
-            actionLabel = "Open selected profile"
+            actionLabel = "Open ${profile.name}",
+            showActionButton = false
         )
-        SectionLabel("SELECTED PROFILE INSIGHTS")
-        PfTextCard(heading = profile.name, body = profile.detail)
-        PfCard(title = "Create a custom sound", subtitle = "Set a frequency band and waveform", onClick = onCreateCustom)
+        Spacer(Modifier.height(16.dp))
+        MysticInsightCard(
+            title = "Selected sound profile",
+            sections = listOf(
+                profile.name to profile.summary,
+                "Frequency band" to TimeFormat.band(profile.firstHz, profile.lastHz),
+                "Listening information" to profile.detail
+            )
+        )
+        MysticActionButton("Open ${profile.name}") { onProfileSelected(profile) }
+        PfCard(
+            title = "Create a custom sound",
+            subtitle = "Set a frequency band and waveform",
+            onClick = onCreateCustom
+        )
 
         SectionLabel("YOUR PRESETS (${presets.size}/${SafetyLimits.MAX_PRESETS})")
         if (presets.isEmpty()) {
@@ -188,24 +229,6 @@ fun CustomSoundScreen(
     var message by remember { mutableStateOf<String?>(null) }
 
     PfScreen(title = "Create a sound", subtitle = "Adjust your playback") {
-        SectionLabel("FREQUENCY")
-        FrequencySliderCard(
-            label = "Start frequency",
-            value = startHz,
-            onChange = { onRangeChange(it, maxOf(it, endHz)) }
-        )
-        FrequencySliderCard(
-            label = "End frequency",
-            value = endHz,
-            onChange = { onRangeChange(minOf(startHz, it), it) }
-        )
-        PfTextCard(
-            heading = "Digital, not measured",
-            body = "These are synthesis settings. Many phone speakers fall away above " +
-                "16 kHz, so a high setting can be nearly silent in the room."
-        )
-
-        SectionLabel("WAVEFORM REGULATOR")
         LayaswarnaRadialSelector(
             options = ToneMode.entries.map { candidate ->
                 RadialOption(
@@ -223,9 +246,36 @@ fun CustomSoundScreen(
             selectedId = mode.name,
             onSelect = { selected -> onModeChange(ToneMode.valueOf(selected)) },
             onActivate = { selected -> onModeChange(ToneMode.valueOf(selected)) },
-            actionLabel = "Use selected waveform"
+            actionLabel = "Use selected waveform",
+            showActionButton = false
         )
-        PfTextCard(heading = mode.label(), body = mode.explanation())
+        Spacer(Modifier.height(16.dp))
+        MysticInsightCard(
+            title = "Selected waveform",
+            sections = listOf(
+                mode.label() to mode.explanation(),
+                "Frequency" to TimeFormat.band(startHz, endHz),
+                "Output" to "Bounded digital gain; system volume limits still apply."
+            )
+        )
+        MysticActionButton("Use ${mode.label()} waveform") { onModeChange(mode) }
+
+        SectionLabel("FREQUENCY")
+        FrequencySliderCard(
+            label = "Start frequency",
+            value = startHz,
+            onChange = { onRangeChange(it, maxOf(it, endHz)) }
+        )
+        FrequencySliderCard(
+            label = "End frequency",
+            value = endHz,
+            onChange = { onRangeChange(minOf(startHz, it), it) }
+        )
+        PfTextCard(
+            heading = "Digital, not measured",
+            body = "These are synthesis settings. Many phone speakers fall away above " +
+                "16 kHz, so a high setting can be nearly silent in the room."
+        )
 
         SectionLabel("OUTPUT LEVEL")
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -279,8 +329,7 @@ fun CustomSoundScreen(
 @Composable
 fun TimerScreen(selectedMinutes: Int, onSelect: (Int) -> Unit) {
     var tentative by rememberSaveable(selectedMinutes) { mutableStateOf(selectedMinutes.toString()) }
-    PfScreen(title = "Playback schedule", subtitle = "Choose a bounded duration") {
-        SectionLabel("SESSION TIMER")
+    PfScreen(title = "Session timer regulator", subtitle = "Choose a bounded listening duration") {
         LayaswarnaRadialSelector(
             options = SafetyLimits.DURATION_CHOICES_MIN.map {
                 RadialOption(it.toString(), "$it min", "Timed session", RadialSymbol.DURATION)
@@ -288,12 +337,25 @@ fun TimerScreen(selectedMinutes: Int, onSelect: (Int) -> Unit) {
             selectedId = tentative,
             onSelect = { tentative = it },
             onActivate = { onSelect(it.toInt()) },
-            actionLabel = "Confirm ${tentative} minute timer"
+            actionLabel = "Confirm ${tentative} minute timer",
+            showActionButton = false
         )
-        Spacer(Modifier.height(12.dp))
-        PfTextCard(
-            "No continuous playback",
-            "Every session ends after a timed limit or earlier on backgrounding, audio-focus loss, low battery or severe thermal warning."
+        Spacer(Modifier.height(16.dp))
+        MysticInsightCard(
+            title = "Selected duration",
+            sections = listOf(
+                "${tentative} minute session" to "Audio stops automatically when this session ends.",
+                "Foreground only" to "Playback stops when you leave the app or the activity stops.",
+                "Safety checks" to "The battery, volume, route and thermal limits remain active."
+            )
+        )
+        MysticActionButton("Confirm ${tentative} minute timer") {
+            onSelect(tentative.toInt())
+        }
+        Text(
+            "Continuous and overnight listening are not available.",
+            color = PiFaunaColors.Muted,
+            fontSize = 14.sp
         )
     }
 }
