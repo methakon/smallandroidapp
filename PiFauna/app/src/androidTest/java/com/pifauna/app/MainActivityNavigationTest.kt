@@ -46,9 +46,9 @@ class MainActivityNavigationTest {
     @Test
     fun homeListsProfilesAndOpensThePlayer() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Choose a sound profile").assertIsDisplayed()
+        compose.onNodeWithText("Sound profile regulator").assertIsDisplayed()
 
-        compose.onNodeWithText("Open selected profile").performScrollTo().performClick()
+        compose.onNodeWithText("Open Mosquito").performScrollTo().performClick()
         compose.waitForIdle()
 
         // The Figma artboard is 390x844; on this 640 dp screen the primary action
@@ -63,7 +63,7 @@ class MainActivityNavigationTest {
 
         compose.onNodeWithText("Profiles").performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("Explore profiles").assertIsDisplayed()
+        compose.onNodeWithText("Profile library regulator").assertIsDisplayed()
 
         compose.onNodeWithText("Settings").performClick()
         compose.waitForIdle()
@@ -89,23 +89,24 @@ class MainActivityNavigationTest {
     @Test
     fun timerScreenOffersNoContinuousMode() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Open selected profile").performScrollTo().performClick()
+        compose.onNodeWithText("Open Mosquito").performScrollTo().performClick()
         compose.waitForIdle()
 
         compose.onNodeWithText("Duration • 10 minutes").performClick()
         compose.waitForIdle()
 
-        compose.onNodeWithText("Playback schedule").assertIsDisplayed()
+        compose.onNodeWithText("Session timer regulator").assertIsDisplayed()
         // The continuous option must not be offered as an action.
-        compose.onNodeWithText("No continuous playback").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Continuous and overnight listening are not available.")
+            .performScrollTo().assertIsDisplayed()
     }
     @Test
     fun chakraLibraryIsReachableAndDoesNotStartSound() {
         dismissWelcomeIfShown()
         compose.onNodeWithText("Seven Chakra Library").performScrollTo().performClick()
         compose.waitForIdle()
-        compose.onNodeWithText("Open Anahata details").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("CHAKRA INSIGHTS").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Open Anahata").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("CHAKRA INSIGHTS · ANAHATA").performScrollTo().assertIsDisplayed()
     }
 
 }
