@@ -3,7 +3,7 @@ package com.pifauna.app.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
 import androidx.compose.ui.res.painterResource
-import in.berhampore.dhar.layaswarna.R
+import `in`.berhampore.dhar.layaswarna.R
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.ExperimentalFoundationApi
