@@ -256,8 +256,20 @@ class PlayerController(context: Context) {
     }
 
     fun stop(reason: String) {
+        stopInternal(reason, graceful = true)
+    }
+
+    /**
+     * Safety stops must not wait for an acoustic fade: a route change, thermal
+     * warning, focus loss or a backgrounded app is obeyed immediately.
+     */
+    private fun stopForSafety(reason: String) {
+        stopInternal(reason, graceful = false)
+    }
+
+    private fun stopInternal(reason: String, graceful: Boolean) {
         val wasPlaying = _state.value.isPlaying
-        teardownAudio()
+        teardownAudio(graceful)
         _state.value = _state.value.copy(
             phase = if (wasPlaying) PlaybackPhase.Idle else _state.value.phase,
             startedAtElapsed = 0L,
@@ -268,17 +280,17 @@ class PlayerController(context: Context) {
     /** Called from Activity.onStop: playback is foreground-only by design. */
     fun onAppBackgrounded() {
         if (_state.value.isPlaying) {
-            stop("Stopped: the app left the foreground.")
+            stopForSafety("Stopped: the app left the foreground.")
         }
     }
 
     fun release() {
-        teardownAudio()
+        teardownAudio(graceful = false)
         routeMonitor.stop()
     }
 
-    private fun teardownAudio() {
-        engine.stop()
+    private fun teardownAudio(graceful: Boolean = true) {
+        if (graceful) engine.stop() else engine.stopImmediately()
         activeToken = 0L
         abandonAudioFocus()
         if (monitoringRoute) {
@@ -292,7 +304,7 @@ class PlayerController(context: Context) {
         val code = SafetyPolicy.mustStop(snapshot) ?: return
         val decision = SafetyPolicy.evaluate(snapshot) as? SafetyDecision.Blocked ?: return
         Log.i(TAG, "stopping for hazard $code")
-        stop(decision.message)
+        stopForSafety(decision.message)
     }
 
     private fun onEngineFinished(reason: FinishReason, token: Long) {
@@ -349,7 +361,7 @@ class PlayerController(context: Context) {
     private fun onFocusChanged(change: Int) {
         if (!_state.value.isPlaying) return
         if (change <= AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
-            stop("Stopped: another app took over audio output.")
+            stopForSafety("Stopped: another app took over audio output.")
         }
     }
 

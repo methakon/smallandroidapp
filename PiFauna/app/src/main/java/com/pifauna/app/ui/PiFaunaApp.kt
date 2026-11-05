@@ -24,6 +24,7 @@ import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.playback.PlayerController
 import com.pifauna.app.ui.screens.AnahataNadaScreen
+import com.pifauna.app.ui.screens.AboutPrivacyScreen
 import com.pifauna.app.ui.screens.ChakraConsoleScreen
 import com.pifauna.app.ui.screens.ChakraLibraryScreen
 import com.pifauna.app.ui.screens.BatterySaverScreen
@@ -53,7 +54,8 @@ enum class Route(val tab: Tab?) {
     PlaybackSafety(null),
     ChakraLibrary(null),
     ChakraConsole(null),
-    AnahataNada(null)
+    AnahataNada(null),
+    AboutPrivacy(null)
 }
 
 /**
@@ -263,11 +265,14 @@ fun PiFaunaApp(
 
                 Route.Safety -> SafetyScreen()
 
+                Route.AboutPrivacy -> AboutPrivacyScreen(onBack = ::pop)
+
                 Route.Settings -> SettingsScreen(
                     onOpenSafety = { push(Route.Safety) },
                     onOpenDeviceProtection = { push(Route.DeviceProtection) },
                     onOpenBatterySaver = { push(Route.BatterySaver) },
                     onOpenPlaybackSafety = { push(Route.PlaybackSafety) },
+                    onOpenPrivacy = { push(Route.AboutPrivacy) },
                     onClearData = {
                         settings.clearAll()
                         presetStore.save(emptyList())

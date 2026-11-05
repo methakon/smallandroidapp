@@ -158,6 +158,7 @@ fun SettingsScreen(
     onOpenDeviceProtection: () -> Unit,
     onOpenBatterySaver: () -> Unit,
     onOpenPlaybackSafety: () -> Unit,
+    onOpenPrivacy: () -> Unit,
     onClearData: () -> Unit,
     clearMessage: String?
 ) {
@@ -180,8 +181,8 @@ fun SettingsScreen(
         )
         PfCard(
             title = "About & privacy",
-            subtitle = "No network, no account, no analytics, no permissions",
-            enabled = false
+            subtitle = "Read the bundled privacy policy — works offline, no account",
+            onClick = onOpenPrivacy
         )
 
         SectionLabel("SAFETY")

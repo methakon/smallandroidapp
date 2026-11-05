@@ -109,4 +109,24 @@ class MainActivityNavigationTest {
         compose.onNodeWithText("CHAKRA INSIGHTS · ANAHATA").performScrollTo().assertIsDisplayed()
     }
 
+    /**
+     * The privacy entry used to be a disabled placeholder. It now opens the
+     * policy bundled inside the APK, so the document must be readable with no
+     * network and no account.
+     */
+    @Test
+    fun privacyPolicyIsReachableFromSettings() {
+        dismissWelcomeIfShown()
+        compose.onNodeWithText("Settings").performClick()
+        compose.waitForIdle()
+
+        compose.onNodeWithText("About & privacy").performScrollTo().performClick()
+        compose.waitForIdle()
+
+        compose.onNodeWithText("OFFLINE COPY").assertIsDisplayed()
+        // This screen is a fixed layout (the WebView takes the free space), so
+        // the action sits at the bottom and needs no scrolling.
+        compose.onNodeWithText("Open the published copy").assertIsDisplayed()
+    }
+
 }
