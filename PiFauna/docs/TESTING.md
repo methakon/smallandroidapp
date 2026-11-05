@@ -1,10 +1,26 @@
 # Test plan and recorded results
 
+## Current release — versionCode 9 (reported 2026-11-05)
+
+| Check | Result |
+|---|---|
+| Android SDK | compile 36 / target 36 / minimum 26 |
+| JVM tests | 33 passed |
+| Instrumentation — Panasonic ELUGA, API 28 | 27 passed, 0 failures/fatal exceptions |
+| Instrumentation — Xiaomi Mi A3, API 30 | 27 passed, 0 failures/fatal exceptions |
+| Android lint | 0 errors, 27 warnings |
+| Release AAB validation/signature | bundletool PASS; jarsigner PASS |
+| Release SHA-256 | `c75661316630e5d8c1f5e18fe94d00ef1d3703360b54cd14a49cc43fa3c5f77e` |
+
+The new version uses a claim-based AudioTrack teardown protocol, an explicit ~25 ms VolumeShaper user-stop fade, a bounded natural-completion drain, immediate stops on safety hazards, and additional concurrency-focused device tests. The tests **do not record or analyze the acoustic output**, so click-free sound is not yet objectively established. Additional QA: Android API 36 hardware/emulator, TalkBack, 200% text, external wired/Bluetooth/USB routes, genuine audio focus/thermal, and real device screen capture.
+
+The remaining sections are historical records and retain their original results.
+
 Recorded 2026-11-04 on the machine and device listed below. Nothing in this file
 is estimated: every number comes from a Gradle run, a test XML or a device
 command.
 
-## Layaswarna 0.5.0 — versionCode 7, Android API 36 (current)
+## Historical Layaswarna 0.5.0 — versionCode 7, Android API 36
 
 Recorded 2026-11-05. Google Play rejected versionCode 6 because it targeted
 API 35; Play now requires API 36. This section covers the rebuild.

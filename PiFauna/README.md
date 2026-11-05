@@ -120,11 +120,10 @@ automatically migrated.
 
 CI workflow: [Layaswarna Android validation](../.github/workflows/layaswarna-android.yml)
 runs JVM unit tests, debug APK assembly, instrumentation compilation and lint.
-Current status: **passing** —
-[GitHub Actions run 41903358930](https://github.com/methakon/smallandroidapp/actions/runs/41903358930).
+Latest checked marketing-asset commit CI: **passing** — [run 42005250565](https://github.com/methakon/smallandroidapp/actions/runs/42005250565).
 
 The instrumented suite was also executed on two physical devices (Android 11 and
-Android 9), 20 tests green on each. Manual TalkBack, contrast and large-font
+Android 9), 27 instrumented tests reported passing on each device for versionCode 9. Manual TalkBack, contrast and large-font
 review, and headset/Bluetooth route testing, still need a hands-on pass. See
 [docs/TESTING.md](docs/TESTING.md).
 
@@ -154,7 +153,7 @@ More detail: [docs/SAFETY.md](docs/SAFETY.md).
   cats. The profile names describe study bands, not effects.
 - Playback stops when the screen turns off, because there is no service. This is
   intentional.
-- Release builds are unsigned (`isMinifyEnabled = false`, no signing config).
+- Release builds are signed only with existing private, external upload-key properties; missing keystore properties produce an unsigned bundle.
 
 ## Repository layout
 
@@ -203,4 +202,16 @@ Current theme uses dark violet, accessible light text, gold/rose accents and mut
 
 ### Latest Mystic UI implementation
 
-The Android screen layouts have been synchronized with the newer Figma Mystic variants (seven exact Chakra VectorDrawable icons, illuminated wheel, grouped insights, updated headers and actions). See [Figma implementation status](docs/FIGMA-IMPLEMENTATION.md) for exact node IDs and safety-preserving differences. **The versionCode 7 AAB previously built by the worker predates this UI update and must be rebuilt before it can contain these changes.**
+The Android screen layouts have been synchronized with the newer Figma Mystic variants (seven exact Chakra VectorDrawable icons, illuminated wheel, grouped insights, updated headers and actions). See [Figma implementation status](docs/FIGMA-IMPLEMENTATION.md) for exact node IDs and safety-preserving differences. VersionCode 7 is historical; versionCode 9 has since been built, signed and rolled out to Internal testing after the Mystic UI and SoundEngine updates, according to the worker's Play read-back.
+
+## Release and Play listing — 2026-11-05
+
+- **Current reported Internal testing release:** versionCode **9**, v0.5.0, targetSdk 36. Not published to Production.
+- **SoundEngine:** single-owner teardown, VolumeShaper fade on user stop, natural queue drain, immediate safety-event stop. Tests do not prove click-free audible output.
+- **Validation:** 33 JVM tests, 27 device tests each on API 28/API 30, lint 0 errors/27 warnings (worker report).
+- **Play graphics:** Figma app icon and feature banner committed and reported uploaded to `en-IN`. Five real screenshots were reported prepared, but not uploaded; their claimed repository path needs verification.
+- **Legal site:** Pages `layaswarna-legal.pages.dev` live; `layaswarna.berhampore.in` needs a DNS CNAME. The Play Privacy Policy field remains unset.
+- **Video:** Figma Motion 24-second editable design-preview timeline; exported MP4 is not yet on YouTube.
+- **Translations:** English (India), Bengali, Hindi, Assamese listing drafts created; import/review pending.
+
+Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [promo video](docs/MARKETING-VIDEO.md), [translations](docs/LOCALIZATION.md), [Cloudflare/legal site](docs/LEGAL-SITE-HOSTING.md), [internal release record](docs/PLAY-INTERNAL-DEPLOYMENT.md).
