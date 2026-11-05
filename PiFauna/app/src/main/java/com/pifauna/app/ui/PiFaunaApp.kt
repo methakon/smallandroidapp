@@ -251,6 +251,13 @@ fun PiFaunaApp(
                             push(Route.Player)
                         }
                     },
+                    selectedMinutes = state.durationMinutes,
+                    onDurationSelect = { minutes ->
+                        if (!state.isPlaying) {
+                            controller.setDurationMinutes(minutes)
+                            settings.lastDurationMinutes = minutes
+                        }
+                    },
                     enabled = !state.isPlaying
                 )
 
