@@ -1,6 +1,11 @@
 package com.pifauna.app.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
+import androidx.compose.ui.res.painterResource
+import in.berhampore.dhar.layaswarna.R
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -89,6 +94,7 @@ fun LayaswarnaRadialSelector(
     onActivate: (String) -> Unit,
     actionLabel: String,
     enabled: Boolean = true,
+    showActionButton: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     require(options.size in 2..8) { "Radial selector supports two to eight options" }
@@ -102,7 +108,7 @@ fun LayaswarnaRadialSelector(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-            val diameter = minOf(maxWidth, 330.dp)
+            val diameter = minOf(maxWidth, 350.dp)
             val nodeSize = 58.dp
             val orbit = diameter * 0.36f
             Box(
@@ -127,11 +133,48 @@ fun LayaswarnaRadialSelector(
             ) {
                 Canvas(Modifier.matchParentSize()) {
                     val radius = size.minDimension / 2f
-                    drawCircle(PiFaunaColors.Glow.copy(alpha = 0.10f), radius)
-                    drawCircle(PiFaunaColors.Accent.copy(alpha = 0.65f), radius * 0.91f, style = Stroke(1.5.dp.toPx()))
-                    drawCircle(PiFaunaColors.Lotus.copy(alpha = 0.55f), radius * 0.79f, style = Stroke(1.dp.toPx()))
-                    drawCircle(PiFaunaColors.Card, radius * 0.51f)
-                    drawCircle(PiFaunaColors.Divider, radius * 0.50f, style = Stroke(1.dp.toPx()))
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            listOf(
+                                PiFaunaColors.Glow.copy(alpha = 0.32f),
+                                PiFaunaColors.Glow.copy(alpha = 0.11f),
+                                PiFaunaColors.Background.copy(alpha = 0f)
+                            ),
+                            center = center,
+                            radius = radius
+                        ),
+                        radius = radius
+                    )
+                    drawCircle(
+                        PiFaunaColors.Accent.copy(alpha = 0.8f),
+                        radius = radius * 0.91f,
+                        style = Stroke(1.7.dp.toPx())
+                    )
+                    drawCircle(
+                        PiFaunaColors.Glow.copy(alpha = 0.8f),
+                        radius = radius * 0.86f,
+                        style = Stroke(1.dp.toPx())
+                    )
+                    drawCircle(
+                        PiFaunaColors.Lotus.copy(alpha = 0.65f),
+                        radius = radius * 0.72f,
+                        style = Stroke(1.dp.toPx())
+                    )
+                    drawCircle(PiFaunaColors.Card.copy(alpha = 0.95f), radius * 0.49f)
+                    drawCircle(PiFaunaColors.Accent.copy(alpha = 0.32f), radius * 0.49f, style = Stroke(1.dp.toPx()))
+                    // Small deterministic starlight pinpoints (decorative, no animation).
+                    repeat(25) { index ->
+                        val angle = 2 * PI * index / 25.0
+                        val spread = 0.62f + (index % 5) * 0.065f
+                        drawCircle(
+                            PiFaunaColors.Accent.copy(alpha = 0.25f + (index % 3) * 0.15f),
+                            radius = (if (index % 4 == 0) 1.7.dp else 1.dp).toPx(),
+                            center = Offset(
+                                center.x + cos(angle).toFloat() * radius * spread,
+                                center.y + sin(angle).toFloat() * radius * spread
+                            )
+                        )
+                    }
                 }
 
                 Column(
@@ -143,13 +186,15 @@ fun LayaswarnaRadialSelector(
                     Spacer(Modifier.height(5.dp))
                     Text(
                         active.label,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontSize = if (active.label.length > 11) 16.sp else 22.sp
+                        ),
                         color = PiFaunaColors.BodyText,
                         textAlign = TextAlign.Center,
                         maxLines = 2
                     )
                     Spacer(Modifier.height(4.dp))
-                    Text(active.detail, fontSize = 13.sp, color = PiFaunaColors.Accent, textAlign = TextAlign.Center, maxLines = 2)
+                    Text(active.detail, fontSize = 14.sp, color = PiFaunaColors.Accent, textAlign = TextAlign.Center, maxLines = 2)
                 }
 
                 options.forEachIndexed { index, option ->
@@ -161,6 +206,7 @@ fun LayaswarnaRadialSelector(
                         modifier = Modifier
                             .offset(x = x - (diameter - nodeSize) / 2, y = y - (diameter - nodeSize) / 2)
                             .size(nodeSize)
+                            .shadow(if (isSelected) 10.dp else 0.dp, CircleShape, clip = false)
                             .background(if (isSelected) PiFaunaColors.Selected else PiFaunaColors.Card, CircleShape)
                             .border(if (isSelected) 3.dp else 1.5.dp, if (isSelected) PiFaunaColors.Accent else option.tint, CircleShape)
                             .semantics {
@@ -207,6 +253,7 @@ fun LayaswarnaRadialSelector(
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(horizontal = 12.dp)
         )
+        if (showActionButton) {
         Spacer(Modifier.height(14.dp))
         Button(
             onClick = { onActivate(active.id) },
@@ -219,12 +266,32 @@ fun LayaswarnaRadialSelector(
         ) {
             Text(actionLabel, fontSize = 15.sp, fontWeight = FontWeight.Bold)
         }
+        }
     }
 }
 
 /** Distinct self-drawn symbols. Original geometry, independent of system glyph fonts. */
 @Composable
 fun RadialPictogram(symbol: RadialSymbol, tint: Color, modifier: Modifier = Modifier) {
+    // These vector resources are translated from the exact Figma Mystic chakra glyph paths.
+    val chakraDrawable = when (symbol) {
+        RadialSymbol.ROOT -> R.drawable.ic_chakra_muladhara
+        RadialSymbol.SACRAL -> R.drawable.ic_chakra_svadhisthana
+        RadialSymbol.SOLAR -> R.drawable.ic_chakra_manipura
+        RadialSymbol.HEART -> R.drawable.ic_chakra_anahata
+        RadialSymbol.THROAT -> R.drawable.ic_chakra_vishuddha
+        RadialSymbol.THIRD_EYE -> R.drawable.ic_chakra_ajna
+        RadialSymbol.CROWN -> R.drawable.ic_chakra_sahasrara
+        else -> null
+    }
+    if (chakraDrawable != null) {
+        Image(
+            painter = painterResource(chakraDrawable),
+            contentDescription = null, // Parent wheel node supplies spoken name and selection.
+            modifier = modifier
+        )
+        return
+    }
     Canvas(modifier) {
         val s = size.minDimension
         val stroke = 1.9.dp.toPx()
