@@ -57,10 +57,7 @@ enum class Tab(val label: String, val glyph: String) {
     Settings("Settings", "⚙")
 }
 
-/**
- * Standard page frame: wordmark, optional hero card, scrollable body.
- * Mirrors the 390x844 Figma artboard with 20 dp side margins.
- */
+/** Shared responsive Mystic page. Status/nav insets are supplied by the parent Scaffold. */
 @Composable
 fun PfScreen(
     title: String? = null,
@@ -73,46 +70,54 @@ fun PfScreen(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp)
     ) {
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(16.dp))
         Text(
             text = "Layaswarna",
-            color = PiFaunaColors.Accent,
+            color = PiFaunaColors.Lotus,
+            fontFamily = FontFamily.Serif,
             fontWeight = FontWeight.Bold,
-            fontSize = 21.sp
+            fontSize = 22.sp
         )
-        Spacer(Modifier.height(20.dp))
-        if (title != null && subtitle != null) {
-            HeroHeader(title = title, subtitle = subtitle)
-        }
-        content()
-        Spacer(Modifier.height(28.dp))
-    }
-}
-
-@Composable
-fun HeroHeader(title: String, subtitle: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .defaultMinSize(minHeight = 122.dp)
-            .background(PiFaunaColors.Hero, RoundedCornerShape(24.dp))
-            .padding(horizontal = 20.dp, vertical = 20.dp)
-    ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        if (title != null) {
+            Spacer(Modifier.height(15.dp))
             Text(
                 text = title,
                 style = MaterialTheme.typography.headlineLarge.copy(fontFamily = FontFamily.Serif),
                 color = PiFaunaColors.BodyText,
-                maxLines = 2
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = subtitle,
-                fontSize = 15.sp,
-                color = PiFaunaColors.HeroSubtitle,
-                maxLines = 2
+                maxLines = 3
             )
         }
+        if (subtitle != null) {
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = subtitle,
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = PiFaunaColors.Muted
+            )
+        }
+        content()
+        Spacer(Modifier.height(32.dp))
+    }
+}
+
+/** Optional hero banner for entry screens that need an explicit invitation. */
+@Composable
+fun HeroHeader(title: String, subtitle: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(PiFaunaColors.Card, RoundedCornerShape(24.dp))
+            .border(1.dp, PiFaunaColors.Accent.copy(alpha = 0.20f), RoundedCornerShape(24.dp))
+            .padding(20.dp)
+    ) {
+        Text(
+            text = title,
+            style = MaterialTheme.typography.headlineLarge.copy(fontFamily = FontFamily.Serif),
+            color = PiFaunaColors.BodyText
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(text = subtitle, fontSize = 14.sp, color = PiFaunaColors.Muted)
     }
 }
 
@@ -159,7 +164,8 @@ fun PfCard(
         modifier = Modifier
             .fillMaxWidth()
             .defaultMinSize(minHeight = 76.dp)
-            .background(PiFaunaColors.Card, RoundedCornerShape(20.dp))
+            .background(PiFaunaColors.Card, RoundedCornerShape(24.dp))
+            .border(1.dp, PiFaunaColors.Accent.copy(alpha = 0.16f), RoundedCornerShape(24.dp))
             .then(clickModifier)
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -202,12 +208,80 @@ fun PfTextCard(heading: String, body: String) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(PiFaunaColors.Card, RoundedCornerShape(20.dp))
+            .background(PiFaunaColors.Card, RoundedCornerShape(24.dp))
+            .border(1.dp, PiFaunaColors.Accent.copy(alpha = 0.16f), RoundedCornerShape(24.dp))
             .padding(horizontal = 20.dp, vertical = 16.dp)
     ) {
         Text(heading, fontSize = 16.sp, color = PiFaunaColors.BodyText)
         Spacer(Modifier.height(6.dp))
         Text(body, fontSize = 14.sp, lineHeight = 21.sp, color = PiFaunaColors.Muted)
+    }
+    Spacer(Modifier.height(16.dp))
+}
+
+/**
+ * Glass-like panel used below the radial controls. Keeping all sections inside one
+ * card mirrors the Figma Mystic insights panel and avoids repetitive tiles.
+ */
+@Composable
+fun MysticInsightCard(
+    title: String,
+    sections: List<Pair<String, String>>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(PiFaunaColors.Card, RoundedCornerShape(24.dp))
+            .border(1.dp, PiFaunaColors.Accent.copy(alpha = 0.25f), RoundedCornerShape(24.dp))
+            .padding(horizontal = 17.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            title.uppercase(),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 0.7.sp,
+            color = PiFaunaColors.Accent
+        )
+        sections.forEach { (heading, body) ->
+            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Text(
+                    heading,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = PiFaunaColors.BodyText
+                )
+                Text(
+                    body,
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp,
+                    color = PiFaunaColors.Muted
+                )
+            }
+        }
+    }
+    Spacer(Modifier.height(14.dp))
+}
+
+/** Visible alternative to long press and double tap, placed after the insight panel. */
+@Composable
+fun MysticActionButton(
+    label: String,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    androidx.compose.material3.Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.fillMaxWidth().height(52.dp),
+        colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+            containerColor = PiFaunaColors.Accent,
+            contentColor = PiFaunaColors.Background
+        ),
+        shape = RoundedCornerShape(26.dp)
+    ) {
+        Text(label, fontSize = 15.sp, fontWeight = FontWeight.Bold)
     }
     Spacer(Modifier.height(16.dp))
 }
