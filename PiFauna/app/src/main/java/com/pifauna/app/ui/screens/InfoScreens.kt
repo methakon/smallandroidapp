@@ -2,7 +2,6 @@ package com.pifauna.app.ui.screens
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.Switch
-import androidx.compose.ui.Alignment
 import com.pifauna.app.ui.PiFaunaColors
 
 import androidx.compose.foundation.layout.height

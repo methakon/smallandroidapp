@@ -293,6 +293,7 @@ fun PiFaunaApp(
                     onOpenPlaybackSafety = { push(Route.PlaybackSafety) },
                     onOpenPrivacy = { push(Route.AboutPrivacy) },
                     onClearData = {
+                        if (state.isPlaying) PlaybackRuntime.stop(context, "Stopped to clear saved settings.")
                         settings.clearAll()
                         continueWhenLocked = false
                         presetStore.save(emptyList())

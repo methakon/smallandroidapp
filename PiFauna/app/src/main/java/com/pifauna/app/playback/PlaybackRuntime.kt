@@ -42,7 +42,7 @@ object PlaybackRuntime {
      */
     fun onActivityStopped(context: Context, deviceLockedOrScreenOff: Boolean) {
         activityStarted = false
-        if (!lockedSessionRequested || !deviceLockedOrScreenOff) {
+        if (!ScreenLockSessionPolicy.continueAfterActivityStopped(lockedSessionRequested, deviceLockedOrScreenOff)) {
             if (lockedSessionRequested) {
                 stop(context, "Stopped: the app left the foreground.")
             } else {
