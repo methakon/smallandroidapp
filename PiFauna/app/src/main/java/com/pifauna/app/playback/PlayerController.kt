@@ -97,7 +97,10 @@ class PlayerController(context: Context) {
         return SafetySnapshot(
             batteryPercent = readBatteryPercent(),
             thermalStatus = thermal,
-            externalAudioRoute = routeMonitor.externalRouteName(),
+            // Available devices are not the active media route. The engine must
+            // verify AudioTrack.routedDevice before emitting any nonzero PCM.
+            // Do not block simply because unrelated Bluetooth audio is connected.
+            externalAudioRoute = null,
             mediaVolumeRatio = routeMonitor.mediaVolumeRatio()
         )
     }
@@ -249,7 +252,7 @@ class PlayerController(context: Context) {
                 _state.value = _state.value.copy(
                     phase = PlaybackPhase.Refused,
                     snapshot = snapshot,
-                    statusMessage = "Audio output unavailable on this device right now."
+                    statusMessage = "Audio output unavailable; phone speaker route must be verified."
                 )
             }
         }
@@ -325,7 +328,7 @@ class PlayerController(context: Context) {
                 statusMessage = when (reason) {
                     FinishReason.COMPLETED -> "Session finished — playback stopped automatically."
                     FinishReason.STOPPED -> "Stopped."
-                    FinishReason.ERROR -> "Playback stopped: the audio output reported an error."
+                    FinishReason.ERROR -> "Playback stopped: route not verified as the phone speaker, route changed, or audio error."
                 }
             )
         }
