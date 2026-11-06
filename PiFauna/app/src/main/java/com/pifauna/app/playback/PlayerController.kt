@@ -144,6 +144,7 @@ class PlayerController(context: Context) {
 
     fun selectProfile(profileId: String) {
         if (_state.value.isPlaying) return
+        approvedExternalOutputId = null
         val profile = SpeciesProfiles.byId(profileId)
         _state.value = _state.value.copy(
             profileId = profile.id,
@@ -163,6 +164,7 @@ class PlayerController(context: Context) {
      */
     fun prepareExperimentalTone(label: String, startHz: Int, endHz: Int, mode: ToneMode) {
         if (_state.value.isPlaying) return
+        approvedExternalOutputId = null
         val low = minOf(startHz, endHz).coerceIn(SafetyLimits.MIN_HZ, SafetyLimits.MAX_HZ)
         val high = maxOf(startHz, endHz).coerceIn(SafetyLimits.MIN_HZ, SafetyLimits.MAX_HZ)
         _state.value = _state.value.copy(
@@ -172,6 +174,8 @@ class PlayerController(context: Context) {
             endHz = high,
             mode = mode,
             phase = PlaybackPhase.Idle,
+            outputMode = OutputMode.PHONE_SPEAKER,
+            externalSpeakerConsented = false,
             statusMessage = "Ready — experimental audible tone prepared; not yet playing."
         )
     }

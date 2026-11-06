@@ -297,6 +297,7 @@ fun PiFaunaApp(
                     onClearData = {
                         if (state.isPlaying) PlaybackRuntime.stop(context, "Stopped to clear saved settings.")
                         settings.clearAll()
+                        controller.choosePhoneSpeaker()
                         continueWhenLocked = false
                         presetStore.save(emptyList())
                         presets = emptyList()
