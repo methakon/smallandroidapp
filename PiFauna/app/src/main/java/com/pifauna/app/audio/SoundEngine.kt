@@ -255,6 +255,7 @@ class SoundEngine {
     ) {
         var reason = FinishReason.STOPPED
         var rendered = 0L
+        var primedFrames = 0L
         try {
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
             var phase = 0.0
@@ -263,7 +264,6 @@ class SoundEngine {
             // Silence primes routing without exposing the experimental tone.
             val silentFrames = ShortArray(CHUNK_FRAMES)
             var attempts = 0
-            var primedFrames = 0L
             while (running.get() && audio.routedDevice == null && attempts < ROUTE_PRIME_ATTEMPTS) {
                 val count = audio.write(silentFrames, 0, silentFrames.size, AudioTrack.WRITE_BLOCKING)
                 if (count <= 0) {
