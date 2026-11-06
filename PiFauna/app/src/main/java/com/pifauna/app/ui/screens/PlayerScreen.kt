@@ -206,11 +206,11 @@ fun PlayerScreen(
                     "Bluetooth A2DP can also mean headphones."
             },
             enabled = !state.isPlaying,
-            onClick = if (state.isPlaying) null else {
+            onClick = if (state.isPlaying) null else ({
                 confirmedStandalone = false
                 acknowledgedRisk = false
                 showSpeakerConsent = true
-            }
+            })
         )
         PfTextCard(
             heading = "Headphones, earbuds & hearing aids",
