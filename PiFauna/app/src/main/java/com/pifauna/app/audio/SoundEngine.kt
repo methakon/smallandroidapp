@@ -2,7 +2,6 @@ package com.pifauna.app.audio
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
-import android.media.AudioDeviceInfo
 import android.media.AudioTrack
 import android.media.VolumeShaper
 import android.os.Process
@@ -384,7 +383,7 @@ class SoundEngine {
 
     private fun isBuiltInSpeakerRoute(audio: AudioTrack): Boolean =
         runCatching {
-            audio.routedDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+            ActiveOutputRoutePolicy.isTrusted(audio.routedDevice?.type)
         }.getOrDefault(false)
 
     private companion object {
