@@ -8,16 +8,16 @@ what it cannot enforce, and what the product is not allowed to claim.
 | Rule | Implementation | Verified by |
 |---|---|---|
 | Digital peak ≤ 8% of full scale | `ToneKernel.renderInto` clamps every sample; `ToneConfig` rejects `gain > 0.08` | `ToneKernelTest.every mode stays inside the digital ceiling` |
-| No clicks | 25 ms fade in/out, plus 12 ms fades on hop steps and 10 ms on pulse edges | `ToneKernelTest.session fades in and out instead of clicking` |
+| Digital fades (not an acoustic guarantee) | 25 ms fade in/out, plus 12 ms fades on hop steps and 10 ms on pulse edges | `ToneKernelTest.session fades in and out instead of clicking` |
 | Frequency inside 100–18,000 Hz | `ToneConfig` init block; UI sliders share the same constants | `ToneKernelTest.invalid configurations are rejected` |
 | Session always ends | `durationMs` validated to ≤ 30 min; the audio loop stops at `totalFrames` | `ToneKernelTest.samples past the end of the session are silent` |
 | Battery cutoff | `SafetyPolicy` blocks at ≤ 15%, re-checked on every battery broadcast | `SafetyPolicyTest.battery at or below the cutoff blocks playback` |
 | Thermal cutoff | Blocks at `THERMAL_STATUS_SEVERE` and above (API 29+) | `SafetyPolicyTest.severe thermal status blocks playback` |
 | Speaker only | External outputs detected via `AudioDeviceInfo`; blocked at start and re-checked on route change | `SafetyPolicyTest.external audio routes are refused` |
 | Volume ceiling | Blocked above 60% of maximum media volume | `SafetyPolicyTest.media volume above the limit is refused` |
-| Foreground only | `MainActivity.onStop` → `controller.onAppBackgrounded()` | device test, `docs/TESTING.md` |
+| Screen-lock opt-in (default OFF) | Normal sessions stop at Activity.onStop; opt-in uses an Android mediaPlayback foreground service with Stop | v10 testing pending |
 | Interruption handling | Any audio-focus loss stops playback | device test |
-| No permissions | Empty `<manifest>` permission set | `aapt2 dump badging` shows only the app's own dynamic-receiver permission |
+| Offline with narrow FGS permissions | FOREGROUND_SERVICE and FOREGROUND_SERVICE_MEDIA_PLAYBACK only; no INTERNET, microphone, camera, location | v10 manifest; device/Play verification pending |
 
 ## 2. What the code cannot enforce
 
@@ -75,7 +75,16 @@ context, not repellency of this app:
 Do not publish as a pest-control or health product. Treat these as blockers:
 
 - any external audio route that plays without an explicit user action;
-- playback that continues after Stop, background, timer expiry or focus loss;
+- playback that continues after Stop, timer expiry or focus loss, or when ordinary screen-lock mode is OFF;
 - any missing Stop control during playback;
 - any efficacy or ultrasound claim;
 - a signed release build without a signing configuration.
+
+## Opt-in screen-lock sessions (versionCode 10 — not yet released)
+
+- Default **OFF**; toggling does not start audio, and the setting is disabled during a live session.
+- Explicit user Start while the Activity is visible begins a bounded `mediaPlayback` foreground service; locking may continue playback until the 5/10/15/30-minute limit, notification Stop, safety interruption or process termination.
+- Switching apps on an unlocked display ends the audio. Removing the app task, audio-focus loss and unsafe output route stop. No boot/process-death automatic restart.
+- Android normal permissions are `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MEDIA_PLAYBACK` only; no INTERNET, microphone, camera or location. A platform MediaSession backs the notification.
+- 8% digital gain is not a calibrated sound-pressure guarantee. The Android OS or OEM may interrupt even opted-in playback.
+- Lock-screen, notification, thermal, battery, route, volume and timer behavior must pass physical-device validation before versionCode 10 is uploaded.
