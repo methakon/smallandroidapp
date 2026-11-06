@@ -70,6 +70,7 @@ class SoundEngine {
     @Volatile private var expectedOutputId: Int? = null
     @Volatile private var outputMode: OutputMode = OutputMode.PHONE_SPEAKER
     private var routeListener: AudioRouting.OnRoutingChangedListener? = null
+    @Volatile private var silentFramesBeforeAudio = 0
     @Volatile private var renderBuffer: ShortArray? = null
 
     private var nextToken: Long = 0L
@@ -142,6 +143,7 @@ class SoundEngine {
             }
             // 256 zero samples ensure that routing can be queried without ever
             // emitting an experimental tone on an unverified output.
+            silentFramesBeforeAudio = 0
             if (preferredDevice != null) {
                 val silent = ShortArray(256)
                 val queued = audio.write(silent, 0, silent.size, AudioTrack.WRITE_NON_BLOCKING)
@@ -149,6 +151,7 @@ class SoundEngine {
                     audio.release()
                     return StartResult.OutputRouteBlocked
                 }
+                silentFramesBeforeAudio = queued
             }
 
             val buffer = renderBuffer ?: ShortArray(CHUNK_FRAMES).also { renderBuffer = it }
@@ -187,6 +190,7 @@ class SoundEngine {
                     running.set(false)
                     teardownClaim.set(true)
                     expectedOutputId = null
+                    silentFramesBeforeAudio = 0
                     track = null
                     runCatching { audio.pause() }
                     runCatching { audio.flush() }
@@ -264,6 +268,7 @@ class SoundEngine {
             }
             routeListener = null
             expectedOutputId = null
+            silentFramesBeforeAudio = 0
             // pause() stops consumption and flush() discards queued frames, which
             // is what unblocks a writer parked in write(..., WRITE_BLOCKING).
             runCatching { if (audio!!.playState == AudioTrack.PLAYSTATE_PLAYING) audio.pause() }
@@ -340,7 +345,7 @@ class SoundEngine {
                     // flush() here used to discard up to a full buffer (~40 ms),
                     // which contains the fade-out, so every session ended with a
                     // hard cut.
-                    val drained = awaitDrain(audio, config, rendered)
+                    val drained = awaitDrain(audio, config, rendered + silentFramesBeforeAudio)
                     if (!drained) {
                         // A stop arrived mid-drain: the tail was cut, so this
                         // session did not complete cleanly.
@@ -354,6 +359,12 @@ class SoundEngine {
                     runCatching { audio.flush() }
                     runCatching { audio.stop() }
                 }
+                routeListener?.let { listener ->
+                    runCatching { audio.removeOnRoutingChangedListener(listener) }
+                }
+                routeListener = null
+                expectedOutputId = null
+                silentFramesBeforeAudio = 0
                 runCatching { audio.release() }
                 if (track === audio) track = null
             } else {
