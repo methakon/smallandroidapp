@@ -14,6 +14,7 @@ import android.os.PowerManager
 import android.os.SystemClock
 import android.util.Log
 import com.pifauna.app.audio.AudioRouteMonitor
+import com.pifauna.app.audio.OutputMode
 import com.pifauna.app.audio.FinishReason
 import com.pifauna.app.audio.SoundEngine
 import com.pifauna.app.audio.StartResult
@@ -43,7 +44,9 @@ data class PlayerState(
     val durationMinutes: Int = 10,
     val startedAtElapsed: Long = 0L,
     val statusMessage: String = "Ready — nothing is playing.",
-    val snapshot: SafetySnapshot = SafetySnapshot()
+    val snapshot: SafetySnapshot = SafetySnapshot(),
+    val outputMode: OutputMode = OutputMode.PHONE_SPEAKER,
+    val externalSpeakerConsented: Boolean = false
 ) {
     val isPlaying: Boolean get() = phase == PlaybackPhase.Playing
     val durationMs: Long get() = durationMinutes * 60_000L
@@ -97,7 +100,14 @@ class PlayerController(context: Context) {
         return SafetySnapshot(
             batteryPercent = readBatteryPercent(),
             thermalStatus = thermal,
-            externalAudioRoute = routeMonitor.externalRouteName(),
+            // A connected output is not necessarily the current playback destination.
+            externalAudioRoute = null,
+            availableExternalRoute = routeMonitor.externalRouteName(),
+            activeOutput = if (_state.value.isPlaying) engine.routedOutput() else null,
+            outputMode = _state.value.outputMode,
+            externalSpeakerConsented = _state.value.externalSpeakerConsented,
+            selectedDurationMinutes = _state.value.durationMinutes,
+            selectedGain = _state.value.gain,
             mediaVolumeRatio = routeMonitor.mediaVolumeRatio()
         )
     }
@@ -128,6 +138,8 @@ class PlayerController(context: Context) {
             startHz = profile.firstHz,
             endHz = profile.lastHz,
             phase = PlaybackPhase.Idle,
+            outputMode = OutputMode.PHONE_SPEAKER,
+            externalSpeakerConsented = false,
             statusMessage = "Ready — ${profile.name} band selected."
         )
     }
@@ -175,7 +187,7 @@ class PlayerController(context: Context) {
     fun setGain(gain: Float) {
         if (_state.value.isPlaying) return
         _state.value = _state.value.copy(
-            gain = gain.coerceIn(0.03f, SafetyLimits.MAX_GAIN)
+            gain = gain.coerceIn(0.01f, SafetyLimits.MAX_GAIN)
         )
     }
 
@@ -183,6 +195,33 @@ class PlayerController(context: Context) {
         if (_state.value.isPlaying) return
         val allowed = minutes.takeIf { it in SafetyLimits.DURATION_CHOICES_MIN } ?: 10
         _state.value = _state.value.copy(durationMinutes = allowed)
+    }
+
+    /**
+     * Explicit, one-session user declaration that this is a free-standing
+     * loudspeaker, NOT headphones, earbuds or a hearing aid.
+     */
+    fun confirmExternalSpeakerForSession() {
+        if (_state.value.isPlaying) return
+        _state.value = _state.value.copy(
+            outputMode = OutputMode.EXTERNAL_BLUETOOTH_SPEAKER,
+            externalSpeakerConsented = true,
+            durationMinutes = 5,
+            gain = com.pifauna.app.audio.AudioOutputPolicy.SPEAKER_MAX_GAIN,
+            phase = PlaybackPhase.Idle,
+            statusMessage = "External speaker approved for this session only. " +
+                "Keep volume very low; acoustic output is unmeasured."
+        )
+    }
+
+    fun choosePhoneSpeaker() {
+        if (_state.value.isPlaying) return
+        _state.value = _state.value.copy(
+            outputMode = OutputMode.PHONE_SPEAKER,
+            externalSpeakerConsented = false,
+            phase = PlaybackPhase.Idle,
+            statusMessage = "Phone speaker chosen. Actual route will be checked on Start."
+        )
     }
 
     // ----------------------------------------------------------------- playback
@@ -222,7 +261,22 @@ class PlayerController(context: Context) {
             return
         }
 
-        when (val result = engine.start(config) { reason, token -> onEngineFinished(reason, token) }) {
+        val preferred = routeMonitor.preferredDevice(current.outputMode)
+        if (preferred == null) {
+            abandonAudioFocus()
+            refuse(SafetyDecision.Blocked(
+                BlockCode.EXTERNAL_ROUTE,
+                "Requested audio output unavailable. Choose a phone or Bluetooth speaker."
+            ))
+            return
+        }
+        when (val result = engine.start(
+            config = config,
+            onFinished = { reason, token -> onEngineFinished(reason, token) },
+            preferredDevice = preferred,
+            requestedOutput = current.outputMode,
+            onRoutingChanged = { refreshSnapshot() }
+        )) {
             is StartResult.Started -> {
                 activeToken = result.token
                 monitoringRoute = true
@@ -230,9 +284,10 @@ class PlayerController(context: Context) {
                 _state.value = _state.value.copy(
                     phase = PlaybackPhase.Playing,
                     startedAtElapsed = SystemClock.elapsedRealtime(),
-                    snapshot = snapshot,
-                    statusMessage = "Playing ${current.startHz}–${current.endHz} Hz " +
-                        "for up to ${current.durationMinutes} min through the built-in speaker."
+                    snapshot = snapshot(),
+                    statusMessage = "Playing ${current.startHz}–${current.endHz} Hz for up to " +
+                        "${current.durationMinutes} min via " +
+                        (if (current.outputMode == OutputMode.PHONE_SPEAKER) "phone speaker." else "consented external speaker.")
                 )
             }
             StartResult.Busy -> {
@@ -243,6 +298,14 @@ class PlayerController(context: Context) {
                         "Playback blocked: the previous session is still shutting down. Try again."
                     )
                 )
+            }
+            StartResult.OutputRouteBlocked -> {
+                abandonAudioFocus()
+                refuse(SafetyDecision.Blocked(
+                    BlockCode.EXTERNAL_ROUTE,
+                    "Playback blocked: the actual audio route could not be verified. " +
+                        "Select the intended output in Android audio settings and try again."
+                ))
             }
             StartResult.Unavailable -> {
                 abandonAudioFocus()
@@ -273,6 +336,8 @@ class PlayerController(context: Context) {
         _state.value = _state.value.copy(
             phase = if (wasPlaying) PlaybackPhase.Idle else _state.value.phase,
             startedAtElapsed = 0L,
+            outputMode = OutputMode.PHONE_SPEAKER,
+            externalSpeakerConsented = false,
             statusMessage = reason
         )
     }
@@ -322,6 +387,8 @@ class PlayerController(context: Context) {
                     FinishReason.ERROR -> PlaybackPhase.Refused
                 },
                 startedAtElapsed = 0L,
+                outputMode = OutputMode.PHONE_SPEAKER,
+                externalSpeakerConsented = false,
                 statusMessage = when (reason) {
                     FinishReason.COMPLETED -> "Session finished — playback stopped automatically."
                     FinishReason.STOPPED -> "Stopped."
