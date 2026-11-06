@@ -157,6 +157,8 @@ fun PiFaunaApp(
                             settings.continueWhenScreenLocked = enabled
                         }
                     },
+                    onSelectPhoneSpeaker = { controller.choosePhoneSpeaker() },
+                    onApproveExternalSpeaker = { controller.confirmExternalSpeakerForSession() },
                     onStartFrequencyChange = { hz ->
                         val end = if (state.endHz < hz) hz else state.endHz
                         controller.setRange(hz, if (state.mode == ToneMode.FIXED ||
