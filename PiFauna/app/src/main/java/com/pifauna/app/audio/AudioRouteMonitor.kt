@@ -2,77 +2,86 @@ package com.pifauna.app.audio
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.media.AudioAttributes
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 
 /**
- * Reports whether sound would leave the phone through something other than its
- * own speaker, and notifies when the route changes during a session.
- *
- * Enumeration is advisory: a device may remap, resample or attenuate output.
- * This class is one layer of defence, not a guarantee of acoustic fidelity.
+ * Available output devices != the actual media output route.
+ * SoundEngine separately checks its live AudioTrack.getRoutedDevice() before
+ * writing audible PCM and listens for changes to that live route.
  */
 class AudioRouteMonitor(context: Context) {
-
-    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    private val mainHandler = Handler(Looper.getMainLooper())
-
+    private val audioManager =
+        context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private val handler = Handler(Looper.getMainLooper())
     private var callback: AudioDeviceCallback? = null
 
-    /** Human-readable name of the first external output, or null for built-in output. */
-    fun externalRouteName(): String? {
-        val devices = runCatching {
-            audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
-        }.getOrNull() ?: return null
+    private fun outputs(): List<AudioDeviceInfo> = runCatching {
+        audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS).toList()
+    }.getOrDefault(emptyList())
 
-        val external = devices.firstOrNull { isExternal(it.type) } ?: return null
-        return when (external.type) {
-            AudioDeviceInfo.TYPE_WIRED_HEADSET -> "A wired headset"
-            AudioDeviceInfo.TYPE_WIRED_HEADPHONES -> "Wired headphones"
-            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-            AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> "A Bluetooth audio device"
-            AudioDeviceInfo.TYPE_USB_DEVICE,
-            AudioDeviceInfo.TYPE_USB_HEADSET -> "A USB audio device"
-            AudioDeviceInfo.TYPE_HEARING_AID -> "A hearing aid"
-            AudioDeviceInfo.TYPE_HDMI -> "An HDMI output"
-            AudioDeviceInfo.TYPE_LINE_ANALOG,
-            AudioDeviceInfo.TYPE_LINE_DIGITAL -> "A line output"
-            AudioDeviceInfo.TYPE_DOCK -> "A dock"
-            else -> external.productName?.toString()?.takeIf { it.isNotBlank() } ?: "An external audio device"
+    fun preferredDevice(mode: OutputMode): AudioDeviceInfo? {
+        val devices = outputs()
+        if (mode == OutputMode.PHONE_SPEAKER) {
+            return devices.firstOrNull { classify(it.type) == RoutedOutput.PHONE_SPEAKER }
+        }
+        // Android 13+ can report the *anticipated* media device, but the live
+        // AudioTrack route is always verified again before sound is emitted.
+        val mediaPreferred = if (Build.VERSION.SDK_INT >= 33) runCatching {
+            audioManager.getAudioDevicesForAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_MEDIA)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                    .build()
+            ).firstOrNull { classify(it.type).isExternalSpeakerCandidate() }
+        }.getOrNull() else null
+        return mediaPreferred ?: devices.firstOrNull {
+            classify(it.type).isExternalSpeakerCandidate()
         }
     }
 
-    /** Ratio of current media volume to maximum, 0.0..1.0. */
-    fun mediaVolumeRatio(): Float {
-        val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        if (max <= 0) return 0f
-        val current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
-        return (current.toFloat() / max).coerceIn(0f, 1f)
+    /** Advisory information for UI only; this is NOT proof of selected output. */
+    fun externalRouteName(): String? {
+        val external = outputs().firstOrNull {
+            classify(it.type) != RoutedOutput.PHONE_SPEAKER &&
+                it.type != AudioDeviceInfo.TYPE_BUILTIN_EARPIECE
+        } ?: return null
+        return when (classify(external.type)) {
+            RoutedOutput.BLUETOOTH_A2DP_UNVERIFIED ->
+                "Bluetooth A2DP available (speaker or headphones — unverified)"
+            RoutedOutput.BLUETOOTH_LE_SPEAKER -> "Bluetooth LE speaker available"
+            RoutedOutput.HEADPHONES -> "Headphones/headset available"
+            RoutedOutput.HEARING_AID -> "A hearing aid is available"
+            else -> "External audio available"
+        }
     }
 
-    /**
-     * Starts reporting route changes. [onChange] runs on the main thread and is
-     * only delivered while monitoring is active.
-     */
+    fun mediaVolumeRatio(): Float {
+        val maximum = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        if (maximum <= 0) return 0f
+        return (audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() /
+            maximum).coerceIn(0f, 1f)
+    }
+
     fun start(onChange: () -> Unit) {
         stop()
-        val deviceCallback = object : AudioDeviceCallback() {
+        val newCallback = object : AudioDeviceCallback() {
             override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
-                if (addedDevices.any { isExternal(it.type) }) notify(onChange)
+                handler.post { onChange() }
             }
-
             override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
-                // Removal can hand output back to the speaker; re-evaluate either way.
-                notify(onChange)
+                handler.post { onChange() }
             }
         }
-        callback = deviceCallback
-        runCatching { audioManager.registerAudioDeviceCallback(deviceCallback, mainHandler) }
-            .onFailure { Log.w(TAG, "cannot register audio device callback", it) }
+        callback = newCallback
+        runCatching { audioManager.registerAudioDeviceCallback(newCallback, handler) }
+            .onFailure { Log.w(TAG, "Audio device callback registration failed", it) }
     }
 
     fun stop() {
@@ -80,36 +89,32 @@ class AudioRouteMonitor(context: Context) {
         callback = null
     }
 
-    private fun notify(onChange: () -> Unit) {
-        mainHandler.post { runCatching(onChange) }
-    }
+    companion object {
+        private const val TAG = "LayaswarnaRoute"
 
-    private fun isExternal(type: Int): Boolean = type in EXTERNAL_TYPES
-
-    private companion object {
-        const val TAG = "PiFaunaRoute"
-
-        /**
-         * Device type constants newer than minSdk are inlined by the compiler, so
-         * comparing an `AudioDeviceInfo.type` int against them is safe on every
-         * supported version: an older platform can never report a newer type.
-         */
         @SuppressLint("InlinedApi")
-        val EXTERNAL_TYPES = setOf(
+        fun classify(type: Int): RoutedOutput = when (type) {
+            AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
+            AudioDeviceInfo.TYPE_BUILTIN_SPEAKER_SAFE -> RoutedOutput.PHONE_SPEAKER
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> RoutedOutput.BLUETOOTH_A2DP_UNVERIFIED
+            AudioDeviceInfo.TYPE_BLE_SPEAKER -> RoutedOutput.BLUETOOTH_LE_SPEAKER
             AudioDeviceInfo.TYPE_WIRED_HEADSET,
             AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
             AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+            AudioDeviceInfo.TYPE_BLE_HEADSET -> RoutedOutput.HEADPHONES
+            AudioDeviceInfo.TYPE_HEARING_AID,
+            AudioDeviceInfo.TYPE_BLE_HEARING_AID -> RoutedOutput.HEARING_AID
             AudioDeviceInfo.TYPE_USB_DEVICE,
             AudioDeviceInfo.TYPE_USB_HEADSET,
-            AudioDeviceInfo.TYPE_HEARING_AID,
             AudioDeviceInfo.TYPE_HDMI,
             AudioDeviceInfo.TYPE_LINE_ANALOG,
             AudioDeviceInfo.TYPE_LINE_DIGITAL,
-            AudioDeviceInfo.TYPE_DOCK,
-            AudioDeviceInfo.TYPE_BLE_HEADSET,
-            AudioDeviceInfo.TYPE_BLE_SPEAKER,
-            AudioDeviceInfo.TYPE_BLE_BROADCAST
-        )
+            AudioDeviceInfo.TYPE_DOCK -> RoutedOutput.OTHER_EXTERNAL
+            else -> RoutedOutput.UNKNOWN
+        }
+
+        private fun RoutedOutput.isExternalSpeakerCandidate(): Boolean =
+            this == RoutedOutput.BLUETOOTH_A2DP_UNVERIFIED ||
+                this == RoutedOutput.BLUETOOTH_LE_SPEAKER
     }
 }
