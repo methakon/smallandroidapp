@@ -183,3 +183,8 @@ The Android source on `feat/pifauna-phone-audio` has now been updated to follow 
 - [Media notification with Stop, node 102:98](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=102-98)
 
 All layers are editable and follow the Mystic dark-violet/gold/rose theme. SettingsScreen and PlayerScreen now bind Material3 switches to the default-Off local preference. The notification frame is a concept; real Android notification layouts vary. VersionCode 10 source is committed but not yet hardware-tested or released. See SCREEN-LOCK-PLAYBACK.md.
+
+
+## VersionCode 11 — Bluetooth output consent (7 November 2026)
+
+Three new fully editable Mystic screens: [default phone route 105:48](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=105-48), [two-step speaker consent 105:64](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=105-64), and [blocked unsafe route 105:78](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=105-78). The Android Player implements the consent as a Material3 AlertDialog rather than trusting Figma interactions. No claim of measured hearing safety. See [AUDIO-OUTPUT-CONSENT.md](AUDIO-OUTPUT-CONSENT.md).
