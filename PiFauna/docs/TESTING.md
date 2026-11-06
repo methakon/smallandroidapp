@@ -1,3 +1,19 @@
+# Testing and recorded results
+
+## Upcoming versionCode 10 — source-only, NOT yet hardware validated
+
+Acceptance checklist for explicit screen-lock mode (default Off):
+
+- OFF: automatic screen lock and hardware Power button stop audio, as in v9.
+- ON: the chosen 5/10/15/30-minute user-started session continues while locked, with notification Stop.
+- Both modes: Home/app switch while unlocked stops, timer expiry stops, foreground/notification Stop works.
+- Safety: external wired/Bluetooth/USB audio, excessive media volume, battery <=15%, severe thermal status and focus loss stop immediately.
+- App task dismissal, process termination and force-stop never auto-resume; rapid lock/unlock/start/stop does not leak or duplicate AudioTrack.
+- Test Mi A3 API30 and ELUGA API28, and API33 and API36 via suitable devices or emulators. Verify notification appearance, Android FGS restrictions, TalkBack and 200% fonts.
+- Run Gradle testDebugUnitTest, assembleDebug, assembleDebugAndroidTest and lintDebug; document real results. Acoustic click-free operation is not established by functional tests.
+
+## Earlier versionCode 9 and legacy test records
+
 # Test plan and recorded results
 
 ## Current release — versionCode 9 (reported 2026-11-05)

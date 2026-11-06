@@ -31,8 +31,7 @@ tells you plainly what that does and does not mean.
 - Up to 20 locally saved custom presets.
 - Digital peak capped at 8% of full scale, with 25 ms fades in and out.
 
-Everything is local. No account, no network, no analytics and **no permissions
-at all** — the manifest declares none.
+Everything remains offline, without account, internet or analytics. The upcoming screen-lock opt-in uses Android foreground-service/media-playback permissions; no INTERNET, microphone, camera or location access.
 
 ## Build prerequisites
 
@@ -215,3 +214,8 @@ The Android screen layouts have been synchronized with the newer Figma Mystic va
 - **Translations:** English (India), Bengali, Hindi, Assamese listing drafts created; import/review pending.
 
 Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [promo video](docs/MARKETING-VIDEO.md), [translations](docs/LOCALIZATION.md), [Cloudflare/legal site](docs/LEGAL-SITE-HOSTING.md), [internal release record](docs/PLAY-INTERNAL-DEPLOYMENT.md).
+
+
+## Screen-lock timed playback — versionCode 10 candidate (not on Google Play)
+
+The new default-Off option **Continue timed playback with screen locked** is available in Settings and Player. Toggling does not start audio. An explicit Start begins a bounded 5/10/15/30-minute mediaPlayback foreground service, with a lock-screen Stop notification. Safety and duration restrictions remain; ordinary playback still stops when the display locks. Android/OEM may interrupt. Last reported Internal testing release remains versionCode 9. See docs/SCREEN-LOCK-PLAYBACK.md.

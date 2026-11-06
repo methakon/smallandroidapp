@@ -174,3 +174,12 @@ The Android source on `feat/pifauna-phone-audio` has now been updated to follow 
 **Safety-preserving deviations from the Figma mockups:** the mock Anahata 45-minute chip remains **excluded** (30-minute hard cap); pink/white noise are still shown as **planned/unavailable**, rather than playing mislabeled tones; the Chakra Console action prepares but does not start audio; the Android status and navigation bars are real system controls, not fake UI glyphs; Home's animated emojis are replaced by original vector/Canvas pictograms. No photos, Figma screenshot bitmaps or temporary Figma URLs were embedded as app assets.
 
 **Build/release boundary:** the worker's previous API-36 signed `versionCode 7` AAB was produced **before these screen commits**. Rebuild and re-sign from the updated GitHub head before uploading a bundle intended to include this Mystic pass. The signing keys, SDK 36 settings, and all audio policy code were not modified here. The GitHub Actions build on the latest UI commit must succeed; actual Android 16 visual comparison, 200% font scale, TalkBack and real external-route tests remain release QA.
+
+
+## Screen-lock playback — three new editable Figma frames (2026-11-06)
+
+- [Settings OFF default, node 102:48](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=102-48)
+- [Settings ON opt-in, node 102:73](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=102-73)
+- [Media notification with Stop, node 102:98](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=102-98)
+
+All layers are editable and follow the Mystic dark-violet/gold/rose theme. SettingsScreen and PlayerScreen now bind Material3 switches to the default-Off local preference. The notification frame is a concept; real Android notification layouts vary. VersionCode 10 source is committed but not yet hardware-tested or released. See SCREEN-LOCK-PLAYBACK.md.

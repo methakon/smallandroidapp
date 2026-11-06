@@ -126,3 +126,8 @@ Checked line by line against the Android implementation:
 - "no advertising or analytics SDKs" — matches `app/build.gradle.kts`
 - explicitly disclaims repellent, ultrasonic, medical and chakra-efficacy claims,
   consistent with `docs/SAFETY.md`
+
+
+## VersionCode 10 legal-site source update (2026-11-06)
+
+Privacy and Safety HTML now disclose the default-Off timed screen-lock opt-in, Android mediaPlayback foreground service permissions, notification Stop and retained safety checks. These are Git source changes ONLY, not evidence of a new Cloudflare Pages deployment. Redeploy the static site and verify the live URLs before changing Play privacy metadata. No INTERNET or telemetry capability was added.
