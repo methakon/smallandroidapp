@@ -3,6 +3,9 @@ package com.pifauna.app.audio
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.AudioRouting
+import android.os.Handler
+import android.os.Looper
 import android.media.VolumeShaper
 import android.os.Process
 import android.os.SystemClock
@@ -64,6 +67,8 @@ class SoundEngine {
 
     @Volatile private var worker: Thread? = null
     @Volatile private var track: AudioTrack? = null
+    @Volatile private var routeListener: AudioRouting.OnRoutingChangedListener? = null
+    private val routeRejected = AtomicBoolean(false)
     @Volatile private var renderBuffer: ShortArray? = null
 
     private var nextToken: Long = 0L
@@ -126,6 +131,7 @@ class SoundEngine {
             activeToken = token
             track = audio
             teardownClaim.set(false)
+            routeRejected.set(false)
             running.set(true)
 
             // Start the track here, while holding the same lock that teardown takes.
@@ -136,6 +142,32 @@ class SoundEngine {
                 running.set(false)
                 teardownClaim.set(true)
                 track = null
+                runCatching { audio.release() }
+                return StartResult.Unavailable
+            }
+
+            // Routing callback is an urgent safety stop; write-loop checks remain
+            // an independent guard against delayed or missing notifications.
+            val listener = AudioRouting.OnRoutingChangedListener { routing ->
+                if (!ActiveOutputRoutePolicy.isTrusted(routing.routedDevice?.type) &&
+                    track === audio && running.get()
+                ) {
+                    routeRejected.set(true)
+                    running.set(false)
+                    runCatching { audio.pause() }
+                    Log.w(TAG, "AudioTrack route changed away from built-in speaker")
+                }
+            }
+            routeListener = listener
+            val observed = runCatching {
+                audio.addOnRoutingChangedListener(listener, Handler(Looper.getMainLooper()))
+            }.isSuccess
+            if (!observed) {
+                running.set(false)
+                teardownClaim.set(true)
+                routeListener = null
+                track = null
+                runCatching { audio.pause() }
                 runCatching { audio.release() }
                 return StartResult.Unavailable
             }
@@ -178,6 +210,7 @@ class SoundEngine {
             fadeOut(audio!!)
         }
         if (ownsTeardown) {
+            unregisterRouteListener(audio!!)
             // pause() stops consumption and flush() discards queued frames, which
             // is what unblocks a writer parked in write(..., WRITE_BLOCKING).
             runCatching { if (audio!!.playState == AudioTrack.PLAYSTATE_PLAYING) audio.pause() }
@@ -274,6 +307,7 @@ class SoundEngine {
             reason = FinishReason.ERROR
         } finally {
             if (teardownClaim.compareAndSet(false, true)) {
+                unregisterRouteListener(audio)
                 // No stop arrived first, so this thread owns the track.
                 if (reason == FinishReason.COMPLETED) {
                     // A natural completion must play out what is still queued.
@@ -303,6 +337,7 @@ class SoundEngine {
                 reason = FinishReason.STOPPED
             }
 
+            if (routeRejected.get()) reason = FinishReason.ERROR
             if (worker === Thread.currentThread()) worker = null
             if (activeToken == token) activeToken = 0L
             runCatching { onFinished(reason, token) }
@@ -379,6 +414,13 @@ class SoundEngine {
             Thread.sleep(DRAIN_POLL_MS)
         }
         return false
+    }
+
+    private fun unregisterRouteListener(audio: AudioTrack) {
+        routeListener?.let { listener ->
+            runCatching { audio.removeOnRoutingChangedListener(listener) }
+        }
+        routeListener = null
     }
 
     private fun isBuiltInSpeakerRoute(audio: AudioTrack): Boolean =
