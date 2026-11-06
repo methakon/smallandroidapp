@@ -102,8 +102,7 @@ class AudioRouteMonitor(context: Context) {
             AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
             AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
             AudioDeviceInfo.TYPE_BLE_HEADSET -> RoutedOutput.HEADPHONES
-            AudioDeviceInfo.TYPE_HEARING_AID,
-            AudioDeviceInfo.TYPE_BLE_HEARING_AID -> RoutedOutput.HEARING_AID
+            AudioDeviceInfo.TYPE_HEARING_AID -> RoutedOutput.HEARING_AID
             AudioDeviceInfo.TYPE_USB_DEVICE,
             AudioDeviceInfo.TYPE_USB_HEADSET,
             AudioDeviceInfo.TYPE_HDMI,
