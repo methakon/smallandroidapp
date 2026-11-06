@@ -1,3 +1,7 @@
+# Play deployment safety boundary
+
+The v11 external Bluetooth speaker consent implementation lives exclusively on `feat/layaswarna-audio-output-consent-v11` and has **not** been uploaded to Google Play. The separately signed versionCode 10 release candidate from the worker remains untouched. Do not upload the modified branch with versionCode 11 without hardware audio-route verification, legal-text deployment check, and explicit user approval.
+
 # Google Play internal testing — current release and historical deployment record
 
 ## Current release — versionCode 9 (2026-11-05, Hermes verified)

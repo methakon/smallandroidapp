@@ -2,9 +2,13 @@ package com.pifauna.app.audio
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioDeviceInfo
+import android.media.AudioRouting
 import android.media.AudioTrack
 import android.media.VolumeShaper
 import android.os.Process
+import android.os.Handler
+import android.os.Looper
 import android.os.SystemClock
 import android.util.Log
 import java.util.concurrent.atomic.AtomicBoolean
@@ -19,6 +23,7 @@ sealed interface StartResult {
     /** A previous session is still shutting down; refusing is safer than overlapping. */
     data object Busy : StartResult
     data object Unavailable : StartResult
+    data object OutputRouteBlocked : StartResult
 }
 
 /**
@@ -62,6 +67,10 @@ class SoundEngine {
 
     @Volatile private var worker: Thread? = null
     @Volatile private var track: AudioTrack? = null
+    @Volatile private var expectedOutputId: Int? = null
+    @Volatile private var outputMode: OutputMode = OutputMode.PHONE_SPEAKER
+    private var routeListener: AudioRouting.OnRoutingChangedListener? = null
+    @Volatile private var silentFramesBeforeAudio = 0
     @Volatile private var renderBuffer: ShortArray? = null
 
     private var nextToken: Long = 0L
@@ -71,8 +80,17 @@ class SoundEngine {
     val isPlaying: Boolean
         get() = running.get() && worker?.isAlive == true
 
-    fun start(config: ToneConfig, onFinished: (FinishReason, Long) -> Unit): StartResult =
-        synchronized(lock) {
+    /**
+     * When a preferred device is supplied, starts with silent PCM only and
+     * verifies the actual routed output before allowing audible tone samples.
+     */
+    fun start(
+        config: ToneConfig,
+        preferredDevice: AudioDeviceInfo? = null,
+        requestedOutput: OutputMode = OutputMode.PHONE_SPEAKER,
+        onRoutingChanged: (() -> Unit)? = null,
+        onFinished: (FinishReason, Long) -> Unit
+    ): StartResult = synchronized(lock) {
             // Never overlap sessions: if the old worker will not die, refuse.
             if (!shutdownLocked(graceful = false)) {
                 Log.w(TAG, "previous session still alive; refusing to start another")
@@ -119,10 +137,29 @@ class SoundEngine {
                 return StartResult.Unavailable
             }
 
+            if (preferredDevice != null && !audio.setPreferredDevice(preferredDevice)) {
+                audio.release()
+                return StartResult.OutputRouteBlocked
+            }
+            // 256 zero samples ensure that routing can be queried without ever
+            // emitting an experimental tone on an unverified output.
+            silentFramesBeforeAudio = 0
+            if (preferredDevice != null) {
+                val silent = ShortArray(256)
+                val queued = audio.write(silent, 0, silent.size, AudioTrack.WRITE_NON_BLOCKING)
+                if (queued <= 0) {
+                    audio.release()
+                    return StartResult.OutputRouteBlocked
+                }
+                silentFramesBeforeAudio = queued
+            }
+
             val buffer = renderBuffer ?: ShortArray(CHUNK_FRAMES).also { renderBuffer = it }
             val token = ++nextToken
             activeToken = token
             track = audio
+            expectedOutputId = preferredDevice?.id
+            outputMode = requestedOutput
             teardownClaim.set(false)
             running.set(true)
 
@@ -138,6 +175,37 @@ class SoundEngine {
                 return StartResult.Unavailable
             }
 
+            if (preferredDevice != null) {
+                // Android's getPreferredDevice is only a *request*; the actual
+                // AudioTrack route is the security boundary. No audible PCM yet.
+                var matched = false
+                repeat(4) {
+                    if (routeMatches(audio, preferredDevice.id, requestedOutput)) {
+                        matched = true
+                    } else if (!matched) {
+                        SystemClock.sleep(7)
+                    }
+                }
+                if (!matched) {
+                    running.set(false)
+                    teardownClaim.set(true)
+                    expectedOutputId = null
+                    silentFramesBeforeAudio = 0
+                    track = null
+                    runCatching { audio.pause() }
+                    runCatching { audio.flush() }
+                    runCatching { audio.release() }
+                    return StartResult.OutputRouteBlocked
+                }
+                if (onRoutingChanged != null) {
+                    val listener = AudioRouting.OnRoutingChangedListener {
+                        onRoutingChanged.invoke()
+                    }
+                    routeListener = listener
+                    audio.addOnRoutingChangedListener(listener, Handler(Looper.getMainLooper()))
+                }
+            }
+
             val session = Thread({ runSession(audio, config, token, buffer, onFinished) }, "PiFaunaAudio")
             session.isDaemon = true
             session.priority = Thread.NORM_PRIORITY + 2
@@ -146,6 +214,26 @@ class SoundEngine {
 
             StartResult.Started(token)
         }
+
+    /** UNKNOWN is treated as unsafe, including when Android changes route mid-session. */
+    fun routedOutput(): RoutedOutput {
+        val audio = track ?: return RoutedOutput.UNKNOWN
+        val expected = expectedOutputId ?: return RoutedOutput.UNKNOWN
+        if (!routeMatches(audio, expected, outputMode)) return RoutedOutput.UNKNOWN
+        val device = if (android.os.Build.VERSION.SDK_INT >= 36) {
+            audio.routedDevices.singleOrNull()
+        } else audio.routedDevice
+        return device?.let { AudioRouteMonitor.classify(it.type) } ?: RoutedOutput.UNKNOWN
+    }
+
+    private fun routeMatches(audio: AudioTrack, expectedId: Int, mode: OutputMode): Boolean {
+        val destinations = if (android.os.Build.VERSION.SDK_INT >= 36) {
+            audio.routedDevices
+        } else listOfNotNull(audio.routedDevice)
+        return destinations.size == 1 &&
+            destinations[0].id == expectedId &&
+            AudioOutputPolicy.matches(mode, AudioRouteMonitor.classify(destinations[0].type))
+    }
 
     /** Fades out over ~25 ms, then releases. Used for a user-initiated stop. */
     fun stop() {
@@ -176,6 +264,12 @@ class SoundEngine {
             fadeOut(audio!!)
         }
         if (ownsTeardown) {
+            routeListener?.let { l ->
+                runCatching { audio!!.removeOnRoutingChangedListener(l) }
+            }
+            routeListener = null
+            expectedOutputId = null
+            silentFramesBeforeAudio = 0
             // pause() stops consumption and flush() discards queued frames, which
             // is what unblocks a writer parked in write(..., WRITE_BLOCKING).
             runCatching { if (audio!!.playState == AudioTrack.PLAYSTATE_PLAYING) audio.pause() }
@@ -252,7 +346,7 @@ class SoundEngine {
                     // flush() here used to discard up to a full buffer (~40 ms),
                     // which contains the fade-out, so every session ended with a
                     // hard cut.
-                    val drained = awaitDrain(audio, config, rendered)
+                    val drained = awaitDrain(audio, config, rendered + silentFramesBeforeAudio)
                     if (!drained) {
                         // A stop arrived mid-drain: the tail was cut, so this
                         // session did not complete cleanly.
@@ -266,6 +360,12 @@ class SoundEngine {
                     runCatching { audio.flush() }
                     runCatching { audio.stop() }
                 }
+                routeListener?.let { listener ->
+                    runCatching { audio.removeOnRoutingChangedListener(listener) }
+                }
+                routeListener = null
+                expectedOutputId = null
+                silentFramesBeforeAudio = 0
                 runCatching { audio.release() }
                 if (track === audio) track = null
             } else {

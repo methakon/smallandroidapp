@@ -1,10 +1,15 @@
 package com.pifauna.app.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SliderDefaults
@@ -13,13 +18,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.pifauna.app.audio.ToneMode
+import com.pifauna.app.audio.OutputMode
 import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.playback.PlaybackPhase
 import com.pifauna.app.playback.PlayerState
@@ -42,6 +50,8 @@ fun PlayerScreen(
     onStop: () -> Unit,
     continueWhenLocked: Boolean,
     onContinueWhenLockedChange: (Boolean) -> Unit,
+    onSelectPhoneSpeaker: () -> Unit,
+    onApproveExternalSpeaker: () -> Unit,
     onStartFrequencyChange: (Int) -> Unit,
     onEndFrequencyChange: (Int) -> Unit,
     onOpenTimer: () -> Unit
@@ -51,6 +61,62 @@ fun PlayerScreen(
 
     var remaining by remember { mutableLongStateOf(state.remainingMs()) }
     val current by rememberUpdatedState(state)
+    var showSpeakerConsent by remember { mutableStateOf(false) }
+    var confirmedStandalone by remember { mutableStateOf(false) }
+    var acknowledgedRisk by remember { mutableStateOf(false) }
+
+    if (showSpeakerConsent && !state.isPlaying) {
+        AlertDialog(
+            onDismissRequest = {
+                showSpeakerConsent = false
+                confirmedStandalone = false
+                acknowledgedRisk = false
+            },
+            title = { Text("External Bluetooth speaker — safety warning") },
+            text = {
+                Column {
+                    Text("Bluetooth A2DP does not reliably identify speakers versus " +
+                        "headphones. Experimental tones may cause hearing damage. " +
+                        "Do not raise volume to hear high frequencies.")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = confirmedStandalone,
+                            onCheckedChange = { confirmedStandalone = it }
+                        )
+                        Text("I confirm this is a free-standing speaker, not " +
+                            "earbuds, headphones or a hearing aid.")
+                    }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = acknowledgedRisk,
+                            onCheckedChange = { acknowledgedRisk = it }
+                        )
+                        Text("I will keep volume low, away from ears, and stop " +
+                            "immediately if uncomfortable. I understand sound " +
+                            "levels are not measured or guaranteed safe.")
+                    }
+                    Text("This approval applies to ONE session only: max 5 minutes, " +
+                        "2% digital gain and 30% device media volume.")
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = confirmedStandalone && acknowledgedRisk,
+                    onClick = {
+                        onApproveExternalSpeaker()
+                        showSpeakerConsent = false
+                        confirmedStandalone = false
+                        acknowledgedRisk = false
+                    }
+                ) { Text("Allow for this session") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSpeakerConsent = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
 
     // One tick per 500 ms only while playing: this drives the countdown label.
     // Stopping is enforced by the audio thread, never by this timer.
@@ -120,6 +186,38 @@ fun PlayerScreen(
             onClick = if (state.isPlaying) null else onOpenTimer
         )
 
+        SectionLabel("AUDIO OUTPUT")
+        PfCard(
+            title = "Phone speaker (default)",
+            subtitle = if (state.outputMode == OutputMode.PHONE_SPEAKER) {
+                "Selected. Connected Bluetooth devices are not automatically blocked; " +
+                    "the actual phone route is checked before sound."
+            } else "Tap to return to the phone speaker.",
+            enabled = !state.isPlaying,
+            onClick = if (state.isPlaying) null else onSelectPhoneSpeaker
+        )
+        PfCard(
+            title = "Bluetooth speaker — session consent",
+            subtitle = if (state.externalSpeakerConsented) {
+                "Approved for ONE session. Max 5 min; 2% digital gain; " +
+                    "media volume 30%. Headphones remain blocked."
+            } else {
+                "Off. Requires two safety acknowledgements before Start. " +
+                    "Bluetooth A2DP can also mean headphones."
+            },
+            enabled = !state.isPlaying,
+            onClick = if (state.isPlaying) null else ({
+                confirmedStandalone = false
+                acknowledgedRisk = false
+                showSpeakerConsent = true
+            })
+        )
+        PfTextCard(
+            heading = "Headphones, earbuds & hearing aids",
+            body = "Unavailable even with consent: sound pressure has not been " +
+                "measured across devices. Unknown or changing routes stop playback."
+        )
+
         SectionLabel("SCREEN-LOCK MODE")
         PfCard(
             title = "Continue timed playback with screen locked",
@@ -183,10 +281,10 @@ fun PlayerScreen(
             heading = "Checks before every start",
             body = "Battery ${state.snapshot.batteryPercent}% · " +
                 "volume ${(state.snapshot.mediaVolumeRatio * 100).toInt()}% of maximum · " +
-                (state.snapshot.externalAudioRoute?.let { "external route detected" } ?: "built-in speaker") +
-                ". Playback is refused below ${SafetyLimits.BATTERY_CUTOFF_PERCENT}% battery, " +
-                "above ${(SafetyLimits.MEDIA_VOLUME_RATIO_LIMIT * 100).toInt()}% volume, on a " +
-                "severe thermal warning, or whenever headphones, Bluetooth or USB audio are connected."
+                (state.snapshot.availableExternalRoute ?: "no external devices detected") +
+                ". Phone mode verifies the actual AudioTrack route before sound. " +
+                "Battery and thermal limits remain active. Bluetooth speaker mode requires " +
+                "one-session consent and stricter duration, gain and volume limits."
         )
         PfTextCard(
             heading = "What this does not prove",

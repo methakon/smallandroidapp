@@ -1,3 +1,23 @@
+# v11 audio-route safety — release-blocking test plan
+
+**v11 branch is not a verified or signed release.** All checks below must be evidenced, not inferred from unit tests.
+
+| Scenario | Expected result |
+|---|---|
+| Bluetooth device merely connected; actual output is phone speaker | Default phone mode may play only if the AudioTrack confirms the built-in output |
+| Phone output selected but AudioTrack routes to A2DP/headphones | Refuse before audible PCM is written |
+| Bluetooth speaker consent dismissed or only one acknowledgement ticked | No approval or external playback |
+| External consent approved for current free-standing loudspeaker | Max 5 min / 2% digital / 30% media-volume gates; real output ID verified |
+| Headphones, hearing aids, USB/HDMI, unknown/multiple routes | Refused, including after external speaker consent |
+| Switch Bluetooth device between consent and Start | Consent invalidated, must reapprove |
+| Mid-play output change or loss, audio-focus, low battery, thermal, excessive volume | Immediate teardown and no old consent reused |
+| Android automatic/manual screen lock, Home navigation | Existing v10 explicit screen-lock option unchanged |
+| Timed end, Stop, process termination | No active audio thread or foreground service; consent resets |
+
+**Execute on:** Mi A3 API30, ELUGA API28; API33 and API36 emulators/devices for routing and notification compatibility. Run Gradle JVM tests, debug build, instrumented test APK and lint; report exact counts/sha. Include route logs, real audio/capture measurements where possible, and verify controls accessibility. Digital level percentages cannot establish safe SPL. Do not modify the signed v10 AAB or upload v11 to Play until a full test report and release approval exists.
+
+## Previous test records
+
 # Testing and recorded results
 
 ## Release Candidate — versionCode 10 (recorded 2026-11-07)

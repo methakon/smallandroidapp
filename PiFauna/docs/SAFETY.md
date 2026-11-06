@@ -88,3 +88,8 @@ Do not publish as a pest-control or health product. Treat these as blockers:
 - Android normal permissions are `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MEDIA_PLAYBACK` only; no INTERNET, microphone, camera or location. A platform MediaSession backs the notification.
 - 8% digital gain is not a calibrated sound-pressure guarantee. The Android OS or OEM may interrupt even opted-in playback.
 - Lock-screen, notification, thermal, battery, route, volume and timer behavior must pass physical-device validation before versionCode 10 is uploaded.
+
+
+## VersionCode 11: experimental external loudspeaker mode (not released)
+
+The phone remains default. Connected Bluetooth devices are not automatically active media routes. The engine verifies AudioTrack's real routed device before emitting audible tones and stops on unexpected/unknown routing. External A2DP (ambiguous speaker/headphone) requires **two explicit acknowledgements for each session** that the device is a free-standing loudspeaker (not headphones/earbuds/hearing aid) and that unmeasured sound could cause hearing damage. Known headphones, hearing aids, USB and unknown routes remain blocked. The experimental speaker mode is capped at **5 minutes, 2% digital gain and 30% Android media volume**; none are validated safe dB SPL values. No continuing or stored consent; original battery/thermal/route/focus safeguards remain. Real device/route tests are required before any Play release. See [AUDIO-OUTPUT-CONSENT.md](AUDIO-OUTPUT-CONSENT.md).

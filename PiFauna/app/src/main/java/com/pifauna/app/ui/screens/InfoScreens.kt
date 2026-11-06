@@ -175,7 +175,8 @@ fun SettingsScreen(
         )
         PfCard(
             title = "Audio output",
-            subtitle = "Built-in speaker only. External routes are refused by policy.",
+            subtitle = "Phone speaker by default. Optional one-session Bluetooth loudspeaker " +
+                "consent is available on the Player screen; headphones and unknown routes remain blocked.",
             enabled = false
         )
         PfCard(

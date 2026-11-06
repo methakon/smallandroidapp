@@ -219,3 +219,8 @@ Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [promo video](
 ## Screen-lock timed playback — versionCode 10 candidate (not on Google Play)
 
 The new default-Off option **Continue timed playback with screen locked** is available in Settings and Player. Toggling does not start audio. An explicit Start begins a bounded 5/10/15/30-minute mediaPlayback foreground service, with a lock-screen Stop notification. Safety and duration restrictions remain; ordinary playback still stops when the display locks. Android/OEM may interrupt. Last reported Internal testing release remains versionCode 9. See docs/SCREEN-LOCK-PLAYBACK.md.
+
+
+## v11 experimental external Bluetooth speaker consent (separate branch)
+
+Development branch: `feat/layaswarna-audio-output-consent-v11`. The verified signed v10 release candidate and the Internal testing track are **untouched**. v11 adds live AudioTrack output verification so connected but unused Bluetooth devices do not unnecessarily block the phone speaker. A one-session, two-acknowledgement consent option allows a user-declared free-standing Bluetooth loudspeaker under stricter 5-minute, 2%-gain and 30%-volume limits. Classic A2DP may represent headphones, so approval is not proof of device type or safe sound pressure. Known headphone, hearing-aid, USB and unverified routes remain blocked. No new data collection or Bluetooth pairing permission. **Not released or hardware-validated.** See [Audio output consent](docs/AUDIO-OUTPUT-CONSENT.md).
