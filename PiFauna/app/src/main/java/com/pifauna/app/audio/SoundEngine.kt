@@ -219,10 +219,11 @@ class SoundEngine {
     fun routedOutput(): RoutedOutput {
         val audio = track ?: return RoutedOutput.UNKNOWN
         val expected = expectedOutputId ?: return RoutedOutput.UNKNOWN
-        return if (routeMatches(audio, expected, outputMode)) {
-            if (outputMode == OutputMode.PHONE_SPEAKER) RoutedOutput.PHONE_SPEAKER
-            else AudioRouteMonitor.classify(audio.routedDevice?.type ?: return RoutedOutput.UNKNOWN)
-        } else RoutedOutput.UNKNOWN
+        if (!routeMatches(audio, expected, outputMode)) return RoutedOutput.UNKNOWN
+        val device = if (android.os.Build.VERSION.SDK_INT >= 36) {
+            audio.routedDevices.singleOrNull()
+        } else audio.routedDevice
+        return device?.let { AudioRouteMonitor.classify(it.type) } ?: RoutedOutput.UNKNOWN
     }
 
     private fun routeMatches(audio: AudioTrack, expectedId: Int, mode: OutputMode): Boolean {
