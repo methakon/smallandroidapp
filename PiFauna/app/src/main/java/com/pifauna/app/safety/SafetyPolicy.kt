@@ -53,8 +53,8 @@ object SafetyPolicy {
         if (!route.isNullOrBlank()) {
             return SafetyDecision.Blocked(
                 BlockCode.EXTERNAL_ROUTE,
-                "Playback blocked: $route is connected. PiFauna plays through the " +
-                    "built-in speaker only — disconnect headphones, Bluetooth or USB audio."
+                "Playback blocked: unsafe active output ($route). Layaswarna requires " +
+                    "a verified built-in phone speaker route."
             )
         }
 
