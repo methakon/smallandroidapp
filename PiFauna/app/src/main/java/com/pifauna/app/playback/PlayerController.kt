@@ -88,6 +88,8 @@ class PlayerController(context: Context) {
     private var focusRequest: AudioFocusRequest? = null
     private var activeToken = 0L
     private var monitoringRoute = false
+    /** The consent applies only to the exact audio-device ID present at approval. */
+    private var approvedExternalOutputId: Int? = null
 
     // ---------------------------------------------------------------- readiness
 
@@ -122,6 +124,17 @@ class PlayerController(context: Context) {
 
     /** Re-reads device state; call when a safety broadcast arrives or a screen opens. */
     fun refreshSnapshot() {
+        val current = _state.value
+        if (!current.isPlaying &&
+            current.outputMode == OutputMode.EXTERNAL_BLUETOOTH_SPEAKER &&
+            routeMonitor.preferredDevice(OutputMode.EXTERNAL_BLUETOOTH_SPEAKER)?.id != approvedExternalOutputId) {
+            approvedExternalOutputId = null
+            _state.value = current.copy(
+                outputMode = OutputMode.PHONE_SPEAKER,
+                externalSpeakerConsented = false,
+                statusMessage = "Bluetooth device changed. Consent cleared; please confirm again."
+            )
+        }
         val snapshot = snapshot()
         _state.value = _state.value.copy(snapshot = snapshot)
         maybeStopForHazard(snapshot)
@@ -203,6 +216,15 @@ class PlayerController(context: Context) {
      */
     fun confirmExternalSpeakerForSession() {
         if (_state.value.isPlaying) return
+        val candidate = routeMonitor.preferredDevice(OutputMode.EXTERNAL_BLUETOOTH_SPEAKER)
+        if (candidate == null) {
+            refuse(SafetyDecision.Blocked(
+                BlockCode.EXTERNAL_ROUTE,
+                "No supported external loudspeaker is available. Select a device first."
+            ))
+            return
+        }
+        approvedExternalOutputId = candidate.id
         _state.value = _state.value.copy(
             outputMode = OutputMode.EXTERNAL_BLUETOOTH_SPEAKER,
             externalSpeakerConsented = true,
@@ -216,6 +238,7 @@ class PlayerController(context: Context) {
 
     fun choosePhoneSpeaker() {
         if (_state.value.isPlaying) return
+        approvedExternalOutputId = null
         _state.value = _state.value.copy(
             outputMode = OutputMode.PHONE_SPEAKER,
             externalSpeakerConsented = false,
@@ -267,6 +290,15 @@ class PlayerController(context: Context) {
             refuse(SafetyDecision.Blocked(
                 BlockCode.EXTERNAL_ROUTE,
                 "Requested audio output unavailable. Choose a phone or Bluetooth speaker."
+            ))
+            return
+        }
+        if (current.outputMode == OutputMode.EXTERNAL_BLUETOOTH_SPEAKER &&
+            preferred.id != approvedExternalOutputId) {
+            abandonAudioFocus()
+            refuse(SafetyDecision.Blocked(
+                BlockCode.EXTERNAL_ROUTE,
+                "Bluetooth output changed since approval. Confirm the physical speaker again."
             ))
             return
         }
@@ -333,6 +365,7 @@ class PlayerController(context: Context) {
     private fun stopInternal(reason: String, graceful: Boolean) {
         val wasPlaying = _state.value.isPlaying
         teardownAudio(graceful)
+        approvedExternalOutputId = null
         _state.value = _state.value.copy(
             phase = if (wasPlaying) PlaybackPhase.Idle else _state.value.phase,
             startedAtElapsed = 0L,
@@ -380,6 +413,7 @@ class PlayerController(context: Context) {
             // Ignore a callback from a session that has already been replaced.
             if (token != activeToken) return@post
             teardownAudio()
+            approvedExternalOutputId = null
             _state.value = _state.value.copy(
                 phase = when (reason) {
                     FinishReason.COMPLETED -> PlaybackPhase.Completed
@@ -399,8 +433,12 @@ class PlayerController(context: Context) {
     }
 
     private fun refuse(decision: SafetyDecision.Blocked) {
+        // Refusal consumes any previously acknowledged one-session consent.
+        approvedExternalOutputId = null
         _state.value = _state.value.copy(
             phase = PlaybackPhase.Refused,
+            outputMode = OutputMode.PHONE_SPEAKER,
+            externalSpeakerConsented = false,
             statusMessage = decision.message,
             snapshot = snapshot()
         )
