@@ -2,6 +2,7 @@ package com.pifauna.app.audio
 
 import android.media.AudioAttributes
 import android.media.AudioFormat
+import android.media.AudioDeviceInfo
 import android.media.AudioTrack
 import android.media.VolumeShaper
 import android.os.Process
@@ -45,8 +46,10 @@ sealed interface StartResult {
  *  - one render buffer is allocated per engine and reused for every session;
  *  - `onFinished` is invoked on the audio worker thread, never on the caller's.
  *
- * This class does not choose the audio route. Deciding whether the current
- * route is acceptable is the caller's job (see [AudioRouteMonitor]).
+ * This engine refuses nonzero PCM until the AudioTrack's ACTUAL routed device
+ * is verified to be the built-in loudspeaker. Connected-output enumeration does
+ * not identify the active output. A null or other route always fails closed.
+ * The routing check is repeated before every PCM write to detect changes.
  */
 class SoundEngine {
 
@@ -213,16 +216,42 @@ class SoundEngine {
         try {
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
             var phase = 0.0
-            // AudioTrack.play() already ran under the engine lock in start(), so no
-            // teardown can have paused this track between play() and the first write.
+            // Only SILENCE may be written before the track reports a verified route.
+            // Many Android implementations report null until the first write.
+            // Silence primes routing without exposing the experimental tone.
+            val silentFrames = ShortArray(CHUNK_FRAMES)
+            var attempts = 0
+            while (running.get() && audio.routedDevice == null && attempts < ROUTE_PRIME_ATTEMPTS) {
+                val count = audio.write(silentFrames, 0, silentFrames.size, AudioTrack.WRITE_BLOCKING)
+                if (count <= 0) {
+                    reason = FinishReason.ERROR
+                    return
+                }
+                attempts++
+            }
+            // This gate denies Bluetooth A2DP and BLE (including ambiguous devices),
+            // headsets, hearing aids, USB, HDMI, null, and unknown output types.
+            if (!isBuiltInSpeakerRoute(audio)) {
+                Log.w(TAG, "route unverified or not the built-in speaker; suppressing PCM")
+                reason = FinishReason.ERROR
+                return
+            }
 
             session@ while (running.get() && rendered < config.totalFrames) {
                 val frames = min(CHUNK_FRAMES.toLong(), config.totalFrames - rendered).toInt()
+                if (!isBuiltInSpeakerRoute(audio)) {
+                    reason = FinishReason.ERROR
+                    break@session
+                }
                 phase = ToneKernel.renderInto(config, rendered, frames, phase, buffer)
 
                 var offset = 0
                 while (offset < frames) {
                     if (!running.get()) break@session
+                    if (!isBuiltInSpeakerRoute(audio)) {
+                        reason = FinishReason.ERROR
+                        break@session
+                    }
                     val written = audio.write(buffer, offset, frames - offset, AudioTrack.WRITE_BLOCKING)
                     if (written < 0) {
                         Log.w(TAG, "AudioTrack.write returned $written")
@@ -353,7 +382,14 @@ class SoundEngine {
         return false
     }
 
+    private fun isBuiltInSpeakerRoute(audio: AudioTrack): Boolean =
+        runCatching {
+            audio.routedDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+        }.getOrDefault(false)
+
     private companion object {
+        // Maximum zero-PCM priming: ~210 ms at 48 kHz, then fail closed.
+        const val ROUTE_PRIME_ATTEMPTS = 10
         const val TAG = "PiFaunaEngine"
 
         /** 1024 frames ≈ 21 ms at 48 kHz: small enough to stop promptly, large enough to be cheap. */
