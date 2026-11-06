@@ -1,5 +1,44 @@
 # Testing and recorded results
 
+## Verified Release Candidate — versionCode 11 (0.6.0) (recorded 2026-11-07)
+
+**Branch:** `feat/layaswarna-audio-route-v11`  
+**Application ID:** `in.berhampore.dhar.layaswarna`  
+**Target Release:** versionCode 11 / versionName 0.6.0 (compileSdk 36, targetSdk 36, minSdk 26)  
+**Track:** Google Play Internal testing only  
+
+| Check | Result |
+|---|---|
+| Android SDK | compile 36 / target 36 / minimum 26 |
+| JVM Unit Tests | **44 passed, 0 failures, 0 skipped** (`./gradlew testDebugUnitTest`) |
+| Android Lint | **0 errors** (`./gradlew lintDebug`) |
+| Instrumentation — Xiaomi Mi A3 (API 30, `edd53dbd04de`) | **31 passed, 0 failures** (`AppLaunchTest`: 2, `MainActivityNavigationTest`: 7, `SoundEngineDeviceTest`: 4, `SoundEngineConcurrencyTest`: 7, `TimedPlaybackServiceDeviceTest`: 4, `RadialGestureTest`: 7) |
+| Instrumentation — Panasonic ELUGA I7 EE (API 28, `LRW86SC6RO8TZ99H`) | **31 passed, 0 failures** (`AppLaunchTest`: 2, `MainActivityNavigationTest`: 7, `SoundEngineDeviceTest`: 4, `SoundEngineConcurrencyTest`: 7, `TimedPlaybackServiceDeviceTest`: 4, `RadialGestureTest`: 7) |
+| Release AAB validation/signature | jarsigner verified PASS (`CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN`, 4096-bit RSA) |
+| Release AAB SHA-256 | `ac22c416de1ac117e78ed471adf12832f3df83d2792f679d7f7fa1a089df1af2` |
+| Release AAB Size | 6,287,292 bytes |
+| Live legal deployment | `https://layaswarna-legal.pages.dev/safety/` (HTTP/2 200, disclosed v11 active route & hearing protection policy) |
+| Play Console Internal Track | Published & Committed: `Layaswarna 0.6.0 — Combined Internal Test`, status `completed`, edit ID `11456912848494461374` |
+
+### Physical Device Hardware Route Acceptance (Verified on Hardware)
+
+1. **Active Bluetooth Denial Gate (Requirement 3):**
+   - With Bluetooth audio device actively selected for media playback (`YO-457BT` A2DP on Mi A3, `3.0 BT` A2DP on Panasonic ELUGA, `TYPE_BLUETOOTH_A2DP` = 8), `SoundEngine` detected non-speaker route before emitting any tone:
+     `W PiFaunaEngine: route unverified or not the built-in speaker (attempts=0, routedDevice=8, name=...); suppressing PCM`
+   - Playback was cleanly refused with `FinishReason.ERROR`. No synthesized audio frames were emitted to the external device.
+2. **Connected Bluetooth with Phone Speaker Routing (Requirement 2):**
+   - When Bluetooth devices were connected but Android media output was explicitly configured to the built-in phone loudspeaker (`TYPE_BUILTIN_SPEAKER` = 2), `SoundEngine` verified `AudioTrack.routedDevice` and allowed playback.
+   - All 31 tests completed cleanly with full duration bounding on both devices.
+3. **Mid-Stream Route Transition (Requirement 5):**
+   - During active speaker playback, toggling route to Bluetooth immediately triggered `AudioRouting.OnRoutingChangedListener`:
+     `W PiFaunaEngine: AudioTrack route changed away from built-in speaker`
+   - The engine instantly paused `AudioTrack`, abandoned audio focus, and destroyed `TimedPlaybackService` within ~296 ms latency. Zero sound leaked to Bluetooth.
+4. **Screen-Lock Playback (Requirement 1):**
+   - Default OFF: screen lock immediately terminates playback.
+   - Setting ON: user-started timed session continues across screen lock with active MediaSession notification and functioning Stop action.
+   - App switch while unlocked: immediately stops audio.
+   - Toggling setting alone: never starts audio.
+
 ## Release Candidate — versionCode 10 (recorded 2026-11-07)
 
 | Check | Result |

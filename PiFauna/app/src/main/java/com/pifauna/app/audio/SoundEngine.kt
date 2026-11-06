@@ -276,7 +276,7 @@ class SoundEngine {
             // This gate denies Bluetooth A2DP and BLE (including ambiguous devices),
             // headsets, hearing aids, USB, HDMI, null, and unknown output types.
             if (!isBuiltInSpeakerRoute(audio)) {
-                Log.w(TAG, "route unverified or not the built-in speaker; suppressing PCM")
+                Log.w(TAG, "route unverified or not the built-in speaker (attempts=$attempts, routedDevice=${audio.routedDevice?.type}, name=${audio.routedDevice?.productName}); suppressing PCM")
                 reason = FinishReason.ERROR
                 return
             }
