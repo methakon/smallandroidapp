@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,6 +40,8 @@ fun PlayerScreen(
     state: PlayerState,
     onStart: () -> Unit,
     onStop: () -> Unit,
+    continueWhenLocked: Boolean,
+    onContinueWhenLockedChange: (Boolean) -> Unit,
     onStartFrequencyChange: (Int) -> Unit,
     onEndFrequencyChange: (Int) -> Unit,
     onOpenTimer: () -> Unit
@@ -115,6 +118,30 @@ fun PlayerScreen(
             subtitle = "Tap to change",
             enabled = !state.isPlaying,
             onClick = if (state.isPlaying) null else onOpenTimer
+        )
+
+        SectionLabel("SCREEN-LOCK MODE")
+        PfCard(
+            title = "Continue timed playback with screen locked",
+            subtitle = if (continueWhenLocked) {
+                "ON — keeps this explicitly started session running until its timer or Stop."
+            } else {
+                "OFF — automatic screen lock stops the audio (default)."
+            },
+            enabled = !state.isPlaying,
+            trailing = {
+                Switch(
+                    checked = continueWhenLocked,
+                    onCheckedChange = onContinueWhenLockedChange,
+                    enabled = !state.isPlaying
+                )
+            }
+        )
+        PfTextCard(
+            heading = "If enabled",
+            body = "A foreground media notification shows a Stop action on the lock screen. " +
+                "The battery, volume, thermal, audio-route and audio-focus limits stay active. " +
+                "Never leave sound unattended around people or animals."
         )
 
         // Status sits above the action: a refusal must be visible at the moment the

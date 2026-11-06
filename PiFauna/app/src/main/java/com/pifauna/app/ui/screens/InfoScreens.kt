@@ -1,6 +1,10 @@
 package com.pifauna.app.ui.screens
 
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.Switch
+import androidx.compose.ui.Alignment
+import com.pifauna.app.ui.PiFaunaColors
+
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -11,7 +15,6 @@ import com.pifauna.app.safety.SafetyLimits
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
-import com.pifauna.app.ui.PiFaunaColors
 import com.pifauna.app.ui.SectionLabel
 
 /** Figma 07 · Safety */
@@ -88,9 +91,9 @@ fun BatterySaverScreen() {
     PfScreen(title = "Battery saver", subtitle = "Efficient audio operation") {
         PfTextCard(
             heading = "Display sleep",
-            body = "The app holds no wake lock and never forces the screen on. When the " +
-                "screen turns off the activity stops, and playback stops with it — that is " +
-                "intended, not a bug."
+            body = "The app never forces the screen on. By default, screen lock stops sound. " +
+                "If you explicitly enable timed screen-lock playback, a mediaPlayback " +
+                "foreground service continues for that session only."
         )
         PfTextCard(
             heading = "Playback duration",
@@ -100,19 +103,18 @@ fun BatterySaverScreen() {
         )
         PfTextCard(
             heading = "Background audio",
-            body = "There is no service and no foreground-audio mode. Nothing plays once the " +
-                "app leaves the foreground."
+            body = "An explicitly enabled screen-lock session uses a foreground media " +
+                "notification with a Stop control. Other sessions stop on leaving the app."
         )
         PfTextCard(
             heading = "CPU and wake locks",
-            body = "One audio thread at THREAD_PRIORITY_AUDIO, one 1024-frame PCM buffer " +
-                "reused for the whole session, and no per-sample allocation. Stopping " +
-                "joins the thread and releases the AudioTrack before returning."
+            body = "One audio thread and a reused PCM buffer. Timed lock-screen " +
+                "sessions may consume extra battery; Stop and the timer always end audio."
         )
         PfTextCard(
             heading = "Battery monitoring",
-            body = "The battery level arrives as a system broadcast and the thermal status " +
-                "as a listener. There is no polling loop anywhere in the app."
+            body = "Battery and thermal events remain monitored while timed lock-screen " +
+                "audio is active, even when the Activity is stopped."
         )
     }
 }
@@ -154,6 +156,9 @@ fun PlaybackSafetyScreen() {
 /** Figma 08 · Settings */
 @Composable
 fun SettingsScreen(
+    continueWhenLocked: Boolean,
+    allowPlaybackModeChange: Boolean,
+    onContinueWhenLockedChange: (Boolean) -> Unit,
     onOpenSafety: () -> Unit,
     onOpenDeviceProtection: () -> Unit,
     onOpenBatterySaver: () -> Unit,
@@ -175,9 +180,28 @@ fun SettingsScreen(
             enabled = false
         )
         PfCard(
-            title = "Background playback",
-            subtitle = "Off — there is no service, so sound cannot outlive the screen",
-            enabled = false
+            title = "Continue timed playback with screen locked",
+            subtitle = if (continueWhenLocked) {
+                "ON — your next user-started 5–30 min session can continue while locked."
+            } else {
+                "OFF (default) — sound stops when the screen locks."
+            },
+            enabled = allowPlaybackModeChange,
+            trailing = {
+                Switch(
+                    checked = continueWhenLocked,
+                    onCheckedChange = onContinueWhenLockedChange,
+                    enabled = allowPlaybackModeChange
+                )
+            }
+        )
+        PfTextCard(
+            heading = "Screen-lock session safety",
+            body = "Only an explicitly started timed session continues when locked. " +
+                "A persistent playback notification provides Stop. All battery, thermal, " +
+                "volume, audio-route and focus safeguards remain active. " +
+                "Switching apps while the display is on still stops playback. " +
+                "Never leave sound unattended around children or animals."
         )
         PfCard(
             title = "About & privacy",

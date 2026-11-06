@@ -23,6 +23,8 @@ import com.pifauna.app.data.SettingsStore
 import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.playback.PlayerController
+import com.pifauna.app.playback.PlaybackRuntime
+import androidx.compose.ui.platform.LocalContext
 import com.pifauna.app.ui.screens.AnahataNadaScreen
 import com.pifauna.app.ui.screens.AboutPrivacyScreen
 import com.pifauna.app.ui.screens.ChakraConsoleScreen
@@ -73,6 +75,8 @@ fun PiFaunaApp(
     startRoute: Route
 ) {
     val state by controller.state.collectAsState()
+    val context = LocalContext.current
+    var continueWhenLocked by remember { mutableStateOf(settings.continueWhenScreenLocked) }
     var stack by remember { mutableStateOf(listOf(startRoute)) }
     var presets by remember { mutableStateOf(presetStore.load()) }
     var clearMessage by remember { mutableStateOf<String?>(null) }
@@ -143,9 +147,16 @@ fun PiFaunaApp(
                         settings.lastMode = state.mode
                         settings.lastGain = state.gain
                         controller.refreshSnapshot()
-                        controller.start()
+                        PlaybackRuntime.start(context, continueWhenLocked)
                     },
-                    onStop = { controller.stop("Stopped by user.") },
+                    onStop = { PlaybackRuntime.stop(context, "Stopped by user.") },
+                    continueWhenLocked = continueWhenLocked,
+                    onContinueWhenLockedChange = { enabled ->
+                        if (!state.isPlaying) {
+                            continueWhenLocked = enabled
+                            settings.continueWhenScreenLocked = enabled
+                        }
+                    },
                     onStartFrequencyChange = { hz ->
                         val end = if (state.endHz < hz) hz else state.endHz
                         controller.setRange(hz, if (state.mode == ToneMode.FIXED ||
@@ -268,6 +279,14 @@ fun PiFaunaApp(
                 Route.AboutPrivacy -> AboutPrivacyScreen(onBack = ::pop)
 
                 Route.Settings -> SettingsScreen(
+                    continueWhenLocked = continueWhenLocked,
+                    allowPlaybackModeChange = !state.isPlaying,
+                    onContinueWhenLockedChange = { enabled ->
+                        if (!state.isPlaying) {
+                            continueWhenLocked = enabled
+                            settings.continueWhenScreenLocked = enabled
+                        }
+                    },
                     onOpenSafety = { push(Route.Safety) },
                     onOpenDeviceProtection = { push(Route.DeviceProtection) },
                     onOpenBatterySaver = { push(Route.BatterySaver) },
@@ -275,6 +294,7 @@ fun PiFaunaApp(
                     onOpenPrivacy = { push(Route.AboutPrivacy) },
                     onClearData = {
                         settings.clearAll()
+                        continueWhenLocked = false
                         presetStore.save(emptyList())
                         presets = emptyList()
                         selectedSpecies = SpeciesProfiles.all.first().id

@@ -355,7 +355,7 @@ fun TimerScreen(selectedMinutes: Int, onSelect: (Int) -> Unit) {
             title = "Selected duration",
             sections = listOf(
                 "${tentative} minute session" to "Audio stops automatically when this session ends.",
-                "Foreground only" to "Playback stops when you leave the app or the activity stops.",
+                "Screen-lock option" to "Off by default. If explicitly enabled, this session can finish while the screen is locked.",
                 "Safety checks" to "The battery, volume, route and thermal limits remain active."
             )
         )

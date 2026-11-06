@@ -52,6 +52,11 @@ class SettingsStore(context: Context) {
         get() = prefs.getBoolean(KEY_WELCOME, false)
         set(value) = prefs.edit().putBoolean(KEY_WELCOME, value).apply()
 
+    /** Explicit opt-in, OFF by default. Never auto-starts audio. */
+    var continueWhenScreenLocked: Boolean
+        get() = prefs.getBoolean(KEY_SCREEN_LOCK_PLAYBACK, false)
+        set(value) = prefs.edit().putBoolean(KEY_SCREEN_LOCK_PLAYBACK, value).apply()
+
     var playbackSafetyAcknowledged: Boolean
         get() = prefs.getBoolean(KEY_SAFETY_ACK, false)
         set(value) = prefs.edit().putBoolean(KEY_SAFETY_ACK, value).apply()
@@ -70,6 +75,7 @@ class SettingsStore(context: Context) {
         private const val KEY_GAIN = "last_gain"
         private const val KEY_WELCOME = "welcome_seen"
         private const val KEY_SAFETY_ACK = "safety_acknowledged"
+        private const val KEY_SCREEN_LOCK_PLAYBACK = "screen_lock_playback_opt_in"
     }
 }
 
