@@ -10,11 +10,11 @@ import android.os.Looper
 import android.util.Log
 
 /**
- * Reports whether sound would leave the phone through something other than its
- * own speaker, and notifies when the route changes during a session.
- *
- * Enumeration is advisory: a device may remap, resample or attenuate output.
- * This class is one layer of defence, not a guarantee of acoustic fidelity.
+ * Enumerates externally connected output devices for diagnostics and observes
+ * Android output-device inventory changes. This is NOT the AudioTrack route.
+ * A connected Bluetooth device may be unused by the media stream.
+ * SoundEngine separately checks the actual AudioTrack.routedDevice before
+ * writing nonzero PCM and while playing; never authorize output from this list.
  */
 class AudioRouteMonitor(context: Context) {
 
@@ -23,7 +23,7 @@ class AudioRouteMonitor(context: Context) {
 
     private var callback: AudioDeviceCallback? = null
 
-    /** Human-readable name of the first external output, or null for built-in output. */
+    /** First available external output (inventory only), or null; NOT active routing. */
     fun externalRouteName(): String? {
         val devices = runCatching {
             audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
