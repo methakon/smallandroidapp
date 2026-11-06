@@ -1,5 +1,6 @@
 package com.pifauna.app.playback
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -139,6 +140,11 @@ class TimedPlaybackService : Service() {
             ).build()
     }
 
+    // This is an active Android MediaSession notification using MediaStyle and
+    // session.sessionToken; media-session notifications are exempt from Android
+    // 13 POST_NOTIFICATIONS permission. Lint cannot infer the runtime exemption.
+    // Still verify API 33+ notification visibility during device acceptance.
+    @SuppressLint("NotificationPermission")
     private fun updateNotification() {
         val state = PlaybackRuntime.controller(this).state.value
         if (!state.isPlaying) return
