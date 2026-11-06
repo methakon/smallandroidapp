@@ -137,13 +137,6 @@ fun PlayerScreen(
                 )
             }
         )
-        PfTextCard(
-            heading = "If enabled",
-            body = "A foreground media notification shows a Stop action on the lock screen. " +
-                "The battery, volume, thermal, audio-route and audio-focus limits stay active. " +
-                "Never leave sound unattended around people or animals."
-        )
-
         // Status sits above the action: a refusal must be visible at the moment the
         // user taps Start, not below the fold where the tap looks like a no-op.
         StatusBanner(
@@ -176,6 +169,13 @@ fun PlayerScreen(
                 )
             }
         }
+
+        PfTextCard(
+            heading = "If enabled",
+            body = "A foreground media notification shows a Stop action on the lock screen. " +
+                "The battery, volume, thermal, audio-route and audio-focus limits stay active. " +
+                "Never leave sound unattended around people or animals."
+        )
 
         Spacer(Modifier.height(22.dp))
         SectionLabel("DEVICE STATE")
