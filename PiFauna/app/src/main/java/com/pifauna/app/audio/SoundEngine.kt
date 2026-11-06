@@ -69,6 +69,7 @@ class SoundEngine {
     @Volatile private var track: AudioTrack? = null
     @Volatile private var routeListener: AudioRouting.OnRoutingChangedListener? = null
     private val routeRejected = AtomicBoolean(false)
+    private val routeConfirmed = AtomicBoolean(false)
     @Volatile private var renderBuffer: ShortArray? = null
 
     private var nextToken: Long = 0L
@@ -132,6 +133,7 @@ class SoundEngine {
             track = audio
             teardownClaim.set(false)
             routeRejected.set(false)
+            routeConfirmed.set(false)
             running.set(true)
 
             // Start the track here, while holding the same lock that teardown takes.
@@ -149,9 +151,16 @@ class SoundEngine {
             // Routing callback is an urgent safety stop; write-loop checks remain
             // an independent guard against delayed or missing notifications.
             val listener = AudioRouting.OnRoutingChangedListener { routing ->
-                if (!ActiveOutputRoutePolicy.isTrusted(routing.routedDevice?.type) &&
-                    track === audio && running.get()
-                ) {
+                val routeType = routing.routedDevice?.type
+                // A null callback during silent priming can be normal on some
+                // devices. Before the first verified speaker route no tone is
+                // written anyway. After verification, null is unsafe.
+                val unsafe = when {
+                    ActiveOutputRoutePolicy.isTrusted(routeType) -> false
+                    routeType == null && !routeConfirmed.get() -> false
+                    else -> true
+                }
+                if (unsafe && track === audio && running.get()) {
                     routeRejected.set(true)
                     running.set(false)
                     runCatching { audio.pause() }
@@ -200,6 +209,7 @@ class SoundEngine {
      */
     private fun shutdownLocked(graceful: Boolean): Boolean {
         running.set(false)
+        routeConfirmed.set(false)
 
         val audio = track
         // Only the claim winner may touch the track: the worker may already have
@@ -253,18 +263,25 @@ class SoundEngine {
             // Silence primes routing without exposing the experimental tone.
             val silentFrames = ShortArray(CHUNK_FRAMES)
             var attempts = 0
+            var primedFrames = 0L
             while (running.get() && audio.routedDevice == null && attempts < ROUTE_PRIME_ATTEMPTS) {
                 val count = audio.write(silentFrames, 0, silentFrames.size, AudioTrack.WRITE_BLOCKING)
                 if (count <= 0) {
                     reason = FinishReason.ERROR
                     return
                 }
+                primedFrames += count
                 attempts++
             }
             // This gate denies Bluetooth A2DP and BLE (including ambiguous devices),
             // headsets, hearing aids, USB, HDMI, null, and unknown output types.
             if (!isBuiltInSpeakerRoute(audio)) {
                 Log.w(TAG, "route unverified or not the built-in speaker; suppressing PCM")
+                reason = FinishReason.ERROR
+                return
+            }
+            routeConfirmed.set(true)
+            if (!running.get() || !isBuiltInSpeakerRoute(audio)) {
                 reason = FinishReason.ERROR
                 return
             }
@@ -314,7 +331,7 @@ class SoundEngine {
                     // flush() here used to discard up to a full buffer (~40 ms),
                     // which contains the fade-out, so every session ended with a
                     // hard cut.
-                    val drained = awaitDrain(audio, config, rendered)
+                    val drained = awaitDrain(audio, config, rendered + primedFrames)
                     if (!drained) {
                         // A stop arrived mid-drain: the tail was cut, so this
                         // session did not complete cleanly.
@@ -337,6 +354,7 @@ class SoundEngine {
                 reason = FinishReason.STOPPED
             }
 
+            routeConfirmed.set(false)
             if (routeRejected.get()) reason = FinishReason.ERROR
             if (worker === Thread.currentThread()) worker = null
             if (activeToken == token) activeToken = 0L
