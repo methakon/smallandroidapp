@@ -14,7 +14,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import com.pifauna.app.MainActivity
-import com.pifauna.app.R
+import in.berhampore.dhar.layaswarna.R
 import com.pifauna.app.util.TimeFormat
 
 /**
