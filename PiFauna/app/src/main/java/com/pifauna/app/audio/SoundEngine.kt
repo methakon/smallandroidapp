@@ -86,10 +86,10 @@ class SoundEngine {
      */
     fun start(
         config: ToneConfig,
-        onFinished: (FinishReason, Long) -> Unit,
         preferredDevice: AudioDeviceInfo? = null,
         requestedOutput: OutputMode = OutputMode.PHONE_SPEAKER,
-        onRoutingChanged: (() -> Unit)? = null
+        onRoutingChanged: (() -> Unit)? = null,
+        onFinished: (FinishReason, Long) -> Unit
     ): StartResult = synchronized(lock) {
             // Never overlap sessions: if the old worker will not die, refuse.
             if (!shutdownLocked(graceful = false)) {
