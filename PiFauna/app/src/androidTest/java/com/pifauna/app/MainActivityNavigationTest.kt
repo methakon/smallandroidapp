@@ -68,7 +68,9 @@ class MainActivityNavigationTest {
         compose.onNodeWithText("Settings").performClick()
         compose.waitForIdle()
         compose.onNodeWithText("Preferences").assertIsDisplayed()
-        compose.onNodeWithText("Background playback").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("Continue timed playback with screen locked")
+            .performScrollTo()
+            .assertIsDisplayed()
     }
 
     @Test

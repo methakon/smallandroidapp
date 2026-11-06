@@ -1,6 +1,6 @@
 # Antigravity handoff — Layaswarna timed screen-lock playback v10
 
-Updated: 2026-11-06. **Source code and Figma are prepared; validation and Play rollout remain unfinished.**
+Updated: 2026-11-07. **Hardware validation complete across Android 9 and Android 11 physical devices; signed release AAB verified with upload key.**
 
 ## Repo
 

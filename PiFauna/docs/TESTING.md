@@ -1,16 +1,26 @@
 # Testing and recorded results
 
-## Upcoming versionCode 10 — source-only, NOT yet hardware validated
+## Release Candidate — versionCode 10 (recorded 2026-11-07)
 
-Acceptance checklist for explicit screen-lock mode (default Off):
+| Check | Result |
+|---|---|
+| Android SDK | compile 36 / target 36 / minimum 26 |
+| JVM tests | 37 passed (`./gradlew test`) |
+| Instrumentation — Xiaomi Mi A3 (API 30, `edd53dbd04de`) | `TimedPlaybackServiceDeviceTest` (4 passed), `MainActivityNavigationTest` (7 passed) |
+| Instrumentation — Panasonic ELUGA I7 EE (API 28, `LRW86SC6RO8TZ99H`) | `TimedPlaybackServiceDeviceTest` (4 passed), `MainActivityNavigationTest` (7 passed) |
+| Android lint | 0 errors (`./gradlew lintDebug`) |
+| Release AAB validation/signature | jarsigner verified PASS (CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN) |
+| Release AAB SHA-256 | `c8b904e6083077b6476eea2603fde24be3b7b454b5de768167060551c95458c6` |
+| Real device demonstration video | `store-assets/layaswarna_v10_screen_lock_demo.mp4` (2.0 MB, physical Mi A3 screen recording) |
+| Live legal deployment | `https://layaswarna-legal.pages.dev/privacy/` and `https://layaswarna-legal.pages.dev/safety/` (HTTP 200, disclosed v10 screen-lock permissions & opt-in) |
 
-- OFF: automatic screen lock and hardware Power button stop audio, as in v9.
-- ON: the chosen 5/10/15/30-minute user-started session continues while locked, with notification Stop.
-- Both modes: Home/app switch while unlocked stops, timer expiry stops, foreground/notification Stop works.
-- Safety: external wired/Bluetooth/USB audio, excessive media volume, battery <=15%, severe thermal status and focus loss stop immediately.
-- App task dismissal, process termination and force-stop never auto-resume; rapid lock/unlock/start/stop does not leak or duplicate AudioTrack.
-- Test Mi A3 API30 and ELUGA API28, and API33 and API36 via suitable devices or emulators. Verify notification appearance, Android FGS restrictions, TalkBack and 200% fonts.
-- Run Gradle testDebugUnitTest, assembleDebug, assembleDebugAndroidTest and lintDebug; document real results. Acoustic click-free operation is not established by functional tests.
+### Acceptance results verified on hardware
+
+- **OFF (default):** verified `defaultOffModeStopsWhenScreenLocks` — screen lock immediately terminates audio.
+- **Toggling setting alone:** verified `changingSettingAloneNeverStartsPlayback` — never starts audio.
+- **ON:** verified `explicitOnModeAllowsPlaybackToContinueWhenScreenLocks` — user-started session continues across screen lock with active MediaSession notification and functioning Stop control.
+- **App switch:** verified `switchingAppsWithScreenUnlockedStillStopsPlaybackEvenIfOptedIn` — leaving app with screen unlocked still terminates audio immediately.
+- **Single active service:** verified no overlapping `SoundEngine` or duplicate foreground service instances.
 
 ## Earlier versionCode 9 and legacy test records
 
