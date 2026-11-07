@@ -87,17 +87,51 @@ class MantraStore(context: Context) {
     }
 }
 
-/** Finite japa counts, never an unattended infinite loop. */
+/** A set consists of exactly 108 chants. Set selections are NOT raw repetitions. */
 object MantraRepetitionPolicy {
-    val counts = listOf(11, 21, 58, 108)
+    const val REPS_PER_SET = 108
+    val setChoices = listOf(1, 11, 21, 58, 108)
     val gapsMs = listOf(500L, 1000L, 2000L, 3000L)
+
+    /** Per explicitly initiated foreground session — never silently extend or restart. */
     const val MAX_SESSION_MS = 30L * 60L * 1000L
 
-    fun permitted(count: Int, gapMs: Long): Boolean =
-        count in counts && gapMs in gapsMs
+    fun permitted(sets: Int, gapMs: Long): Boolean =
+        sets in setChoices && gapMs in gapsMs
 
-    fun estimatedMs(durationMs: Long, count: Int, gapMs: Long): Long {
-        require(durationMs in 300L..90_000L && permitted(count, gapMs))
-        return durationMs * count + gapMs * (count - 1)
+    fun totalRepetitions(sets: Int): Int {
+        require(sets in setChoices)
+        return Math.multiplyExact(sets, REPS_PER_SET)
     }
+
+    fun estimatedMs(durationMs: Long, sets: Int, gapMs: Long): Long {
+        require(durationMs in 300L..90_000L && permitted(sets, gapMs))
+        val repetitions = totalRepetitions(sets).toLong()
+        return Math.addExact(
+            Math.multiplyExact(durationMs, repetitions),
+            Math.multiplyExact(gapMs, repetitions - 1)
+        )
+    }
+
+    /** Completed chants only; the first chant is set 1, repetition 1. */
+    fun progress(completed: Int, sets: Int): MantraProgress {
+        val total = totalRepetitions(sets)
+        require(completed in 0..total)
+        return if (completed == total) {
+            MantraProgress(sets, REPS_PER_SET, completed, total)
+        } else {
+            MantraProgress(completed / REPS_PER_SET + 1,
+                completed % REPS_PER_SET, completed, total)
+        }
+    }
+
+    fun canFinishInOneSession(durationMs: Long, sets: Int, gapMs: Long): Boolean =
+        estimatedMs(durationMs, sets, gapMs) <= MAX_SESSION_MS
 }
+
+data class MantraProgress(
+    val currentSet: Int,
+    val completedWithinSet: Int,
+    val completedOverall: Int,
+    val totalOverall: Int
+)
