@@ -1,4 +1,4 @@
-# Layaswarna — Mantra Studio v13 / 0.8.0: UX, privacy and implementation contract
+> **AUTHORITATIVE DESIGN CHANGE: Figma only.** The Adobe sections below document superseded historical ideas, not active deliverables or release conditions. For the v13 home and Mantra Studio, use [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md) and its 11 editable Figma screen links.\n\n# Layaswarna — Mantra Studio v13 / 0.8.0: UX, privacy and implementation contract
 
 **Status:** Development prototype on `feat/layaswarna-mantra-studio-v13`. Not a released feature and not a substitute for physical-device or Play policy review.  
 **Published release untouched:** Internal Testing v11 / 0.6.0.  
