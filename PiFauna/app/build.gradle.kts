@@ -36,8 +36,8 @@ android {
         applicationId = "in.berhampore.dhar.layaswarna"
         minSdk = 26
         targetSdk = 36
-        versionCode = 10
-        versionName = "0.5.0"
+        versionCode = 12
+        versionName = "0.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -96,6 +96,9 @@ android {
         warningsAsErrors = false
         abortOnError = true
         checkDependencies = true
+        // Translations are in progress; missing translations in regional templates
+        // should not abort lint while English fallback is active.
+        disable += "MissingTranslation"
     }
 }
 

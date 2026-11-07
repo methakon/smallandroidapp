@@ -19,7 +19,17 @@ These are **drafts**, and the CSV column schema is **not guaranteed to be the Pl
 
 Worker reports the files were inspected locally but not imported into Google Play. The publishing API can create localized listings directly, if explicitly authorized, but generated translations require human-language and claims review first. All drafted entries were checked against Play character limits at file generation: name ≤30, short description ≤80, full description ≤4000 characters.
 
-**Store-listing localization is not Android UI localization.** Proper UI translations would additionally require `res/values-bn/strings.xml`, `values-hi/`, `values-as/` and migration of hardcoded Compose strings.
+## UI string resource extraction (2026-11-07 audit reconciliation)
+
+All user-facing strings across Layaswarna have been inventoried and extracted into Android string resources:
+- Default strings: [`app/src/main/res/values/strings.xml`](../app/src/main/res/values/strings.xml) (English default).
+- Bengali preparation: [`app/src/main/res/values-bn/strings.xml`](../app/src/main/res/values-bn/strings.xml).
+- Hindi preparation: [`app/src/main/res/values-hi/strings.xml`](../app/src/main/res/values-hi/strings.xml).
+- Assamese preparation: [`app/src/main/res/values-as/strings.xml`](../app/src/main/res/values-as/strings.xml).
+
+**Localization integrity policy:**
+- English (`en-IN`) is the default and fully verified on physical devices.
+- Translations in Bengali (`bn`), Hindi (`hi`), and Assamese (`as`) are **in preparation** and will not be claimed as complete until reviewed by native speakers, checked for claims integrity (no repellent, medical, or sleep claims), and tested on physical Android devices for correct font rendering, line wraps, and touch target accessibility.
 
 Safeguards: accurately preserve 5/10/15/30-minute session choices, experimental **audible** tones only, no proven medical, sleep-therapy, chakra-efficacy or repellent claims, no unimplemented pink/white noise, and offline local-storage behavior.
 

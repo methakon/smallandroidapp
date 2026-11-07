@@ -1,6 +1,34 @@
 # Google Play internal testing — current release and historical deployment record
 
-## Current release — versionCode 9 (2026-11-05, Hermes verified)
+## Active development branch — versionCode 12 (2026-11-07)
+
+Branch: `feat/layaswarna-audit-reconciliation-v12`
+Application ID: `in.berhampore.dhar.layaswarna`
+Version: `0.7.0` (versionCode `12`)
+Status: Development & audit reconciliation. Under release protection: published versionCode 11 remains active on Google Play; versionCode 12 is never automatically uploaded.
+
+## Current Google Play release — versionCode 11 (2026-11-07, Antigravity verified)
+
+Authenticated upload, track update, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.6.0 — Combined Internal Test**, versionCodes: **["11"]**. No Production, Closed, or Open track was touched.
+
+| Field | VersionCode 11 |
+|---|---|
+| App ID | `in.berhampore.dhar.layaswarna` |
+| Track | `internal` |
+| Version name | 0.6.0 |
+| Version code | 11 |
+| Android SDK | minSdk 26, targetSdk 36, compileSdk 36 |
+| Signed AAB | 6,287,292 bytes |
+| SHA-256 (local & Play validated) | `ac22c416de1ac117e78ed471adf12832f3df83d2792f679d7f7fa1a089df1af2` |
+| SHA-1 (Play reported) | `d3d9d4059cede36b8bc262dd50004b8aab71cb5b` |
+| Upload Signer | `CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN` (4096-bit RSA) |
+| Edit Commit ID | `11456912848494461374` |
+| Status | `completed` |
+| Verification | Unit tests: 44/44 passed; Android lint: 0 errors; Instrumentation: 31/31 passed on both Xiaomi Mi A3 (API 30) and Panasonic ELUGA (API 28); Hardware route change test passed (~296 ms stop latency). |
+| Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
+| Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` (HTTP/2 200, updated v11 route safety disclosure) |
+
+## Superseded release — versionCode 9 (2026-11-05, Hermes verified)
 
 Hermes reports an authenticated read-back of Play Developer API: internal track **Layaswarna 0.5.0 - Internal Test 4**, versionCodes **["9"]**, status **completed**. No Production/alpha/beta track was touched. This record summarizes the worker's reported checks; it is not a separate direct Play Console verification.
 

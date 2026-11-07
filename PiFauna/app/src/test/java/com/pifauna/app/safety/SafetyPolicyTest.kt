@@ -89,4 +89,47 @@ class SafetyPolicyTest {
             SafetyPolicy.mustStop(snapshot(route = "Bluetooth audio device"))
         )
     }
+
+    @Test
+    fun `connected-but-unrouted Bluetooth allows playback`() {
+        // When route is null (unrouted Bluetooth / watch), snapshot allows playback
+        val unroutedSnapshot = snapshot(battery = 80, thermal = 0, route = null, volume = 0.3f)
+        assertEquals(SafetyDecision.Allowed, SafetyPolicy.evaluate(unroutedSnapshot))
+        assertNull(SafetyPolicy.mustStop(unroutedSnapshot))
+    }
+
+    @Test
+    fun `active external routes block playback in preflight and mustStop`() {
+        val routes = listOf(
+            "Wired headphones",
+            "A wired headset",
+            "A Bluetooth audio device",
+            "A USB audio device",
+            "A hearing aid",
+            "An HDMI output",
+            "A line output"
+        )
+        for (route in routes) {
+            val blockedSnapshot = snapshot(route = route)
+            val decision = SafetyPolicy.evaluate(blockedSnapshot)
+            assertTrue(decision is SafetyDecision.Blocked)
+            assertEquals(BlockCode.EXTERNAL_ROUTE, (decision as SafetyDecision.Blocked).code)
+            assertEquals(BlockCode.EXTERNAL_ROUTE, SafetyPolicy.mustStop(blockedSnapshot))
+        }
+    }
+
+    @Test
+    fun `route transition from speaker to external route triggers mustStop`() {
+        // Initially on built-in speaker
+        val initialSession = snapshot(route = null)
+        assertNull(SafetyPolicy.mustStop(initialSession))
+
+        // Headset connected during active session
+        val transitionedSession = initialSession.copy(externalAudioRoute = "Wired headphones")
+        assertEquals(BlockCode.EXTERNAL_ROUTE, SafetyPolicy.mustStop(transitionedSession))
+
+        // Headset removed -> back to safe state
+        val restoredSession = transitionedSession.copy(externalAudioRoute = null)
+        assertNull(SafetyPolicy.mustStop(restoredSession))
+    }
 }

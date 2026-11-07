@@ -10,11 +10,11 @@ import android.os.Looper
 import android.util.Log
 
 /**
- * Reports whether sound would leave the phone through something other than its
- * own speaker, and notifies when the route changes during a session.
- *
- * Enumeration is advisory: a device may remap, resample or attenuate output.
- * This class is one layer of defence, not a guarantee of acoustic fidelity.
+ * Enumerates externally connected output devices for diagnostics and observes
+ * Android output-device inventory changes. This is NOT the AudioTrack route.
+ * A connected Bluetooth device may be unused by the media stream.
+ * SoundEngine separately checks the actual AudioTrack.routedDevice before
+ * writing nonzero PCM and while playing; never authorize output from this list.
  */
 class AudioRouteMonitor(context: Context) {
 
@@ -23,26 +23,48 @@ class AudioRouteMonitor(context: Context) {
 
     private var callback: AudioDeviceCallback? = null
 
-    /** Human-readable name of the first external output, or null for built-in output. */
-    fun externalRouteName(): String? {
+    /**
+     * Conservative preflight for PHYSICAL outputs only.
+     *
+     * AudioManager.getDevices() returns *connected* outputs, not the media route.
+     * In particular, isBluetoothA2dpOn is not proof that this AudioTrack is
+     * routed to Bluetooth; blocking on it can deny the phone speaker even when
+     * the user deliberately selected the phone speaker.
+     *
+     * Wired/USB/HDMI outputs remain conservatively blocked when connected
+     * because preflight cannot prove where media will go. Bluetooth alone
+     * NEVER causes a preflight refusal; SoundEngine independently checks the
+     * specific AudioTrack.routedDevice before writing any nonzero PCM and
+     * stops playback when that route becomes unsafe.
+     */
+    fun activeExternalRoute(): String? {
         val devices = runCatching {
             audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
         }.getOrNull() ?: return null
 
-        val external = devices.firstOrNull { isExternal(it.type) } ?: return null
-        return when (external.type) {
+        val physicalExternal = devices.firstOrNull { it.type in PHYSICAL_EXTERNAL_TYPES }
+        return physicalExternal?.let(::formatDeviceName)
+    }
+
+    /** First available external output (compatibility alias for [activeExternalRoute]). */
+    fun externalRouteName(): String? = activeExternalRoute()
+
+    private fun formatDeviceName(device: AudioDeviceInfo): String {
+        return when (device.type) {
             AudioDeviceInfo.TYPE_WIRED_HEADSET -> "A wired headset"
             AudioDeviceInfo.TYPE_WIRED_HEADPHONES -> "Wired headphones"
-            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-            AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> "A Bluetooth audio device"
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> "A Bluetooth audio device"
             AudioDeviceInfo.TYPE_USB_DEVICE,
             AudioDeviceInfo.TYPE_USB_HEADSET -> "A USB audio device"
             AudioDeviceInfo.TYPE_HEARING_AID -> "A hearing aid"
             AudioDeviceInfo.TYPE_HDMI -> "An HDMI output"
             AudioDeviceInfo.TYPE_LINE_ANALOG,
             AudioDeviceInfo.TYPE_LINE_DIGITAL -> "A line output"
-            AudioDeviceInfo.TYPE_DOCK -> "A dock"
-            else -> external.productName?.toString()?.takeIf { it.isNotBlank() } ?: "An external audio device"
+            AudioDeviceInfo.TYPE_DOCK -> "An audio dock"
+            AudioDeviceInfo.TYPE_BLE_HEADSET,
+            AudioDeviceInfo.TYPE_BLE_SPEAKER,
+            AudioDeviceInfo.TYPE_BLE_BROADCAST -> "A Bluetooth LE audio device"
+            else -> device.productName?.toString()?.takeIf { it.isNotBlank() } ?: "An external audio device"
         }
     }
 
@@ -86,7 +108,7 @@ class AudioRouteMonitor(context: Context) {
 
     private fun isExternal(type: Int): Boolean = type in EXTERNAL_TYPES
 
-    private companion object {
+    internal companion object {
         const val TAG = "PiFaunaRoute"
 
         /**
@@ -95,21 +117,38 @@ class AudioRouteMonitor(context: Context) {
          * supported version: an older platform can never report a newer type.
          */
         @SuppressLint("InlinedApi")
-        val EXTERNAL_TYPES = setOf(
+        val PHYSICAL_EXTERNAL_TYPES = setOf(
             AudioDeviceInfo.TYPE_WIRED_HEADSET,
             AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
-            AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
             AudioDeviceInfo.TYPE_USB_DEVICE,
             AudioDeviceInfo.TYPE_USB_HEADSET,
             AudioDeviceInfo.TYPE_HEARING_AID,
             AudioDeviceInfo.TYPE_HDMI,
             AudioDeviceInfo.TYPE_LINE_ANALOG,
             AudioDeviceInfo.TYPE_LINE_DIGITAL,
-            AudioDeviceInfo.TYPE_DOCK,
+            AudioDeviceInfo.TYPE_DOCK
+        )
+
+        @SuppressLint("InlinedApi")
+        val BT_MEDIA_TYPES = setOf(
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
             AudioDeviceInfo.TYPE_BLE_HEADSET,
             AudioDeviceInfo.TYPE_BLE_SPEAKER,
             AudioDeviceInfo.TYPE_BLE_BROADCAST
         )
+
+        @SuppressLint("InlinedApi")
+        val EXTERNAL_TYPES = PHYSICAL_EXTERNAL_TYPES + BT_MEDIA_TYPES + setOf(
+            AudioDeviceInfo.TYPE_BLUETOOTH_SCO
+        )
     }
+}
+
+/** Pure helper: connected physical outputs are a conservative early refusal.
+ * Bluetooth media sinks are NOT classified as active from device inventory.
+ * Only SoundEngine may decide the actual Bluetooth/phone speaker media route.
+ */
+internal object AudioRoutePreflightClassifier {
+    fun isExternalRouteActive(outputDeviceTypes: Collection<Int>): Boolean =
+        outputDeviceTypes.any { it in AudioRouteMonitor.PHYSICAL_EXTERNAL_TYPES }
 }

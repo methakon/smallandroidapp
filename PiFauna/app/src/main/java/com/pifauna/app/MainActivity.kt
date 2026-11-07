@@ -32,7 +32,10 @@ class MainActivity : ComponentActivity() {
         settings = SettingsStore(this)
         presets = PresetStore(this)
 
-        val startRoute = if (settings.welcomeSeen) Route.Home else Route.Welcome
+        val routeExtra = intent?.getStringExtra("route")?.let {
+            runCatching { Route.valueOf(it) }.getOrNull()
+        }
+        val startRoute = routeExtra ?: if (settings.welcomeSeen) Route.Home else Route.Welcome
         setContent {
             PiFaunaTheme {
                 PiFaunaApp(

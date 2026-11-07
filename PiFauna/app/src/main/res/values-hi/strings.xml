@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Hindi (हिन्दी) localization template for Layaswarna.
+    Status: Prepared for translation. Requires fluent human review,
+    Devanagari typography verification, and device-level rendering tests before release.
+-->
+<resources>
+    <string name="app_name">लयस्वर्ण</string>
+    <string name="brand_wordmark">लयस्वर्ण</string>
+    <string name="tab_home">होम</string>
+    <string name="tab_profiles">प्रोफाइल</string>
+    <string name="tab_settings">सेटिंग्स</string>
+    <string name="action_start">शुरू करें</string>
+    <string name="action_stop">रोकें</string>
+</resources>

@@ -3,6 +3,9 @@ package com.pifauna.app.audio
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
+import android.media.AudioRouting
+import android.os.Handler
+import android.os.Looper
 import android.media.VolumeShaper
 import android.os.Process
 import android.os.SystemClock
@@ -45,8 +48,10 @@ sealed interface StartResult {
  *  - one render buffer is allocated per engine and reused for every session;
  *  - `onFinished` is invoked on the audio worker thread, never on the caller's.
  *
- * This class does not choose the audio route. Deciding whether the current
- * route is acceptable is the caller's job (see [AudioRouteMonitor]).
+ * This engine refuses nonzero PCM until the AudioTrack's ACTUAL routed device
+ * is verified to be the built-in loudspeaker. Connected-output enumeration does
+ * not identify the active output. A null or other route always fails closed.
+ * The routing check is repeated before every PCM write to detect changes.
  */
 class SoundEngine {
 
@@ -62,6 +67,9 @@ class SoundEngine {
 
     @Volatile private var worker: Thread? = null
     @Volatile private var track: AudioTrack? = null
+    @Volatile private var routeListener: AudioRouting.OnRoutingChangedListener? = null
+    private val routeRejected = AtomicBoolean(false)
+    private val routeConfirmed = AtomicBoolean(false)
     @Volatile private var renderBuffer: ShortArray? = null
 
     private var nextToken: Long = 0L
@@ -124,6 +132,8 @@ class SoundEngine {
             activeToken = token
             track = audio
             teardownClaim.set(false)
+            routeRejected.set(false)
+            routeConfirmed.set(false)
             running.set(true)
 
             // Start the track here, while holding the same lock that teardown takes.
@@ -134,6 +144,39 @@ class SoundEngine {
                 running.set(false)
                 teardownClaim.set(true)
                 track = null
+                runCatching { audio.release() }
+                return StartResult.Unavailable
+            }
+
+            // Routing callback is an urgent safety stop; write-loop checks remain
+            // an independent guard against delayed or missing notifications.
+            val listener = AudioRouting.OnRoutingChangedListener { routing ->
+                val routeType = routing.routedDevice?.type
+                // A null callback during silent priming can be normal on some
+                // devices. Before the first verified speaker route no tone is
+                // written anyway. After verification, null is unsafe.
+                val unsafe = when {
+                    ActiveOutputRoutePolicy.isTrusted(routeType) -> false
+                    routeType == null && !routeConfirmed.get() -> false
+                    else -> true
+                }
+                if (unsafe && track === audio && running.get()) {
+                    routeRejected.set(true)
+                    running.set(false)
+                    runCatching { audio.pause() }
+                    Log.w(TAG, "AudioTrack route changed away from built-in speaker")
+                }
+            }
+            routeListener = listener
+            val observed = runCatching {
+                audio.addOnRoutingChangedListener(listener, Handler(Looper.getMainLooper()))
+            }.isSuccess
+            if (!observed) {
+                running.set(false)
+                teardownClaim.set(true)
+                routeListener = null
+                track = null
+                runCatching { audio.pause() }
                 runCatching { audio.release() }
                 return StartResult.Unavailable
             }
@@ -166,6 +209,7 @@ class SoundEngine {
      */
     private fun shutdownLocked(graceful: Boolean): Boolean {
         running.set(false)
+        routeConfirmed.set(false)
 
         val audio = track
         // Only the claim winner may touch the track: the worker may already have
@@ -176,6 +220,7 @@ class SoundEngine {
             fadeOut(audio!!)
         }
         if (ownsTeardown) {
+            unregisterRouteListener(audio!!)
             // pause() stops consumption and flush() discards queued frames, which
             // is what unblocks a writer parked in write(..., WRITE_BLOCKING).
             runCatching { if (audio!!.playState == AudioTrack.PLAYSTATE_PLAYING) audio.pause() }
@@ -210,19 +255,52 @@ class SoundEngine {
     ) {
         var reason = FinishReason.STOPPED
         var rendered = 0L
+        var primedFrames = 0L
         try {
             Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)
             var phase = 0.0
-            // AudioTrack.play() already ran under the engine lock in start(), so no
-            // teardown can have paused this track between play() and the first write.
+            // Only SILENCE may be written before the track reports a verified route.
+            // Many Android implementations report null until the first write.
+            // Silence primes routing without exposing the experimental tone.
+            val silentFrames = ShortArray(CHUNK_FRAMES)
+            var attempts = 0
+            while (running.get() && audio.routedDevice == null && attempts < ROUTE_PRIME_ATTEMPTS) {
+                val count = audio.write(silentFrames, 0, silentFrames.size, AudioTrack.WRITE_BLOCKING)
+                if (count <= 0) {
+                    reason = FinishReason.ERROR
+                    return
+                }
+                primedFrames += count
+                attempts++
+            }
+            // This gate denies Bluetooth A2DP and BLE (including ambiguous devices),
+            // headsets, hearing aids, USB, HDMI, null, and unknown output types.
+            if (!isBuiltInSpeakerRoute(audio)) {
+                Log.w(TAG, "route unverified or not the built-in speaker (attempts=$attempts, routedDevice=${audio.routedDevice?.type}, name=${audio.routedDevice?.productName}); suppressing PCM")
+                reason = FinishReason.ERROR
+                return
+            }
+            routeConfirmed.set(true)
+            if (!running.get() || !isBuiltInSpeakerRoute(audio)) {
+                reason = FinishReason.ERROR
+                return
+            }
 
             session@ while (running.get() && rendered < config.totalFrames) {
                 val frames = min(CHUNK_FRAMES.toLong(), config.totalFrames - rendered).toInt()
+                if (!isBuiltInSpeakerRoute(audio)) {
+                    reason = FinishReason.ERROR
+                    break@session
+                }
                 phase = ToneKernel.renderInto(config, rendered, frames, phase, buffer)
 
                 var offset = 0
                 while (offset < frames) {
                     if (!running.get()) break@session
+                    if (!isBuiltInSpeakerRoute(audio)) {
+                        reason = FinishReason.ERROR
+                        break@session
+                    }
                     val written = audio.write(buffer, offset, frames - offset, AudioTrack.WRITE_BLOCKING)
                     if (written < 0) {
                         Log.w(TAG, "AudioTrack.write returned $written")
@@ -246,13 +324,14 @@ class SoundEngine {
             reason = FinishReason.ERROR
         } finally {
             if (teardownClaim.compareAndSet(false, true)) {
+                unregisterRouteListener(audio)
                 // No stop arrived first, so this thread owns the track.
                 if (reason == FinishReason.COMPLETED) {
                     // A natural completion must play out what is still queued.
                     // flush() here used to discard up to a full buffer (~40 ms),
                     // which contains the fade-out, so every session ended with a
                     // hard cut.
-                    val drained = awaitDrain(audio, config, rendered)
+                    val drained = awaitDrain(audio, config, rendered + primedFrames)
                     if (!drained) {
                         // A stop arrived mid-drain: the tail was cut, so this
                         // session did not complete cleanly.
@@ -275,6 +354,8 @@ class SoundEngine {
                 reason = FinishReason.STOPPED
             }
 
+            routeConfirmed.set(false)
+            if (routeRejected.get()) reason = FinishReason.ERROR
             if (worker === Thread.currentThread()) worker = null
             if (activeToken == token) activeToken = 0L
             runCatching { onFinished(reason, token) }
@@ -353,7 +434,21 @@ class SoundEngine {
         return false
     }
 
+    private fun unregisterRouteListener(audio: AudioTrack) {
+        routeListener?.let { listener ->
+            runCatching { audio.removeOnRoutingChangedListener(listener) }
+        }
+        routeListener = null
+    }
+
+    private fun isBuiltInSpeakerRoute(audio: AudioTrack): Boolean =
+        runCatching {
+            ActiveOutputRoutePolicy.isTrusted(audio.routedDevice?.type)
+        }.getOrDefault(false)
+
     private companion object {
+        // Maximum zero-PCM priming: ~210 ms at 48 kHz, then fail closed.
+        const val ROUTE_PRIME_ATTEMPTS = 10
         const val TAG = "PiFaunaEngine"
 
         /** 1024 frames ≈ 21 ms at 48 kHz: small enough to stop promptly, large enough to be cheap. */

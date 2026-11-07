@@ -1,4 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
+    <!-- App & Identity -->
     <string name="app_name">Layaswarna</string>
+    <string name="brand_wordmark">LAYASWARNA</string>
+    <string name="brand_tagline">Acoustic experiments · phone speaker</string>
+
+    <!-- Navigation Tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_profiles">Profiles</string>
+    <string name="tab_settings">Settings</string>
+
+    <!-- Common Actions & Labels -->
+    <string name="action_start">Start</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_prepare">Prepare</string>
+    <string name="action_open">Open</string>
+    <string name="action_back">Back</string>
+    <string name="action_get_started">Get started</string>
+    <string name="action_learn_limits">Learn about sound limits</string>
+
+    <!-- Welcome Screen -->
+    <string name="welcome_title">Gentle sound control</string>
+    <string name="welcome_subtitle">Discover sound profiles</string>
+    <string name="welcome_explore_section">EXPLORE</string>
+    <string name="welcome_get_started_title">Get started</string>
+    <string name="welcome_get_started_subtitle">Pick a band and run a timed session</string>
+    <string name="welcome_limits_title">Learn about sound limits</string>
+    <string name="welcome_limits_subtitle">What a phone speaker can and cannot do</string>
+    <string name="welcome_notice_heading">Before you begin</string>
+    <string name="welcome_notice_body">Layaswarna generates short, low-level test tones through the built-in speaker. It is not a repellent, it is not medically certified, and no frequency here is proven to affect insects or animals. Keep the volume low, stay away from ears, and stop if anyone feels discomfort.</string>
+
+    <!-- Home Screen -->
+    <string name="home_title">Sound profile regulator</string>
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="greeting_night">Good night</string>
+    <string name="home_subtitle_suffix">Tap or rotate to select a sound</string>
+    <string name="home_selected_profile_heading">SELECTED SOUND PROFILE</string>
+    <string name="home_all_profiles_title">All profiles and saved sounds</string>
+    <string name="home_all_profiles_subtitle">Browse preset library</string>
+    <string name="home_meditation_section">MEDITATION</string>
+    <string name="home_disclaimer">Experimental audio: no proven repellency or medical effects.</string>
+
+    <!-- Profiles Screen -->
+    <string name="profile_library_title">Profile library regulator</string>
+    <string name="profile_library_subtitle">Tap or rotate to explore experimental sound presets</string>
+    <string name="profile_selected_heading">Selected sound profile</string>
+    <string name="profile_create_custom_title">Create a custom sound</string>
+    <string name="profile_create_custom_subtitle">Set a frequency band and waveform</string>
+    <string name="profile_presets_section">YOUR PRESETS (%1$d/%2$d)</string>
+    <string name="profile_no_presets_title">No saved presets</string>
+    <string name="profile_no_presets_body">Custom bands you save appear here. Presets stay on this device.</string>
+    <string name="profile_experimental_freq">Experimental frequency</string>
+    <string name="profile_frequency_band">Frequency band</string>
+    <string name="profile_about_heading">About this profile</string>
+    <string name="profile_listening_info">Listening information</string>
+
+    <!-- Custom Sound Screen -->
+    <string name="custom_title">Create a sound</string>
+    <string name="custom_subtitle">Adjust your playback</string>
+    <string name="custom_frequency_range">FREQUENCY RANGE</string>
+    <string name="custom_waveform_heading">Selected waveform</string>
+    <string name="custom_level_heading">Digital ceiling</string>
+    <string name="custom_save_preset">Save as preset</string>
+    <string name="custom_preset_saved">Preset saved to device.</string>
+
+    <!-- Timer Screen -->
+    <string name="timer_title">Session duration</string>
+    <string name="timer_subtitle">Choose how long audio plays</string>
+    <string name="timer_continuous_disabled_title">Continuous playback</string>
+    <string name="timer_continuous_disabled_body">Not offered — every session must end on its own. Unattended playback is the main safety hazard this app is built to avoid.</string>
+
+    <!-- Sound Player Screen -->
+    <string name="player_sound_output">SOUND OUTPUT</string>
+    <string name="player_time_remaining">Time remaining</string>
+    <string name="player_timed_session">Timed sound session</string>
+    <string name="player_screen_lock_label">Continue timed playback with screen locked</string>
+    <string name="player_screen_lock_subtext_on">Allowed — playback continues until the timer expires or a hazard stop occurs.</string>
+    <string name="player_screen_lock_subtext_off">Blocked — turning off the screen or locking the phone will stop playback.</string>
+    <string name="player_screen_lock_enabled_heading">If enabled</string>
+    <string name="player_screen_lock_enabled_body">A foreground media notification shows a Stop action on the lock screen. The battery, volume, thermal, audio-route and audio-focus limits stay active. Never leave sound unattended around people or animals.</string>
+    <string name="player_device_state">DEVICE STATE</string>
+    <string name="player_checks_heading">Checks before every start</string>
+    <string name="player_not_proven_heading">What this does not prove</string>
+    <string name="player_not_proven_body">A selected digital frequency does not establish measured speaker output, repellent effects or chakra-specific physiological effects. Phone speakers vary significantly, especially at high frequencies.</string>
+
+    <!-- Seven Chakra Library & Console -->
+    <string name="chakra_library_title">Seven Chakra Library</string>
+    <string name="chakra_library_subtitle">Tap or rotate to explore symbolic meditation tones</string>
+    <string name="chakra_console_title">Chakra Sound Console</string>
+    <string name="chakra_console_subtitle">Choose an optional symbolic meditation tone</string>
+    <string name="chakra_insights_title">Chakra insights · %1$s</string>
+    <string name="chakra_selected_tone">Selected chakra tone</string>
+    <string name="chakra_suggested_session">Suggested session</string>
+    <string name="chakra_suggested_session_body">5–10 minutes of supervised listening.</string>
+    <string name="chakra_safety_reminder">Safety reminder</string>
+    <string name="chakra_safety_reminder_body">Meditation frequencies are symbolic conventions, not medical treatments. Keep volume moderate and stop if discomfort occurs.</string>
+
+    <!-- Anahata Nada Studio -->
+    <string name="anahata_title">Anahata Nada</string>
+    <string name="anahata_subtitle">Experimental relaxation audio · short supervised sessions</string>
+    <string name="anahata_sound_heading">Selected sound</string>
+    <string name="anahata_session_heading">Session length</string>
+    <string name="anahata_notice_heading">Notice</string>
+    <string name="anahata_notice_body">Audible sweeps and soft tones are playable. Noise generators (pink, white) are planned for a future update and cannot be played in this version.</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_title">Preferences</string>
+    <string name="settings_subtitle">Personalize Layaswarna</string>
+    <string name="settings_explore_section">EXPLORE</string>
+    <string name="settings_dark_title">Dark appearance</string>
+    <string name="settings_dark_subtitle">Always on — the Figma design defines a single dark canvas</string>
+    <string name="settings_audio_output_title">Audio output</string>
+    <string name="settings_audio_output_subtitle">Built-in speaker only. External routes are refused by policy.</string>
+    <string name="settings_lock_title">Continue timed playback with screen locked</string>
+    <string name="settings_lock_subtitle_on">ON — explicitly allowed for this device until toggled off.</string>
+    <string name="settings_lock_subtitle_off">OFF (default) — sound stops when the screen locks.</string>
+    <string name="settings_lock_safety_title">Screen-lock session safety</string>
+    <string name="settings_lock_safety_body">Only an explicitly started timed session continues when locked. A persistent playback notification provides Stop. All battery, thermal, volume, audio-route and focus safeguards remain active. Switching apps while the display is on still stops playback. Never leave sound unattended around children or animals.</string>
+    <string name="settings_about_privacy_title">About &amp; privacy</string>
+    <string name="settings_about_privacy_subtitle">Offline operation and local data policy</string>
+
+    <!-- Safety & Information Screens -->
+    <string name="safety_title">Sound &amp; hearing safety</string>
+    <string name="safety_subtitle">Important information</string>
+    <string name="device_protection_title">Device protection</string>
+    <string name="device_protection_subtitle">Safe playback defaults</string>
+    <string name="battery_saver_title">Battery saver</string>
+    <string name="battery_saver_subtitle">Efficient audio operation</string>
+    <string name="playback_safety_title">Playback safety</string>
+    <string name="playback_safety_subtitle">Understanding safety limits</string>
+    <string name="about_privacy_title">About &amp; Privacy</string>
+    <string name="about_privacy_subtitle">Offline operation, storage &amp; safety</string>
 </resources>

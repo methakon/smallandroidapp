@@ -1,6 +1,6 @@
-# Timed screen-lock playback — Layaswarna versionCode 10 (candidate)
+# Timed screen-lock playback — Layaswarna (versionCode 11 / 12)
 
-Updated 2026-11-06. **Source implementation and editable Figma designs are committed; hardware validation and Play rollout are NOT complete.** VersionCode 9 remains the last reported Internal testing release.
+**Status:** Developed as a versionCode 10 prototype, integrated with speaker routing verification in **versionCode 11 (0.6.0)**, hardware-tested on Xiaomi Mi A3 and Panasonic ELUGA, and released to Google Play Internal testing. Ongoing development continues in versionCode 12 (0.7.0).
 
 ## User interaction
 
