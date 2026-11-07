@@ -107,7 +107,8 @@ fun HomeScreen(
     onSelectProfile: (String) -> Unit,
     onOpenLibrary: () -> Unit,
     onOpenChakras: () -> Unit,
-    onOpenAnahata: () -> Unit
+    onOpenAnahata: () -> Unit,
+    onOpenMantra: () -> Unit
 ) {
     val greeting = when (hourOfDay) {
         in 5..11 -> "Good morning"
@@ -153,6 +154,11 @@ fun HomeScreen(
             title = "Anahata Nada",
             subtitle = "Experimental relaxation sound studio",
             onClick = onOpenAnahata
+        )
+        PfCard(
+            title = "Mantra Studio",
+            subtitle = "Record, retry and save your chant · repeat 11, 21, 58 or 108 times",
+            onClick = onOpenMantra
         )
         Text(
             "Experimental audio: no proven repellency or medical effects.",
