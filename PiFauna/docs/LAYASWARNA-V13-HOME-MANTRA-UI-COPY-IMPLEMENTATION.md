@@ -165,7 +165,7 @@ Completion: **Practice complete** / *You finished {selectedSets} sets of 108 cha
 ### B4. Playback and japa timing
 
 - Distinguish user-selected `selectedSets` (1,11,21,58,108), derived `totalRepetitions = selectedSets * 108`, `completedOverall`, `completedWithinSet`, `currentSet` and `gapMs`.
-- For each repetition, play exactly the saved audio content, on completion schedule the next after 500/1000/2000/3000 ms; gaps must not count as repetitions.
+- For each repetition, play exactly the saved audio content, on completion schedule the next after 100/250/500/750/1000/2000/3000 ms; gaps must not count as repetitions.
 - Stop immediately on explicit user Stop, activity background, output route changes, focus loss, thermal limits, battery cutoff, or media-volume threshold.
 - Enforce a 30-minute per-start session cap, surface the *full practice* estimate before starting and let the user explicitly resume, never automatically restart.
 - Use real audio routing from the active player, not Bluetooth connection state. Test platform restrictions on API26–27 and API36 simultaneous routes.
@@ -185,6 +185,6 @@ Start with a *design concept* based on the sober palette and the home copy here.
 
 ### M-07/M-08 original concentric yantra design specification
 
-Create a dual independently selectable circular control inspired by abstract sacred geometry and cosmic orbits, **not a reproduction of Doctor Strange film artwork**. Outer ring: 1, 11, 21, 58, 108 **sets**. Inner ring: 0.5s, 1s, 2s, 3s silence. Center: selected sets × 108. Ring segments must have labels that are readable without relying on color; add ordinary accessible buttons/chips with equivalent functions. Live progress uses outer-ring set completion and inner-ring progress through the current 108 chants, plus text counters. Long sets are allowed only as separate user-started 30-minute sessions with explicit Continue.
+Create a dual independently selectable circular control inspired by abstract sacred geometry and cosmic orbits, **not a reproduction of Doctor Strange film artwork**. Outer ring: 1, 11, 21, 58, 108 **sets**. Inner ring: 0.1s, 0.25s, 0.5s, 0.75s, 1s, 2s, 3s silence. Center: selected sets × 108. Ring segments must have labels that are readable without relying on color; add ordinary accessible buttons/chips with equivalent functions. Live progress uses outer-ring set completion and inner-ring progress through the current 108 chants, plus text counters. Long sets are allowed only as separate user-started 30-minute sessions with explicit Continue.
 
 **Figma editable screens:** https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=113-52 and https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=113-120 . **Android prototype:** `ConcentricJapaDial.kt`, `MantraRepetitionPolicy`, `MantraAudioEngine` and `MantraStudioScreen`. **Adobe alternative:** the separately committed Adobe prompt in `LAYASWARNA-V13-YANTRA-COMPARISON-PROMPTS.md` should be used to create an independently editable concept for comparison.
