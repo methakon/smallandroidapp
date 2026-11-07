@@ -139,7 +139,8 @@ fun PiFaunaApp(
                     onOpenLibrary = { stack = listOf(Route.Profiles) },
                     onOpenChakras = { push(Route.ChakraLibrary) },
                     onOpenAnahata = { push(Route.AnahataNada) },
-                    onOpenMantra = { push(Route.MantraStudio) }
+                    onOpenMantra = { push(Route.MantraStudio) },
+                    onOpenCustomSound = { push(Route.CustomSound) }
                 )
 
                 Route.Player -> PlayerScreen(
