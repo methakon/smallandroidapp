@@ -130,4 +130,14 @@ class MainActivityNavigationTest {
         compose.onNodeWithText("Open the published copy").assertExists()
     }
 
+    @Test
+    fun mantraStudioIsReachableWithoutRequestingMicrophone() {
+        dismissWelcomeIfShown()
+        compose.onNodeWithText("Mantra Studio").performScrollTo().performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Record a mantra").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("MY RECORDINGS").performScrollTo().assertIsDisplayed()
+        // Navigation/reading the library must not trigger Android RECORD_AUDIO.
+    }
+
 }
