@@ -1,4 +1,4 @@
-# Layaswarna v13 — UI copy deck and implementation plan
+> **Current design master: Figma only**, selected 2026-11-08. For current editable screen designs, see [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md). Any legacy Adobe alternatives below are archived and not to be implemented.\n\n# Layaswarna v13 — UI copy deck and implementation plan
 
 **Status:** Proposed wording and engineering specification; not a declaration that every screen or behavior is implemented.  
 **Branch:** `feat/layaswarna-mantra-studio-v13`  
