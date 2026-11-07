@@ -143,6 +143,12 @@ class MantraAudioEngine(private val context: Context) {
         recordingFile = null
     }
 
+    /** Preview is exactly one play, not one 108-count set. */
+    fun startPreview(file: File, onProgress: (Int, String?) -> Unit) {
+        startPlaybackCount(file, 1, 0L, onProgress)
+    }
+
+    /** Only a user-approved number of complete sets is interpreted as japa. */
     fun startReplay(
         file: File,
         sets: Int,
@@ -150,9 +156,17 @@ class MantraAudioEngine(private val context: Context) {
         onProgress: (completed: Int, error: String?) -> Unit
     ) {
         require(MantraRepetitionPolicy.permitted(sets, betweenMs))
+        startPlaybackCount(file, MantraRepetitionPolicy.totalRepetitions(sets), betweenMs, onProgress)
+    }
+
+    private fun startPlaybackCount(
+        file: File, repeats: Int, betweenMs: Long,
+        onProgress: (completed: Int, error: String?) -> Unit
+    ) {
+        require(repeats >= 1 && repeats <= 11_664 && betweenMs >= 0L)
         require(file.isFile)
         stopPlayback()
-        count = MantraRepetitionPolicy.totalRepetitions(sets)
+        count = repeats
         completed = 0
         gapMs = betweenMs
         currentFile = file
