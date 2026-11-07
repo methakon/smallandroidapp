@@ -2,7 +2,7 @@ name: Layaswarna Android validation
 
 on:
   push:
-    branches: [feat/pifauna-phone-audio, feat/layaswarna-audio-route-v11]
+    branches: [feat/pifauna-phone-audio, feat/layaswarna-audio-route-v11, feat/layaswarna-audit-reconciliation-v12, 'feat/layaswarna-*']
     paths:
       - 'PiFauna/**'
       - '.github/workflows/layaswarna-android.yml'
