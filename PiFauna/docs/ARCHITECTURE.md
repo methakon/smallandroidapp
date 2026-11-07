@@ -59,7 +59,7 @@ Starting a 5/10/15/30-minute session plays only while the Activity is visible in
 
 ## Audio routing & Safety Gates
 
-1. **Preflight evaluation:** `AudioRouteMonitor` detects active media routes (wired headphones, USB headset, hearing aid, Bluetooth A2DP). If present, `SafetyPolicy.evaluate()` marks playback as blocked and displays a clear preflight warning on `PlayerScreen`. Unrelated Bluetooth devices (smartwatches, BLE sensors, SCO call-only devices) do not trigger false preflight blocks.
+1. **Conservative preflight evaluation:** `AudioRouteMonitor` detects *connected* physical outputs (wired headphones, USB headset, hearing aid, HDMI). `SafetyPolicy.evaluate()` refuses these before start. Bluetooth connection state is deliberately excluded from preflight blocking: even an A2DP-enabled device may be connected while Android routes media through the phone speaker. Actual Bluetooth routing is denied by the runtime AudioTrack gate, not inferred from inventory.
 2. **Runtime authorization gate:** Regardless of preflight checks, `SoundEngine` strictly queries `AudioTrack.routedDevice` (`isBuiltInSpeakerRoute()`) before writing any nonzero PCM and on every routing change callback. Only `TYPE_BUILTIN_SPEAKER` is authorized. Any other route immediately aborts audio output.
 
 ---
