@@ -1,0 +1,189 @@
+package com.pifauna.app.mantra
+
+import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.media.MediaRecorder
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
+import java.io.File
+
+/**
+ * Foreground-only local mantra capture and finite counted replay.
+ * No foreground service, boot receiver, network, or automatic restart.
+ */
+class MantraAudioEngine(private val context: Context) {
+    private var recorder: MediaRecorder? = null
+    private var player: MediaPlayer? = null
+    private val main = Handler(Looper.getMainLooper())
+    private var pending: Runnable? = null
+    private var recordingFile: File? = null
+    private var recordingStart = 0L
+    private var sessionStart = 0L
+    private var count = 0
+    private var completed = 0
+    private var gapMs = 1000L
+    private var callback: ((Int, String?) -> Unit)? = null
+    private var currentFile: File? = null
+    private var recording = false
+
+    val isRecording: Boolean get() = recording
+    val isPlaying: Boolean get() = player != null || pending != null
+
+    fun beginCapture(file: File) {
+        stopPlayback()
+        discardCapture()
+        val capture = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(context)
+            else @Suppress("DEPRECATION") MediaRecorder()
+        try {
+            capture.setAudioSource(MediaRecorder.AudioSource.MIC)
+            capture.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+            capture.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+            capture.setAudioEncodingBitRate(96_000)
+            capture.setAudioSamplingRate(44_100)
+            capture.setMaxDuration(90_000)
+            capture.setOutputFile(file.absolutePath)
+            capture.prepare()
+            capture.start()
+            recorder = capture
+            recordingFile = file
+            recordingStart = SystemClock.elapsedRealtime()
+            recording = true
+        } catch (failure: Exception) {
+            runCatching { capture.reset(); capture.release() }
+            file.delete()
+            throw failure
+        }
+    }
+
+    /** Returns the accepted take and duration; caller decides to save or retry. */
+    fun finishCapture(): Pair<File, Long> {
+        val capture = recorder ?: error("No recording started")
+        recorder = null
+        recording = false
+        val file = requireNotNull(recordingFile)
+        recordingFile = null
+        val duration = (SystemClock.elapsedRealtime() - recordingStart).coerceAtMost(90_000L)
+        try {
+            capture.stop()
+            capture.release()
+            require(duration >= 300L && file.length() > 100L) { "Record a longer take." }
+            return file to duration
+        } catch (failure: Exception) {
+            runCatching { capture.reset(); capture.release() }
+            file.delete()
+            throw failure
+        }
+    }
+
+    fun discardCapture() {
+        recorder?.let { runCatching { it.stop() }; runCatching { it.reset(); it.release() } }
+        recorder = null
+        recording = false
+        recordingFile?.delete()
+        recordingFile = null
+    }
+
+    fun startReplay(
+        file: File,
+        repetitions: Int,
+        betweenMs: Long,
+        onProgress: (completed: Int, error: String?) -> Unit
+    ) {
+        require(MantraRepetitionPolicy.permitted(repetitions, betweenMs))
+        require(file.isFile)
+        stopPlayback()
+        count = repetitions
+        completed = 0
+        gapMs = betweenMs
+        currentFile = file
+        callback = onProgress
+        sessionStart = SystemClock.elapsedRealtime()
+        launchOne()
+    }
+
+    private fun launchOne() {
+        if (SystemClock.elapsedRealtime() - sessionStart >= MantraRepetitionPolicy.MAX_SESSION_MS) {
+            finish("Session reached the 30-minute safety limit.")
+            return
+        }
+        val file = currentFile ?: return
+        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        val ratio = if (max > 0) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() / max else 1f
+        if (ratio > 0.6f) {
+            finish("Lower media volume to 60% or less.")
+            return
+        }
+        val p = MediaPlayer()
+        try {
+            p.setAudioAttributes(AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
+            p.setDataSource(file.absolutePath)
+            p.prepare()
+            // Start silent: no recorded voice is allowed until the real route
+            // reports the phone speaker; a connected BT device alone is irrelevant.
+            p.setVolume(0f, 0f)
+            p.setOnCompletionListener {
+                p.setOnRoutingChangedListener(null, null)
+                runCatching { p.release() }
+                if (player === p) player = null
+                completed++
+                callback?.invoke(completed, null)
+                if (completed >= count) {
+                    finish(null)
+                } else {
+                    val next = Runnable { pending = null; launchOne() }
+                    pending = next
+                    main.postDelayed(next, gapMs)
+                }
+            }
+            p.setOnErrorListener { _, _, _ ->
+                finish("Audio playback error.")
+                true
+            }
+            p.setOnRoutingChangedListener({
+                if (p.routedDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                    finish("Playback stopped: output changed from phone speaker.")
+                }
+            }, main)
+            player = p
+            p.start()
+            if (p.routedDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                finish("Only the built-in phone speaker is supported.")
+                return
+            }
+            p.setVolume(0.35f, 0.35f)
+        } catch (failure: Exception) {
+            runCatching { p.release() }
+            if (player === p) player = null
+            finish(failure.message ?: "Cannot play this recording.")
+        }
+    }
+
+    private fun finish(message: String?) {
+        val callbackNow = callback
+        val total = completed
+        stopPlayback()
+        callbackNow?.invoke(total, message)
+    }
+
+    fun stopPlayback() {
+        pending?.let(main::removeCallbacks)
+        pending = null
+        player?.let { runCatching { it.setVolume(0f, 0f); it.stop() }; runCatching { it.release() } }
+        player = null
+        callback = null
+        currentFile = null
+    }
+
+    fun close() {
+        discardCapture()
+        stopPlayback()
+    }
+}
