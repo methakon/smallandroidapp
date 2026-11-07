@@ -109,7 +109,7 @@ fun ConcentricJapaDial(
             val offsetPx = position(139f, angle)
             Text(
                 text = value.toString(),
-                modifier = Modifier.offset {
+                modifier = Modifier.align(Alignment.TopStart).offset {
                     IntOffset(offsetPx.x - with(density) { 20.dp.roundToPx() },
                         offsetPx.y - with(density) { 11.dp.roundToPx() })
                 },
