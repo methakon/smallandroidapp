@@ -36,6 +36,9 @@ import com.pifauna.app.mantra.MantraRecording
 import com.pifauna.app.mantra.MantraRepetitionPolicy
 import com.pifauna.app.mantra.MantraStore
 import com.pifauna.app.playback.PlaybackRuntime
+import com.pifauna.app.ui.ConcentricJapaDial
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
@@ -59,7 +62,7 @@ fun MantraStudioScreen() {
     var recording by remember { mutableStateOf(false) }
     var recordingElapsedMs by remember { mutableLongStateOf(0L) }
     var selected by remember { mutableStateOf<MantraRecording?>(null) }
-    var repetitions by remember { mutableIntStateOf(108) }
+    var selectedSets by remember { mutableIntStateOf(1) }
     var gapMs by remember { mutableLongStateOf(1000L) }
     var completed by remember { mutableIntStateOf(0) }
     var replaying by remember { mutableStateOf(false) }
@@ -104,21 +107,27 @@ fun MantraStudioScreen() {
         else requestMicrophone.launch(Manifest.permission.RECORD_AUDIO)
     }
 
-    fun play(file: File, count: Int) {
+    fun play(file: File, sets: Int? = null) {
         if (recording) return
         PlaybackRuntime.stop(context, "Stopped before mantra replay.")
         completed = 0
         replaying = true
-        runCatching {
-            engine.startReplay(file, count, gapMs) { done, error ->
-                completed = done
-                if (error != null || done >= count) {
-                    replaying = false
-                    status = error ?: "Completed $done repetitions."
-                } else {
-                    status = "Chant $done of $count complete."
-                }
+        val target = sets?.let(MantraRepetitionPolicy::totalRepetitions) ?: 1
+        val notify: (Int, String?) -> Unit = { done, error ->
+            completed = done
+            if (error != null || done >= target) {
+                replaying = false
+                status = error ?: if (sets == null) "Preview finished."
+                    else "Completed $done of $target chants."
+            } else {
+                val progress = MantraRepetitionPolicy.progress(done, sets ?: 1)
+                status = if (sets == null) "Previewing…"
+                    else "Set ${progress.currentSet} of $sets · ${progress.completedWithinSet}/108 chants completed."
             }
+        }
+        runCatching {
+            if (sets == null) engine.startPreview(file, notify)
+            else engine.startReplay(file, sets, gapMs, notify)
         }.onFailure {
             replaying = false
             status = it.message ?: "Could not play the selected recording."
@@ -187,7 +196,7 @@ fun MantraStudioScreen() {
                 title = "Review take · ${duration / 1000}s",
                 subtitle = "You can preview, retry, or save when satisfied."
             )
-            OutlinedButton(onClick = { play(file, 1) }, enabled = !recording && !replaying) {
+            OutlinedButton(onClick = { play(file) }, enabled = !recording && !replaying) {
                 Text("Preview this take")
             }
             OutlinedTextField(
@@ -235,7 +244,7 @@ fun MantraStudioScreen() {
                         enabled = !recording && !replaying
                     ) { Text("Delete") }
                     OutlinedButton(
-                        onClick = { play(store.recordingFile(item), 1) },
+                        onClick = { play(store.recordingFile(item)) },
                         enabled = !recording && !replaying
                     ) { Text("Preview") }
                 }
@@ -243,23 +252,40 @@ fun MantraStudioScreen() {
         }
 
         selected?.let { item ->
-            SectionLabel("COUNTED REPLAY · ${item.title}")
-            PfCard(
-                title = "Repetitions: $repetitions",
-                subtitle = "Playback ends after the selected count or 30 minutes, whichever comes first."
+            val total = MantraRepetitionPolicy.totalRepetitions(selectedSets)
+            val estimated = MantraRepetitionPolicy.estimatedMs(item.durationMs, selectedSets, gapMs)
+            val estimatedMinutes = estimated / 60_000L
+            val estimatedHours = estimatedMinutes / 60
+            val remainingMinutes = estimatedMinutes % 60
+            val finishable = estimated <= MantraRepetitionPolicy.MAX_SESSION_MS
+
+            SectionLabel("JAPA CYCLE · ${item.title}")
+            PfTextCard(
+                heading = "Choose your sets of 108",
+                body = "Outer dial: number of 108-count sets. Inner dial: quiet pause between chants."
             )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                MantraRepetitionPolicy.counts.forEach { number ->
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                ConcentricJapaDial(
+                    selectedSets = selectedSets,
+                    selectedGapMs = gapMs,
+                    enabled = !recording && !replaying,
+                    onSetsChanged = { selectedSets = it },
+                    onGapChanged = { gapMs = it }
+                )
+            }
+            SectionLabel("OUTER RING · SETS")
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                MantraRepetitionPolicy.setChoices.forEach { sets ->
                     FilterChip(
-                        selected = repetitions == number,
+                        selected = selectedSets == sets,
                         enabled = !recording && !replaying,
-                        onClick = { repetitions = number },
-                        label = { Text("$number") }
+                        onClick = { selectedSets = sets },
+                        label = { Text("$sets") }
                     )
                 }
             }
-            PfCard(title = "Silence between chants: ${gapMs / 1000.0}s")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            SectionLabel("INNER RING · SILENCE BETWEEN CHANTS")
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 MantraRepetitionPolicy.gapsMs.forEach { gap ->
                     FilterChip(
                         selected = gapMs == gap,
@@ -269,21 +295,33 @@ fun MantraStudioScreen() {
                     )
                 }
             }
+            PfCard(
+                title = "$selectedSets sets × 108 = $total chants",
+                subtitle = "Estimated duration: ${estimatedHours}h ${remainingMinutes}m · Gap between each chant: ${gapMs / 1000.0}s"
+            )
+            if (!finishable) {
+                PfTextCard(
+                    heading = "This selection exceeds the 30-minute session limit",
+                    body = "The full set cannot finish in a single session. Automatic background or overnight playback is not supported. Reduce the number of sets or save your plan for a future explicitly started session."
+                )
+            }
             if (replaying) {
-                PfCard(title = "Completed $completed / $repetitions")
+                val progress = MantraRepetitionPolicy.progress(completed.coerceIn(0, total), selectedSets)
+                PfCard(
+                    title = "Set ${progress.currentSet} / $selectedSets",
+                    subtitle = "Completed within current set: ${progress.completedWithinSet} / 108 · Overall: $completed / $total"
+                )
                 Button(onClick = {
                     engine.stopPlayback()
                     replaying = false
-                    status = "Stopped after $completed repetitions."
-                }, modifier = Modifier.fillMaxWidth()) {
-                    Text("Stop playback")
-                }
+                    status = "Stopped after $completed of $total repetitions."
+                }, modifier = Modifier.fillMaxWidth()) { Text("Stop practice") }
             } else {
                 Button(
-                    onClick = { play(store.recordingFile(item), repetitions) },
-                    enabled = !recording,
+                    onClick = { play(store.recordingFile(item), selectedSets) },
+                    enabled = !recording && finishable,
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Start $repetitions repetitions") }
+                ) { Text("Start $selectedSets sets · $total chants") }
             }
         }
         Spacer(Modifier.height(8.dp))
