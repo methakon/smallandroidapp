@@ -54,7 +54,7 @@ class MantraAudioEngine(private val context: Context) {
                 return
             }
             val active = player
-            if (active != null && active.routedDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+            if (active != null && !verifiedSpeakerRoute(active)) {
                 finish("Stopped: phone speaker route is not verified.")
                 return
             }
@@ -166,7 +166,28 @@ class MantraAudioEngine(private val context: Context) {
         launchOne()
     }
 
+    /**
+     * MediaPlayer routing APIs first became available in Android 9 (API 28).
+     * Older versions are denied, never routed based on a guessed output.
+     * On Android 16, check every simultaneously reported route.
+     */
+    private fun verifiedSpeakerRoute(p: MediaPlayer): Boolean {
+        if (Build.VERSION.SDK_INT < 28) return false
+        return runCatching {
+            if (Build.VERSION.SDK_INT >= 36) {
+                val routes = p.routedDevices
+                routes.size == 1 && routes.first().type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+            } else {
+                p.routedDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+            }
+        }.getOrDefault(false)
+    }
+
     private fun launchOne() {
+        if (Build.VERSION.SDK_INT < 28) {
+            finish("Verified voice replay requires Android 9 or newer.")
+            return
+        }
         if (SystemClock.elapsedRealtime() - sessionStart >= MantraRepetitionPolicy.MAX_SESSION_MS) {
             finish("Session reached the 30-minute safety limit.")
             return
@@ -206,7 +227,7 @@ class MantraAudioEngine(private val context: Context) {
                 true
             }
             p.addOnRoutingChangedListener({
-                if (p.routedDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                if (!verifiedSpeakerRoute(p)) {
                     finish("Playback stopped: output changed from phone speaker.")
                 }
             }, main)
