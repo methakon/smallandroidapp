@@ -293,13 +293,13 @@ fun MantraStudioScreen() {
                         selected = gapMs == gap,
                         enabled = !recording && !replaying,
                         onClick = { gapMs = gap },
-                        label = { Text("${gap / 1000.0}s") }
+                        label = { Text("${MantraRepetitionPolicy.gapLabel(gap)}s") }
                     )
                 }
             }
             PfCard(
                 title = "$selectedSets sets × 108 = $total chants",
-                subtitle = "Estimated duration: ${estimatedHours}h ${remainingMinutes}m · Gap between each chant: ${gapMs / 1000.0}s"
+                subtitle = "Estimated duration: ${estimatedHours}h ${remainingMinutes}m · Gap between each chant: ${MantraRepetitionPolicy.gapLabel(gapMs)}s"
             )
             if (!finishable) {
                 PfTextCard(
