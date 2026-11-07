@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.AlertDialog
@@ -287,14 +288,22 @@ fun MantraStudioScreen() {
                 }
             }
             SectionLabel("INNER RING · SILENCE BETWEEN CHANTS")
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                MantraRepetitionPolicy.gapsMs.forEach { gap ->
-                    FilterChip(
-                        selected = gapMs == gap,
-                        enabled = !recording && !replaying,
-                        onClick = { gapMs = gap },
-                        label = { Text("${MantraRepetitionPolicy.gapLabel(gap)}s") }
-                    )
+            // Seven values cannot fit in one row at 360dp or larger system fonts.
+            // Keep the controls touch-sized and allow screen readers to reach each value.
+            MantraRepetitionPolicy.gapsMs.chunked(4).forEach { options ->
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    options.forEach { gap ->
+                        FilterChip(
+                            selected = gapMs == gap,
+                            enabled = !recording && !replaying,
+                            onClick = { gapMs = gap },
+                            modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp),
+                            label = { Text("${MantraRepetitionPolicy.gapLabel(gap)}s") }
+                        )
+                    }
                 }
             }
             PfCard(
