@@ -97,10 +97,12 @@ class PlayerController(context: Context) {
         return SafetySnapshot(
             batteryPercent = readBatteryPercent(),
             thermalStatus = thermal,
-            // Available devices are not the active media route. The engine must
-            // verify AudioTrack.routedDevice before emitting any nonzero PCM.
-            // Do not block simply because unrelated Bluetooth audio is connected.
-            externalAudioRoute = null,
+            // Preflight check: detects wired headphones, USB audio, hearing aids,
+            // and active Bluetooth A2DP audio without falsely blocking unrelated
+            // Bluetooth devices (smartwatches, BLE sensors, call-only SCO).
+            // SoundEngine separately verifies AudioTrack.routedDevice == TYPE_BUILTIN_SPEAKER
+            // as the final runtime authorization gate before writing any nonzero PCM.
+            externalAudioRoute = routeMonitor.activeExternalRoute(),
             mediaVolumeRatio = routeMonitor.mediaVolumeRatio()
         )
     }

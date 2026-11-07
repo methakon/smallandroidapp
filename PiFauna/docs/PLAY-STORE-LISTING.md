@@ -8,7 +8,8 @@ Last updated: 2026-11-05. Branch: `feat/pifauna-phone-audio`. Separates **commit
 |---|---|
 | App name | Layaswarna |
 | Package | `in.berhampore.dhar.layaswarna` |
-| Current release | v0.5.0 / **versionCode 9** on Internal testing (Play API read-back: `completed`) |
+| Active Play Release | v0.6.0 / **versionCode 11** on Internal testing (Android Publisher API: `completed`) |
+| Development Version | v0.7.0 / **versionCode 12** on `feat/layaswarna-audit-reconciliation-v12` |
 | Suggested app category | **Music & Audio** |
 | Default locale | **English (India), en-IN** |
 | Product | Offline, audible experimental sound generator; not medically validated or a proven repellent |
@@ -23,7 +24,7 @@ Last updated: 2026-11-05. Branch: `feat/pifauna-phone-audio`. Separates **commit
 >
 > Explore experimental sound profiles with a circular selector, create custom frequency ranges, and try four waveforms: sine, sweep, pulse and hop. Discover seven chakra-inspired tones with traditional associations, and explore the experimental Anahata Nada sound studio.
 >
-> Choose a supervised listening session of 5, 10, 15 or 30 minutes. Playback includes a digital amplitude limit, media volume checks, battery and thermal safeguards, audio-focus handling and built-in-speaker-only operation. Playback stops when you leave the app.
+> Choose a supervised listening session of 5, 10, 15 or 30 minutes. Sessions play while the app is active, and can continue with the screen locked when you explicitly enable screen-lock playback. Playback includes a digital amplitude limit, media volume checks, battery and thermal safeguards, audio-focus handling and built-in-speaker-only operation.
 >
 > Save custom presets on your device. No account, ads or analytics are required.
 >
@@ -41,22 +42,22 @@ Last updated: 2026-11-05. Branch: `feat/pifauna-phone-audio`. Separates **commit
 
 Figma sources: icon [62:25](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=62-25); feature graphic [87:2](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=87-2). No release rebuild needed for artwork.
 
-## Phone screenshots (en-IN `phoneScreenshots`) — **IN PROGRESS / NOT COMPLETE**
+## Phone screenshots (en-IN `phoneScreenshots`) — **CAPTURED & VERIFIED**
 
-**Device (verified):** Xiaomi Mi A3, ADB `edd53dbd04de` (Android 11 / API 30). App **`in.berhampore.dhar.layaswarna` versionCode 9** (installed; no rebuild). Device config **restored and verified:** Physical 720×1560, density 320, no `wm` overrides.
+**Device (verified):** Xiaomi Mi A3, ADB `edd53dbd04de` (Android 11 / API 30).
+**Dimensions:** 720×1280 (16:9 portrait, 24-bit RGB, no alpha, ~80–180 KB per image, all < 8 MB limit).
+**Location:** [`PiFauna/store-assets/screenshots/`](../store-assets/screenshots/) (both `.png` and `.jpg` variants available; uncropped 720×1560 originals in `originals/`).
 
-**Native captures (authentic, preserved locally, uncommitted):** 7 real screens via `adb exec-out screencap -p` → `PiFauna/store-assets/screenshots/originals/` (720×1560 RGBA PNGs):
-1. `01-home-orig.png` — Home / interactive circular sound profile regulator
-2. `02-profiles-orig.png` — Profile Library
-3. `03-chakra-library-orig.png` — Chakra Library / seven chakra-inspired tones
-4. `04-chakra-console-orig.png` — Chakra Sound Console / selected tone & listening info
-5. `05-custom-sound-orig.png` — Custom Sound / frequency & waveform controls
-6. `06-anahata-nada-orig.png` — Anahata Nada / audible sounds & timer choices (shows “Planned” for unavailable sounds — accurate)
-7. `07-player-timer-orig.png` — Sound Player / timed playback controls & safety info
-
-**Not done (blocking):** inspect & crop each original **720×1560 → exact 720×1280 (9:16, portrait, RGB/no alpha, < 8 MB)** preserving controls/text (no stretching/fabrication); export finals as `01-home.jpg`–`07-player-timer.jpg`; verify programmatically; commit+push; **upload all 7** to en-IN `phoneScreenshots` via Play Developer API (quota `layaswarna-play`), commit Play edit, **read back** to confirm acceptance. Any older top-level JPGs present locally (720×1560 / wrong names) are **not** the compliant final set.
-
-**Play status:** **0** new compliant screenshots uploaded for this task (API read-back showed `phoneScreenshots: 0`; icon/feature present). **Accepted screenshots (verified): 0.**
+| Screenshot | Screen / Feature | Verified Contents |
+|---|---|---|
+| `01-home.jpg` | Home | Radial sound profile regulator, time-aware greeting, selected mosquito profile insight |
+| `02-profiles.jpg` | Profile Library | Full species profile library, radial selection, custom band preset access |
+| `03-chakra-library.jpg` | Seven Chakra Library | Radial selector for 7 symbolic chakra meditation tones with dynamic insight card |
+| `04-chakra-console.jpg` | Chakra Sound Console | Selected Anahata meditation tone preparation, session guidance, audible-only controls |
+| `05-custom-sound.jpg` | Custom Sound | Radial waveform selector (sine, sweep, pulse, hop), frequency range & output level controls |
+| `06-anahata-nada.jpg` | Anahata Nada Studio | Relaxation sound studio, audible sweep choices, bounded session times (noise marked planned) |
+| `07-player-timer.jpg` | Sound Player | Interactive countdown dial, start/stop action, preflight device check card, screen-lock toggle |
+| `08-settings.jpg` | Settings | "Continue timed playback with screen locked" toggle (default OFF), safety limits overview |
 
 ## Promo video
 

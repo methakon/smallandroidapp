@@ -1,6 +1,13 @@
 # Google Play internal testing — current release and historical deployment record
 
-## Current release — versionCode 11 (2026-11-07, Antigravity verified)
+## Active development branch — versionCode 12 (2026-11-07)
+
+Branch: `feat/layaswarna-audit-reconciliation-v12`
+Application ID: `in.berhampore.dhar.layaswarna`
+Version: `0.7.0` (versionCode `12`)
+Status: Development & audit reconciliation. Under release protection: published versionCode 11 remains active on Google Play; versionCode 12 is never automatically uploaded.
+
+## Current Google Play release — versionCode 11 (2026-11-07, Antigravity verified)
 
 Authenticated upload, track update, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.6.0 — Combined Internal Test**, versionCodes: **["11"]**. No Production, Closed, or Open track was touched.
 

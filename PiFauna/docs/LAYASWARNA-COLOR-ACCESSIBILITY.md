@@ -41,4 +41,14 @@ The muted temple palette above is **historical and remains relevant to the curre
 
 Audit acceptance: body text >=14sp, captions preferably >=11–12sp, >=48dp effective tap targets, 24dp horizontal gutters, Android system insets, semantic non-Unicode vector icons, selected state beyond color, accessible alternatives to wheel gestures, and real independent Material 3 bottom navigation. The new Figma set illustrates these directions but **does not yet demonstrate a fully constrained component library or WCAG/Android accessibility pass**. Avoid animated glow or pulse when reduced motion is requested; never use flashing effects.
 
-The earlier statement that Android code was not yet updated applied to the *earlier* palette. Android now has the muted Layaswarna palette, **not** the newer modern-mystic palette. The audio safety contract remains unchanged.
+## 2026-11-07 reconciliation: Modern-Mystic palette adoption
+
+The Android application (`Theme.kt`) has officially adopted the Modern-Mystic palette:
+- `MysticBackground`: `#0B0716` (deep dark violet canvas)
+- `MysticSurface`: `#1A1228` (elevated cards and panels)
+- `MysticPrimary`: `#E8C872` (warm radiant gold for highlights and primary actions)
+- `MysticSecondary`: `#8B6CFF` (calm amethyst for secondary accents)
+- `MysticRose`: `#D69AA8` (soft terracotta rose for selection indicators)
+- Seven distinct muted chakra node colors for symbolic radial nodes.
+
+The audio safety contract, digital ceilings, and volume limits remain identical.

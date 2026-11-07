@@ -25,20 +25,24 @@ returned by that call.
 | # | Figma frame | Node | Status | Implementation |
 |---|---|---|---|---|
 | 01 | Welcome | `1:2` | Implemented | `WelcomeScreen` |
-| 02 | Home | `1:15` | Implemented | `HomeScreen` (greeting is time-aware) |
-| 03 | Sound Player | `1:32` | Implemented | `PlayerScreen` |
-| 04 | Profile Library | `1:47` | Implemented | `ProfilesScreen` |
-| 05 | Custom Sound | `1:64` | Implemented | `CustomSoundScreen` |
-| 06 | Timer | `1:81` | Implemented, one card disabled | `TimerScreen` |
+| 02 | Home | `1:15` | Implemented | `HomeScreen` (radial profile selector with time-aware greeting) |
+| 03 | Sound Player | `1:32` | Implemented | `PlayerScreen` (interactive countdown dial, frequency controls, preflight check cards) |
+| 04 | Profile Library | `1:47` | Implemented | `ProfilesScreen` (radial profile selector + presets) |
+| 05 | Custom Sound | `1:64` | Implemented | `CustomSoundScreen` (radial waveform selector + custom Hz sliders) |
+| 06 | Timer | `1:81` | Implemented | `TimerScreen` (5, 10, 15, 30 min bounded choices; continuous card disabled) |
 | 07 | Safety | `1:98` | Implemented | `SafetyScreen` |
-| 08 | Settings | `1:115` | Implemented, three rows read-only | `SettingsScreen` |
+| 08 | Settings | `1:115` | Implemented | `SettingsScreen` (includes active screen-lock playback toggle switch) |
 | 09 | Device Protection | `2:2` | Implemented | `DeviceProtectionScreen` |
 | 10 | Battery Saver | `2:42` | Implemented | `BatterySaverScreen` |
 | 11 | Playback Safety | `2:22` | Implemented | `PlaybackSafetyScreen` |
+| 12 | About & Privacy | n/a | Implemented | `AboutPrivacyScreen` |
+| 13 | Chakra Sound Console | `13:23` / `73:2` | Implemented | `ChakraConsoleScreen` (in `ConceptScreens.kt`) |
+| 14 | Seven Chakra Library | `50:2` | Implemented | `ChakraLibraryScreen` (in `ConceptScreens.kt`) |
+| 15 | Anahata Nada Studio | `73:101` | Implemented | `AnahataNadaScreen` (in `ConceptScreens.kt`) |
 
-Navigation: the Figma footer defines three destinations (`Home`, `Profiles`,
-`Settings`). Those are the bottom-bar tabs; the remaining eight screens are
-pushed on top of the current tab and reached from cards inside them.
+Navigation: the bottom bar defines three primary destinations (`Home`, `Profiles`,
+`Settings`). The remaining twelve screens are navigated hierarchically from cards,
+radial selectors, or links inside them (total 15 destinations in `com.pifauna.app.ui.Route`).
 
 ## Deliberate deviations from the design
 
@@ -51,9 +55,10 @@ These are product decisions, not unfinished work.
 2. **Maximum frequency is 18,000 Hz, not 20,000 Hz.** Figma 05 shows a
    "12–20 kHz" band. Nothing above 18 kHz is meaningful through a phone speaker
    and calling it ultrasonic would be false, so the slider stops at 18 kHz.
-3. **No background playback toggle.** Figma 08 lists "Background playback". The
-   row is present but read-only: there is no service, so the setting cannot
-   exist.
+3. **Explicit screen-lock timed playback opt-in.** In place of generic "Background playback",
+   the app provides an explicit, default-OFF toggle: "Continue timed playback with screen locked".
+   When enabled, user-initiated sessions continue under an Android `mediaPlayback` foreground
+   service with a lock-screen Stop notification. Indefinite background playback is prohibited.
 4. **Dark appearance is fixed.** Figma 08 lists a "Dark appearance" switch; the
    design file contains only a dark palette, so the row reports that instead of
    pretending to toggle something.
@@ -97,7 +102,7 @@ Implemented directly on `feat/pifauna-phone-audio`:
 - `ui/screens/InfoScreens.kt`: changed user-facing PiFauna references to Layaswarna.
 - `res/values/strings.xml`: changed Android launcher label to Layaswarna.
 - **Unchanged:** Kotlin package/application ID, 11-route navigation, audio engine, battery/thermal/volume/route guards, foreground-only and session-duration policy.
-- **Not implemented:** Three concept routes (Chakra Sound Console, Seven Chakra Library, Anahata Nada Studio), AI raster artwork as app assets, original Figma vector path replication, theme switching, extended sleep playback.
+- **Not implemented in this historical pass (superseded by 2026-11-05 Mystic pass):** Three concept routes (Chakra Sound Console, Seven Chakra Library, Anahata Nada Studio) were concepts here, but were subsequently implemented in `ConceptScreens.kt` in the Mystic integration. AI raster artwork as app assets, theme switching, and extended sleep playback remain omitted by design.
 - **Validation status:** GitHub commits confirmed; Gradle build, unit tests, emulator/device screenshots and runtime accessibility tests **not executed in this session**. Run `cd PiFauna && ./gradlew testDebugUnitTest assembleDebug` on a machine with Android SDK and Java configured, and inspect all 11 routes before merging.
 
 
@@ -182,4 +187,12 @@ The Android source on `feat/pifauna-phone-audio` has now been updated to follow 
 - [Settings ON opt-in, node 102:73](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=102-73)
 - [Media notification with Stop, node 102:98](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=102-98)
 
-All layers are editable and follow the Mystic dark-violet/gold/rose theme. SettingsScreen and PlayerScreen now bind Material3 switches to the default-Off local preference. The notification frame is a concept; real Android notification layouts vary. VersionCode 10 source is committed but not yet hardware-tested or released. See SCREEN-LOCK-PLAYBACK.md.
+All layers are editable and follow the Mystic dark-violet/gold/rose theme. SettingsScreen and PlayerScreen bind Material3 switches to the default-Off local preference. The notification frame is a concept; real Android notification layouts vary. Screen-lock playback was merged with speaker route verification into versionCode 11, hardware-tested on physical devices, and published to Google Play Internal testing. See SCREEN-LOCK-PLAYBACK.md.
+
+## 2026-11-07 Audit reconciliation & current state
+
+- **Theme & Tokens:** The active theme in `Theme.kt` is the Modern-Mystic dark-violet (`#0B0716`), gold (`#E8C872`), amethyst (`#8B6CFF`), and muted rose/chakra node colors. The legacy green (`#0C211D`) is preserved in this document only as historical context.
+- **Concept Screens Implemented:** Chakra Sound Console (`ChakraConsoleScreen`), Seven Chakra Library (`ChakraLibraryScreen`), and Anahata Nada Studio (`AnahataNadaScreen`) are all implemented in `ConceptScreens.kt` with dynamic insights and safety-bounded controls.
+- **Radial Selector Wheel:** Implemented in `RadialSelector.kt` and active across Home, Profiles, Waveform, and Timer selection flows.
+- **Navigation Structure:** 15 total destinations defined in `Route` and hosted in `PiFaunaApp`.
+- **String Resource Migration:** Hardcoded Compose strings are inventoried and extracted into `res/values/strings.xml` to prepare for Bengali, Hindi, and Assamese localization without disrupting layout or behavior.

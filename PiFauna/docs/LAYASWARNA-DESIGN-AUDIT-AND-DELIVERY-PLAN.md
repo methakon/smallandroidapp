@@ -27,19 +27,20 @@ For category selection (Home, Profile Library), waveform selection (Custom Sound
 | Screen | Design direction | Android status |
 |---|---|---|
 | 01 Welcome | Branded onboarding and clear safety entry | Existing route; redesign pending |
-| 02 Home | One regulator with meaningful profile symbols, selected state and accessible open action | Existing Android uses **separate circular category tiles**; new wheel pending |
-| 03 Sound Player | Keep true playback state, countdown, frequency, start/stop and guards; do not misrepresent navigation as progress | Existing countdown dial wired; redesign pending |
-| 04 Profile Library | One profile selector; no duplicate list of the same selected name/frequency | Existing Android category grid; wheel pending |
-| 05 Custom Sound | Waveform regulator plus distinct frequency/output controls and save action | Existing route; redesign pending |
-| 06 Timer | Bounded 5/10/15/30-minute selection with explicit confirmation and stop policy | Existing route; redesign pending |
-| 07 Safety | Readable warnings; remove ornamental overlap; no unnecessary wheel | Existing route; visual update pending |
-| 08 Settings | Standard readable settings, accurate read-only controls and accessible navigation | Existing route; visual update pending |
-| 09 Device Protection | Clear limiter, battery, thermal and audio-focus explanations | Existing route; visual update pending |
-| 10 Battery Saver | Clear foreground/timed playback information | Existing route; visual update pending |
-| 11 Playback Safety | Clear device and hearing guidance | Existing route; visual update pending |
-| 12 Chakra Sound Console | Seven-position symbolic wheel, selected chakra/tone, adjustable audio controls | Figma concept only |
-| 13 Seven Chakra Library | Seven-position wheel and **dynamic selected-chakra insights** instead of redundant seven-row frequency list | Figma concept only |
-| 14 Anahata Nada Studio | Relaxation sound regulator and bounded timer; no implied sleep treatment | Figma concept only |
+| 02 Home | One regulator with meaningful profile symbols, selected state and accessible open action | Implemented via `LayaswarnaRadialSelector` in `BrowseScreens.kt` |
+| 03 Sound Player | Keep true playback state, countdown, frequency, start/stop and guards; do not misrepresent navigation as progress | Implemented with interactive countdown dial, preflight checks, and screen-lock toggle |
+| 04 Profile Library | One profile selector; no duplicate list of the same selected name/frequency | Implemented with `LayaswarnaRadialSelector` and saved presets |
+| 05 Custom Sound | Waveform regulator plus distinct frequency/output controls and save action | Implemented with radial waveform selector and Hz sliders |
+| 06 Timer | Bounded 5/10/15/30-minute selection with explicit confirmation and stop policy | Implemented with radial timer selector; continuous disabled |
+| 07 Safety | Readable warnings; remove ornamental overlap; no unnecessary wheel | Implemented in `InfoScreens.kt` |
+| 08 Settings | Standard readable settings, accurate controls and accessible navigation | Implemented with active screen-lock playback switch |
+| 09 Device Protection | Clear limiter, battery, thermal and audio-focus explanations | Implemented in `InfoScreens.kt` |
+| 10 Battery Saver | Clear foreground/timed playback information | Implemented in `InfoScreens.kt` |
+| 11 Playback Safety | Clear device and hearing guidance | Implemented in `InfoScreens.kt` |
+| 12 Chakra Sound Console | Seven-position symbolic wheel, selected chakra/tone, adjustable audio controls | Implemented in `ConceptScreens.kt` |
+| 13 Seven Chakra Library | Seven-position wheel and **dynamic selected-chakra insights** instead of redundant seven-row frequency list | Implemented in `ConceptScreens.kt` |
+| 14 Anahata Nada Studio | Relaxation sound regulator and bounded timer; no implied sleep treatment | Implemented in `ConceptScreens.kt` |
+| 15 About & Privacy | Offline disclosure and local data privacy | Implemented in `InfoScreens.kt` |
 
 ## 4. Chakra sound associations and content rules
 

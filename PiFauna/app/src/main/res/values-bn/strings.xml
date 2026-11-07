@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Bengali (বাংলা) localization template for Layaswarna.
+    Status: Prepared for translation. Requires fluent human review,
+    Bengali typography verification, and device-level rendering tests before release.
+-->
+<resources>
+    <string name="app_name">লয়স্বর্ণ</string>
+    <string name="brand_wordmark">লয়স্বর্ণ</string>
+    <string name="tab_home">হোম</string>
+    <string name="tab_profiles">প্রোফাইল</string>
+    <string name="tab_settings">সেটিংস</string>
+    <string name="action_start">শুরু করুন</string>
+    <string name="action_stop">থামুন</string>
+</resources>

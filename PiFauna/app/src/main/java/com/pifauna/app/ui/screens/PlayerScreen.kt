@@ -183,7 +183,7 @@ fun PlayerScreen(
             heading = "Checks before every start",
             body = "Battery ${state.snapshot.batteryPercent}% · " +
                 "volume ${(state.snapshot.mediaVolumeRatio * 100).toInt()}% of maximum · " +
-                (state.snapshot.externalAudioRoute?.let { "external route detected" } ?: "built-in speaker") +
+                (state.snapshot.externalAudioRoute?.let { "external route detected ($it)" } ?: "built-in speaker") +
                 ". Playback is refused below ${SafetyLimits.BATTERY_CUTOFF_PERCENT}% battery, " +
                 "above ${(SafetyLimits.MEDIA_VOLUME_RATIO_LIMIT * 100).toInt()}% volume, on a " +
                 "severe thermal warning, or whenever headphones, Bluetooth or USB audio are connected."

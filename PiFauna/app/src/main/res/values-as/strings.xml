@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Assamese (অসমীয়া) localization template for Layaswarna.
+    Status: Prepared for translation. Requires fluent human review,
+    Assamese script verification, and device-level rendering tests before release.
+-->
+<resources>
+    <string name="app_name">লয়স্বৰ্ণ</string>
+    <string name="brand_wordmark">লয়স্বৰ্ণ</string>
+    <string name="tab_home">গৃহ</string>
+    <string name="tab_profiles">প্ৰ\'ফাইল</string>
+    <string name="tab_settings">ছেটিংছ</string>
+    <string name="action_start">আৰম্ভ কৰক</string>
+    <string name="action_stop">বন্ধ কৰক</string>
+</resources>

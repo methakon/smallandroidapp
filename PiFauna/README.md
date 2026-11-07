@@ -11,7 +11,7 @@ tells you plainly what that does and does not mean.
 
 ## What the app does
 
-- Fourteen navigable screens: the original eleven routes plus Chakra Sound Console,
+- Fifteen navigable screens: the original eleven routes, About & Privacy, plus Chakra Sound Console,
   Seven Chakra Library and Anahata Nada. Navigation uses separate Material 3
   targets; selection screens share one circular regulator with original vector icons.
 - Wheel gestures: single tap or drag/rotate to select, stationary long-press or
@@ -150,8 +150,11 @@ More detail: [docs/SAFETY.md](docs/SAFETY.md).
   hardware gain still govern how loud it is in the room.
 - No frequency band here has been shown to repel insects, rodents, birds, dogs or
   cats. The profile names describe study bands, not effects.
-- Playback stops when the screen turns off, because there is no service. This is
-  intentional.
+- By default, playback stops when the screen turns off or the app is backgrounded.
+  Users may explicitly opt in to "Continue timed playback with screen locked" in Settings
+  or Sound Player. When enabled, a bounded foreground mediaPlayback service keeps
+  playback active with a lock-screen Stop notification until the timer expires or a
+  safety limit triggers. Indefinite playback is strictly prohibited.
 - Release builds are signed only with existing private, external upload-key properties; missing keystore properties produce an unsigned bundle.
 
 ## Repository layout
@@ -199,23 +202,16 @@ The launcher mask and Android device rendering still require visual QA.
 Figma: <https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX>. The modern-mystic redesign set has 14 screens in addition to earlier concepts and archives.
 Current theme uses dark violet, accessible light text, gold/rose accents and muted seven-chakra node colors. See [design audit and implementation plan](docs/LAYASWARNA-DESIGN-AUDIT-AND-DELIVERY-PLAN.md).
 
-### Latest Mystic UI implementation
+### Mystic UI and Theme implementation
 
-The Android screen layouts have been synchronized with the newer Figma Mystic variants (seven exact Chakra VectorDrawable icons, illuminated wheel, grouped insights, updated headers and actions). See [Figma implementation status](docs/FIGMA-IMPLEMENTATION.md) for exact node IDs and safety-preserving differences. VersionCode 7 is historical; versionCode 9 has since been built, signed and rolled out to Internal testing after the Mystic UI and SoundEngine updates, according to the worker's Play read-back.
+The Android screen layouts are synchronized with the Figma Mystic variants (seven exact Chakra VectorDrawable icons, illuminated wheel, grouped insights, updated headers and actions). See [Figma implementation status](docs/FIGMA-IMPLEMENTATION.md) for exact node IDs and safety-preserving differences. The theme uses the modern-mystic palette in `Theme.kt` with dark violet (`#0B0716`), gold (`#E8C872`), amethyst (`#8B6CFF`), and muted chakra accents.
 
-## Release and Play listing — 2026-11-05
+## Release history and current status
 
-- **Current reported Internal testing release:** versionCode **9**, v0.5.0, targetSdk 36. Not published to Production.
-- **SoundEngine:** single-owner teardown, VolumeShaper fade on user stop, natural queue drain, immediate safety-event stop. Tests do not prove click-free audible output.
-- **Validation:** 33 JVM tests, 27 device tests each on API 28/API 30, lint 0 errors/27 warnings (worker report).
-- **Play graphics:** Figma app icon and feature banner committed and reported uploaded to `en-IN`. Five real screenshots were reported prepared, but not uploaded; their claimed repository path needs verification.
-- **Legal site:** Pages `layaswarna-legal.pages.dev` live; `layaswarna.berhampore.in` needs a DNS CNAME. The Play Privacy Policy field remains unset.
-- **Video:** Figma Motion 24-second editable design-preview timeline; exported MP4 is not yet on YouTube.
-- **Translations:** English (India), Bengali, Hindi, Assamese listing drafts created; import/review pending.
+- **versionCode 7 (historical):** Early proof of concept.
+- **versionCode 9 / v0.5.0 (historical):** Initial Google Play Internal testing release featuring Mystic UI update, SoundEngine single-owner teardown, VolumeShaper fade, and device safety checks.
+- **versionCode 10 (candidate, historical):** Local prototype branch introducing screen-lock timed playback with `TimedPlaybackService`.
+- **versionCode 11 / v0.6.0 (active Play Internal release):** Combined release integrating screen-lock foreground media playback and reactive built-in speaker routing verification. Successfully deployed and active on Google Play Internal testing (`edit_id: 11456912848494461374`).
+- **versionCode 12 / v0.7.0 (current development branch):** Reconciles audit gaps: fixes preflight audio routing warnings, captures and commits authentic physical device screenshots to `store-assets/screenshots/`, and extracts hardcoded UI strings into `res/values/strings.xml` in preparation for future Indic localization.
 
-Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [promo video](docs/MARKETING-VIDEO.md), [translations](docs/LOCALIZATION.md), [Cloudflare/legal site](docs/LEGAL-SITE-HOSTING.md), [internal release record](docs/PLAY-INTERNAL-DEPLOYMENT.md).
-
-
-## Screen-lock timed playback — versionCode 10 candidate (not on Google Play)
-
-The new default-Off option **Continue timed playback with screen locked** is available in Settings and Player. Toggling does not start audio. An explicit Start begins a bounded 5/10/15/30-minute mediaPlayback foreground service, with a lock-screen Stop notification. Safety and duration restrictions remain; ordinary playback still stops when the display locks. Android/OEM may interrupt. Last reported Internal testing release remains versionCode 9. See docs/SCREEN-LOCK-PLAYBACK.md.
+Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [audio routing spec](docs/LAYASWARNA-AUDIO-ROUTING-V11-SPEC.md), [screen-lock playback](docs/SCREEN-LOCK-PLAYBACK.md), [translations](docs/LOCALIZATION.md), [Cloudflare/legal site](docs/LEGAL-SITE-HOSTING.md), [internal release record](docs/PLAY-INTERNAL-DEPLOYMENT.md).
