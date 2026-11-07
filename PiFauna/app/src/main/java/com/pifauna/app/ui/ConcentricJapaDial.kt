@@ -121,13 +121,13 @@ fun ConcentricJapaDial(
             val angle = -PI / 2 + (index + .5) * 2 * PI / gaps.size
             val offsetPx = position(89f, angle)
             Text(
-                text = if (value == 500L) ".5s" else "${value / 1000}s",
-                modifier = Modifier.offset {
-                    IntOffset(offsetPx.x - with(density) { 16.dp.roundToPx() },
+                text = "${MantraRepetitionPolicy.gapLabel(value)}s",
+                modifier = Modifier.align(Alignment.TopStart).offset {
+                    IntOffset(offsetPx.x - with(density) { 18.dp.roundToPx() },
                         offsetPx.y - with(density) { 10.dp.roundToPx() })
                 },
                 color = PiFaunaColors.BodyText,
-                fontSize = 12.sp, fontWeight = FontWeight.Medium
+                fontSize = 11.sp, fontWeight = FontWeight.Medium
             )
         }
         androidx.compose.foundation.layout.Column(horizontalAlignment = Alignment.CenterHorizontally) {
