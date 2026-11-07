@@ -25,6 +25,7 @@ Adobe Express and the old generated Adobe SVG/PNG exports are **not** selected d
 | 09 | Saved confirmation | [124:141](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=124-141) | Save feedback exists; success-state design not fully integrated |
 | 10 | 30-minute stop; manual Continue | [124:164](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=124-164) | Explicit Continue exists in Compose state; crash/process-death persistence still a release blocker |
 | 11 | Destructive deletion confirmation | [124:189](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=124-189) | Confirmed delete exists; styling pending |
+| 12 | Accessible expanded controls for five set values and seven pause choices (4+3 row) | [138:93](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=138-93) | Compose fallback split into 4+3 responsive FilterChip rows; typography/device QA pending |
 
 The pre-existing screens in the Figma file remain historical design references; do not silently replace or remove them. The master page uses editable text, Figma vector geometry, reusable brand/nav/card/button components, **not flattened UI screenshots**. Its original radial geometry is inspired by geometric diagrams; do not copy third-party fictional/motion-picture glyphs.
 
