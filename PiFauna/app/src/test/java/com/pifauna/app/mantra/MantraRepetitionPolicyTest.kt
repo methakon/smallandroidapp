@@ -10,8 +10,20 @@ class MantraRepetitionPolicyTest {
         assertEquals(listOf(1, 11, 21, 58, 108), MantraRepetitionPolicy.setChoices)
         assertEquals(listOf(108, 1188, 2268, 6264, 11664),
             MantraRepetitionPolicy.setChoices.map { MantraRepetitionPolicy.totalRepetitions(it) })
-        assertEquals(listOf(500L, 1000L, 2000L, 3000L),
+        assertEquals(listOf(100L, 250L, 500L, 750L, 1000L, 2000L, 3000L),
             MantraRepetitionPolicy.gapsMs)
+    }
+
+    @Test fun supportsFractionalSilenceWithExactLabelsAndTiming() {
+        assertEquals(listOf("0.1", "0.25", "0.5", "0.75", "1", "2", "3"),
+            MantraRepetitionPolicy.gapsMs.map { MantraRepetitionPolicy.gapLabel(it) })
+        assertEquals(108_000L + 107 * 100L,
+            MantraRepetitionPolicy.estimatedMs(1000L, 1, 100L))
+        assertEquals(108_000L + 107 * 250L,
+            MantraRepetitionPolicy.estimatedMs(1000L, 1, 250L))
+        assertEquals(108_000L + 107 * 750L,
+            MantraRepetitionPolicy.estimatedMs(1000L, 1, 750L))
+        assertFalse(MantraRepetitionPolicy.permitted(1, 125L))
     }
 
     @Test fun acceptsOnlySupportedSetsAndGaps() {
