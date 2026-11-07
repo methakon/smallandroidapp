@@ -91,10 +91,22 @@ class MantraStore(context: Context) {
 object MantraRepetitionPolicy {
     const val REPS_PER_SET = 108
     val setChoices = listOf(1, 11, 21, 58, 108)
-    val gapsMs = listOf(500L, 1000L, 2000L, 3000L)
+    val gapsMs = listOf(100L, 250L, 500L, 750L, 1000L, 2000L, 3000L)
 
     /** Per explicitly initiated foreground session — never silently extend or restart. */
     const val MAX_SESSION_MS = 30L * 60L * 1000L
+
+    /** UI labels without floating-point rounding artifacts. */
+    fun gapLabel(gapMs: Long): String = when (gapMs) {
+        100L -> "0.1"
+        250L -> "0.25"
+        500L -> "0.5"
+        750L -> "0.75"
+        1000L -> "1"
+        2000L -> "2"
+        3000L -> "3"
+        else -> throw IllegalArgumentException("Unsupported silence duration")
+    }
 
     fun permitted(sets: Int, gapMs: Long): Boolean =
         sets in setChoices && gapMs in gapsMs
