@@ -4,12 +4,16 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
+import android.media.AudioFocusRequest
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import android.os.BatteryManager
+import android.content.Intent
+import android.content.IntentFilter
 import java.io.File
 
 /**
@@ -30,6 +34,54 @@ class MantraAudioEngine(private val context: Context) {
     private var callback: ((Int, String?) -> Unit)? = null
     private var currentFile: File? = null
     private var recording = false
+    private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    private var focusRequest: AudioFocusRequest? = null
+    private val safetyPoll = object : Runnable {
+        override fun run() {
+            if (callback == null) return
+            val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+            val volume = if (max > 0)
+                audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() / max else 1f
+            if (volume > 0.6f) {
+                finish("Stopped: media volume exceeds 60%.")
+                return
+            }
+            val battery = context.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            val level = battery?.getIntExtra(BatteryManager.EXTRA_LEVEL, -1) ?: -1
+            val scale = battery?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
+            if (level < 0 || scale <= 0 || level * 100 / scale <= 15) {
+                finish("Stopped: battery status unknown or at 15% or less.")
+                return
+            }
+            val active = player
+            if (active != null && active.routedDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+                finish("Stopped: phone speaker route is not verified.")
+                return
+            }
+            if (SystemClock.elapsedRealtime() - sessionStart >= MantraRepetitionPolicy.MAX_SESSION_MS) {
+                finish("Stopped: the 30-minute session limit was reached.")
+                return
+            }
+            main.postDelayed(this, 250L)
+        }
+    }
+
+    private fun requestPlaybackFocus(): Boolean {
+        val request = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+            .setAudioAttributes(AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
+            .setWillPauseWhenDucked(true)
+            .setOnAudioFocusChangeListener({ change ->
+                if (change <= AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                    finish("Stopped: audio focus was lost.")
+                }
+            }, main)
+            .build()
+        val granted = audioManager.requestAudioFocus(request) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
+        if (granted) focusRequest = request
+        return granted
+    }
 
     @Suppress("DEPRECATION")
     private fun legacyRecorder(): MediaRecorder = MediaRecorder()
@@ -106,6 +158,11 @@ class MantraAudioEngine(private val context: Context) {
         currentFile = file
         callback = onProgress
         sessionStart = SystemClock.elapsedRealtime()
+        if (!requestPlaybackFocus()) {
+            finish("Another app is using the audio output.")
+            return
+        }
+        main.postDelayed(safetyPoll, 250L)
         launchOne()
     }
 
@@ -115,7 +172,6 @@ class MantraAudioEngine(private val context: Context) {
             return
         }
         val file = currentFile ?: return
-        val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
         val ratio = if (max > 0) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat() / max else 1f
         if (ratio > 0.6f) {
@@ -178,6 +234,9 @@ class MantraAudioEngine(private val context: Context) {
     fun stopPlayback() {
         pending?.let(main::removeCallbacks)
         pending = null
+        main.removeCallbacks(safetyPoll)
+        focusRequest?.let { runCatching { audioManager.abandonAudioFocusRequest(it) } }
+        focusRequest = null
         player?.let { runCatching { it.setVolume(0f, 0f); it.stop() }; runCatching { it.release() } }
         player = null
         callback = null
