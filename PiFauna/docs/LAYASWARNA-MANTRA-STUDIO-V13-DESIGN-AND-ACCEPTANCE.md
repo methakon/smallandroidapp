@@ -11,7 +11,7 @@
 3. **Review or try again**: Playback preview, keep/discard and retry until satisfied. Replace previous uncommitted take; do not overwrite existing saved recordings.
 4. **Save**: Require a meaningful title (1–80 characters); store AAC/M4A under app-private internal storage and a small local catalog. No cloud upload, analytics, unrequested export or third-party recording access.
 5. **My Recordings**: Show title and recorded duration. Select, preview, remove with confirmation; support multiple files and storage cleanup.
-6. **Counted Japa Player**: Select **1, 11, 21, 58 or 108 SETS**, each consisting of **108** repetitions (108 / 1,188 / 2,268 / 6,264 / 11,664 total chants), with **0.5/1/2/3 seconds silence** between individual chants. Display completed / target, Stop, remaining status and explicit 30-minute maximum. No infinite background loop; no silent restart on relaunch. For long practices, the 30-minute safety cap stops playback and the user must explicitly choose Continue to resume remaining repetitions. No unattended re-start. Show this limitation transparently.
+6. **Counted Japa Player**: Select **1, 11, 21, 58 or 108 SETS**, each consisting of **108** repetitions (108 / 1,188 / 2,268 / 6,264 / 11,664 total chants), with **0.1/0.25/0.5/0.75/1/2/3 seconds silence** between individual chants. Display completed / target, Stop, remaining status and explicit 30-minute maximum. No infinite background loop; no silent restart on relaunch. For long practices, the 30-minute safety cap stops playback and the user must explicitly choose Continue to resume remaining repetitions. No unattended re-start. Show this limitation transparently.
 7. **Foreground lifecycle and safe output**: Stop capture and repetition playback when leaving the Activity; no screen-lock continuation initially. Check microphone access, media-volume limits and actual built-in-speaker output. Preserve separate synthesized-tone SoundEngine safety policy. No recording of other people without consent.
 
 ## Adobe Express brief — original/editable screen system
@@ -23,7 +23,7 @@ Use captured v12 screen imagery as **visual references only**, never invent scre
 - **New screen 2** Record with mic permission explainer, large start/stop control, visible timer.
 - **New screen 3** Review take, preview, retry, title and save.
 - **New screen 4** Library of titled recordings with duration and delete confirmation.
-- **New screen 5** Counted session setup: original concentric yantra-inspired **outer SET dial** with 1/11/21/58/108 and **inner silence dial** with 0.5/1/2/3-second gaps; chips as accessible alternatives.
+- **New screen 5** Counted session setup: original concentric yantra-inspired **outer SET dial** with 1/11/21/58/108 and **inner silence dial** with 0.1/0.25/0.5/0.75/1/2/3-second gaps; chips as accessible alternatives.
 - **New screen 6** Live counted playback: title, n/target, pause/stop concept (only ship controls implemented and tested), volume/route safety messages and progress.
 
 Style: near-black violet **#0B0716** background; muted violet **#241B35** cards; restrained antique gold **#E8C872** primary action; ivory **#F4EEFF** text; subdued mauve highlights. Prefer whitespace, 16dp readable text, 48dp touch targets, uncluttered waveforms, flat/matte cards, subtle symbols rather than excessive glows. Check 200% font, TalkBack and 360dp phone widths. Do not imply waveform is measured if it is an illustration.
@@ -52,7 +52,7 @@ Style: near-black violet **#0B0716** background; muted violet **#241B35** cards;
 
 - Build/lint/unit tests and physical Xiaomi Mi A3 (API30) + Panasonic ELUGA (API28) with explicit RECORD_AUDIO permission flows.
 - Test permission denied, granted, revoked while app backgrounded; retry 10 times; save multiple titles; delete and app relaunch; file corruption, duplicate names and max counts.
-- Test 108/1188/2268/6264/11664 total chant targets across 1/11/21/58/108 sets; 0.5/1/2/3s silence measured across iterations; Stop during a gap and during audio; no 109th replay; session cap.
+- Test 108/1188/2268/6264/11664 total chant targets across 1/11/21/58/108 sets; 0.1/0.25/0.5/0.75/1/2/3s silence measured across iterations; Stop during a gap and during audio; no 109th replay; session cap.
 - Test connected A2DP but phone speaker active, then switch active route to external while playing; ensure no audible external leakage.
 - Test Home, lock, app switch, forced process death and audio-focus interruptions; no background microphone or voice playback.
 - Test actual maximum volume monitoring; no high-volume bypass.
@@ -67,7 +67,7 @@ The main app continues to support API 26. Voice **recording** is available from 
 
 ## Authoritative correction: sets of 108 and concentric yantra dial
 
-**1 set = 108 chants.** Outer-ring choices **1, 11, 21, 58, 108** represent **sets**, not individual repetitions. Inner-ring choices **0.5s, 1s, 2s, 3s** represent silence *between individual chants*. Total chants = `sets × 108`. Estimated full duration (ms) = `chantDurationMs × totalChants + gapMs × (totalChants − 1)`. The final chant has no trailing gap.
+**1 set = 108 chants.** Outer-ring choices **1, 11, 21, 58, 108** represent **sets**, not individual repetitions. Inner-ring choices **0.1s, 0.25s, 0.5s, 0.75s, 1s, 2s, 3s** represent silence *between individual chants*. Total chants = `sets × 108`. Estimated full duration (ms) = `chantDurationMs × totalChants + gapMs × (totalChants − 1)`. The final chant has no trailing gap.
 
 Japa progress should show **Set 3 of 11**, **67 of 108 chants in this set**, and **283 of 1188 overall**, with completed counts reflecting only finished audio plays. A set boundary occurs after every 108 completed plays. The dial uses an **original** geometric, elegant cosmic/yantra language, not copyrighted Doctor Strange graphics, symbols or glyphs. Keep outer and inner rings independently selectable and provide chip/button alternatives for touch accessibility.
 
