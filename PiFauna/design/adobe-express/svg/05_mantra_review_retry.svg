@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .title { font-family: 'Cinzel', serif; font-weight: 700; fill: #F4EEFF; letter-spacing: 1.5px; }
+      .heading { font-weight: 700; fill: #F4EEFF; }
+      .subhead { font-weight: 400; fill: #BEB6CA; }
+      .label { font-weight: 600; fill: #DEC588; letter-spacing: 1.2px; font-size: 26px; }
+      .card-title { font-weight: 600; fill: #F4EEFF; font-size: 34px; }
+      .card-sub { font-weight: 400; fill: #BEB6CA; font-size: 26px; }
+      .btn-text { font-weight: 700; fill: #0B0716; font-size: 30px; }
+      .btn-text-outline { font-weight: 600; fill: #E8C872; font-size: 30px; }
+    </style>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1080" height="1920" fill="#0B0716"/>
+  
+  <!-- Subtle Header ambient glow -->
+  <circle cx="540" cy="180" r="300" fill="#241B35" opacity="0.4" filter="blur(60px)"/>
+
+  <!-- Top App Bar -->
+  <g transform="translate(60, 100)">
+    <text x="0" y="40" class="label">LAYASWARNA</text>
+    <text x="0" y="110" class="title" font-size="52">Review Mantra Take</text>
+  </g>
+
+  <!-- Screen Content -->
+  
+  <g transform="translate(60, 260)">
+    <text x="0" y="30" class="subhead" font-size="30">Take completed · Listen, retry or save</text>
+  </g>
+
+  <!-- Take Summary Card -->
+  <g transform="translate(60, 340)">
+    <rect width="960" height="200" rx="26" fill="#241B35" stroke="#3A2E50"/>
+    <text x="40" y="60" class="card-title">Review take · 15.2s</text>
+    <text x="40" y="105" class="card-sub">Audio format: AAC 96 kbps / 44.1 kHz</text>
+    <text x="40" y="150" class="card-sub">Preview before committing to local library.</text>
+  </g>
+
+  <!-- Preview Action & Retry -->
+  <g transform="translate(60, 580)">
+    <rect width="460" height="90" rx="22" fill="#352B49" stroke="#E8C872"/>
+    <text x="230" y="58" text-anchor="middle" class="btn-text-outline">▶ Preview take</text>
+
+    <g transform="translate(500, 0)">
+      <rect width="460" height="90" rx="22" fill="#241B35" stroke="#3A2E50"/>
+      <text x="230" y="58" text-anchor="middle" fill="#BEB6CA" font-size="28" font-weight="600">Try another take</text>
+    </g>
+  </g>
+
+  <!-- Title Input Form -->
+  <g transform="translate(60, 720)">
+    <text x="0" y="30" class="label">RECORDING TITLE</text>
+    
+    <rect y="50" width="960" height="90" rx="20" fill="#1A1326" stroke="#DEC588" stroke-width="2"/>
+    <text x="40" y="108" fill="#F4EEFF" font-size="32" font-weight="500">Morning Gayatri Mantra</text>
+
+    <text x="0" y="180" class="subhead" font-size="24">1–80 characters · Used for display in your personal library</text>
+  </g>
+
+  <!-- Save Button -->
+  <g transform="translate(60, 960)">
+    <rect width="960" height="100" rx="26" fill="#E8C872"/>
+    <text x="480" y="64" text-anchor="middle" class="btn-text">Save selected take</text>
+  </g>
+
+
+  <!-- Bottom Navigation Bar (Persistent 3 tabs) -->
+  <g transform="translate(0, 1780)">
+    <rect width="1080" height="140" fill="#140E24" opacity="0.95"/>
+    <line x1="0" y1="0" x2="1080" y2="0" stroke="#2B213F" stroke-width="2"/>
+    
+    <!-- Home Tab -->
+    <g transform="translate(180, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#E8C872"/>
+      <text x="0" y="55" fill="#E8C872" font-size="24" font-weight="600">Home</text>
+    </g>
+
+    <!-- Profiles Tab -->
+    <g transform="translate(540, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#BEB6CA"/>
+      <text x="0" y="55" fill="#BEB6CA" font-size="24" font-weight="500">Profiles</text>
+    </g>
+
+    <!-- Settings Tab -->
+    <g transform="translate(900, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#BEB6CA"/>
+      <text x="0" y="55" fill="#BEB6CA" font-size="24" font-weight="500">Settings</text>
+    </g>
+  </g>
+</svg>

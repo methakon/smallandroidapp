@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .title { font-family: 'Cinzel', serif; font-weight: 700; fill: #F4EEFF; letter-spacing: 1.5px; }
+      .heading { font-weight: 700; fill: #F4EEFF; }
+      .subhead { font-weight: 400; fill: #BEB6CA; }
+      .label { font-weight: 600; fill: #DEC588; letter-spacing: 1.2px; font-size: 26px; }
+      .card-title { font-weight: 600; fill: #F4EEFF; font-size: 34px; }
+      .card-sub { font-weight: 400; fill: #BEB6CA; font-size: 26px; }
+      .btn-text { font-weight: 700; fill: #0B0716; font-size: 30px; }
+      .btn-text-outline { font-weight: 600; fill: #E8C872; font-size: 30px; }
+    </style>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1080" height="1920" fill="#0B0716"/>
+  
+  <!-- Subtle Header ambient glow -->
+  <circle cx="540" cy="180" r="300" fill="#241B35" opacity="0.4" filter="blur(60px)"/>
+
+  <!-- Top App Bar -->
+  <g transform="translate(60, 100)">
+    <text x="0" y="40" class="label">LAYASWARNA</text>
+    <text x="0" y="110" class="title" font-size="52">Sound Player &amp; Timer</text>
+  </g>
+
+  <!-- Screen Content -->
+  
+  <g transform="translate(60, 260)">
+    <text x="0" y="30" class="subhead" font-size="30">Natural acoustic modulation session</text>
+  </g>
+
+  <g transform="translate(60, 340)">
+    <rect width="960" height="420" rx="30" fill="#241B35" stroke="#3A2E50"/>
+    
+    <text x="50" y="80" class="card-title">Mosquito profile</text>
+    <text x="50" y="130" class="subhead" font-size="32">16,000 Hz – 20,000 Hz Sweep</text>
+
+    <!-- Circular Timer Progress -->
+    <g transform="translate(480, 260)">
+      <circle cx="0" cy="0" r="110" fill="#1B132B" stroke="#362952" stroke-width="12"/>
+      <circle cx="0" cy="0" r="110" fill="none" stroke="#E8C872" stroke-width="12" stroke-dasharray="691" stroke-dashoffset="230"/>
+      <text x="0" y="16" text-anchor="middle" class="heading" font-size="52">07:24</text>
+      <text x="0" y="54" text-anchor="middle" fill="#BEB6CA" font-size="20">REMAINING</text>
+    </g>
+  </g>
+
+  <!-- Start / Stop Button -->
+  <g transform="translate(60, 810)">
+    <rect width="960" height="110" rx="28" fill="#E8C872"/>
+    <text x="480" y="70" text-anchor="middle" class="btn-text">▶ Start (10 min)</text>
+  </g>
+
+  <!-- Safety Snapshot Box -->
+  <g transform="translate(60, 970)">
+    <rect width="960" height="260" rx="24" fill="#1C1428" stroke="#312547"/>
+    <text x="40" y="55" class="card-title" font-size="28">Device safety status</text>
+    <text x="40" y="105" class="card-sub">Output: Built-in phone speaker (verified)</text>
+    <text x="40" y="145" class="card-sub">Volume: 42% (below 60% cutoff limit)</text>
+    <text x="40" y="185" class="card-sub">Battery: 84% (above 15% minimum)</text>
+    <text x="40" y="225" class="card-sub">Thermal state: Normal (0)</text>
+  </g>
+
+
+  <!-- Bottom Navigation Bar (Persistent 3 tabs) -->
+  <g transform="translate(0, 1780)">
+    <rect width="1080" height="140" fill="#140E24" opacity="0.95"/>
+    <line x1="0" y1="0" x2="1080" y2="0" stroke="#2B213F" stroke-width="2"/>
+    
+    <!-- Home Tab -->
+    <g transform="translate(180, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#E8C872"/>
+      <text x="0" y="55" fill="#E8C872" font-size="24" font-weight="600">Home</text>
+    </g>
+
+    <!-- Profiles Tab -->
+    <g transform="translate(540, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#BEB6CA"/>
+      <text x="0" y="55" fill="#BEB6CA" font-size="24" font-weight="500">Profiles</text>
+    </g>
+
+    <!-- Settings Tab -->
+    <g transform="translate(900, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#BEB6CA"/>
+      <text x="0" y="55" fill="#BEB6CA" font-size="24" font-weight="500">Settings</text>
+    </g>
+  </g>
+</svg>

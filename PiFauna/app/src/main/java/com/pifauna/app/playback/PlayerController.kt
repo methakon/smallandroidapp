@@ -86,6 +86,15 @@ class PlayerController(context: Context) {
     private var activeToken = 0L
     private var monitoringRoute = false
 
+    private val safetyWatchdog = object : Runnable {
+        override fun run() {
+            if (_state.value.isPlaying) {
+                refreshSnapshot()
+                mainHandler.postDelayed(this, 250L)
+            }
+        }
+    }
+
     // ---------------------------------------------------------------- readiness
 
     fun snapshot(): SafetySnapshot {
@@ -110,10 +119,10 @@ class PlayerController(context: Context) {
 
     private fun readBatteryPercent(): Int {
         val sticky = appContext.registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-            ?: return 100
+            ?: return -1
         val level = sticky.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
         val scale = sticky.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
-        return if (level >= 0 && scale > 0) level * 100 / scale else 100
+        return if (level >= 0 && scale > 0) level * 100 / scale else -1
     }
 
     /** Re-reads device state; call when a safety broadcast arrives or a screen opens. */
@@ -233,6 +242,8 @@ class PlayerController(context: Context) {
                 activeToken = result.token
                 monitoringRoute = true
                 routeMonitor.start { refreshSnapshot() }
+                mainHandler.removeCallbacks(safetyWatchdog)
+                mainHandler.postDelayed(safetyWatchdog, 250L)
                 _state.value = _state.value.copy(
                     phase = PlaybackPhase.Playing,
                     startedAtElapsed = SystemClock.elapsedRealtime(),
@@ -296,6 +307,7 @@ class PlayerController(context: Context) {
     }
 
     private fun teardownAudio(graceful: Boolean = true) {
+        mainHandler.removeCallbacks(safetyWatchdog)
         if (graceful) engine.stop() else engine.stopImmediately()
         activeToken = 0L
         abandonAudioFocus()

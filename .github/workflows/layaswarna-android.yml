@@ -89,7 +89,7 @@ jobs:
           ram-size: 2048M
           heap-size: 512M
           disable-animations: true
-          emulator-boot-timeout: 900
+          emulator-boot-timeout: 1200
           working-directory: PiFauna
           script: |
             adb shell input keyevent KEYCODE_WAKEUP

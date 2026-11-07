@@ -14,9 +14,24 @@ data class MantraRecording(
     val createdAt: Long
 )
 
-class MantraStore(context: Context) {
-    private val root = File(context.filesDir, "mantras").apply { mkdirs() }
+class MantraStore(
+    context: Context? = null,
+    baseDir: File? = null
+) {
+    private val root = (baseDir ?: File(requireNotNull(context) { "Either context or baseDir is required" }.filesDir, "mantras")).apply { mkdirs() }
     private val index = File(root, "recordings.json")
+
+    init {
+        pruneOrphanTakes()
+    }
+
+    /** Cleans up uncommitted temporary takes from previous crashes or interrupted takes. */
+    fun pruneOrphanTakes() {
+        runCatching {
+            root.listFiles { file -> file.name.startsWith("take-") && file.name.endsWith(".m4a") }
+                ?.forEach { it.delete() }
+        }
+    }
 
     fun list(): List<MantraRecording> = runCatching {
         val arr = JSONArray(index.takeIf { it.exists() }?.readText() ?: "[]")
@@ -45,6 +60,9 @@ class MantraStore(context: Context) {
         }
         val current = list()
         require(current.size < 200) { "Maximum 200 recordings reached." }
+        if (current.any { it.title.equals(title, ignoreCase = true) }) {
+            throw IllegalArgumentException("A recording named \"$title\" already exists.")
+        }
         val id = UUID.randomUUID().toString()
         val target = file(id)
         take.copyTo(target, overwrite = false)

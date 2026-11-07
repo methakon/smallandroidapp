@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" width="1080" height="1920">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap');
+      text { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      .title { font-family: 'Cinzel', serif; font-weight: 700; fill: #F4EEFF; letter-spacing: 1.5px; }
+      .heading { font-weight: 700; fill: #F4EEFF; }
+      .subhead { font-weight: 400; fill: #BEB6CA; }
+      .label { font-weight: 600; fill: #DEC588; letter-spacing: 1.2px; font-size: 26px; }
+      .card-title { font-weight: 600; fill: #F4EEFF; font-size: 34px; }
+      .card-sub { font-weight: 400; fill: #BEB6CA; font-size: 26px; }
+      .btn-text { font-weight: 700; fill: #0B0716; font-size: 30px; }
+      .btn-text-outline { font-weight: 600; fill: #E8C872; font-size: 30px; }
+    </style>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1080" height="1920" fill="#0B0716"/>
+  
+  <!-- Subtle Header ambient glow -->
+  <circle cx="540" cy="180" r="300" fill="#241B35" opacity="0.4" filter="blur(60px)"/>
+
+  <!-- Top App Bar -->
+  <g transform="translate(60, 100)">
+    <text x="0" y="40" class="label">LAYASWARNA</text>
+    <text x="0" y="110" class="title" font-size="52">Counted Japa Setup</text>
+  </g>
+
+  <!-- Screen Content -->
+  
+  <g transform="translate(60, 260)">
+    <text x="0" y="30" class="subhead" font-size="30">Selected: Morning Gayatri Mantra (15s)</text>
+  </g>
+
+  <!-- Repetitions Card -->
+  <g transform="translate(60, 340)">
+    <rect width="960" height="260" rx="26" fill="#241B35" stroke="#3A2E50"/>
+    <text x="40" y="60" class="card-title">Repetition target: 108</text>
+    <text x="40" y="105" class="card-sub">Session terminates automatically at target or 30-minute safety cap.</text>
+
+    <!-- Count Chips -->
+    <g transform="translate(40, 140)">
+      <rect x="0" y="0" width="180" height="70" rx="18" fill="#352B49" stroke="#4A3C64"/>
+      <text x="90" y="44" text-anchor="middle" fill="#BEB6CA" font-size="28" font-weight="600">11</text>
+
+      <rect x="220" y="0" width="180" height="70" rx="18" fill="#352B49" stroke="#4A3C64"/>
+      <text x="310" y="44" text-anchor="middle" fill="#BEB6CA" font-size="28" font-weight="600">21</text>
+
+      <rect x="440" y="0" width="180" height="70" rx="18" fill="#352B49" stroke="#4A3C64"/>
+      <text x="530" y="44" text-anchor="middle" fill="#BEB6CA" font-size="28" font-weight="600">58</text>
+
+      <rect x="660" y="0" width="220" height="70" rx="18" fill="#E8C872"/>
+      <text x="770" y="44" text-anchor="middle" fill="#0B0716" font-size="28" font-weight="700">108</text>
+    </g>
+  </g>
+
+  <!-- Gap between chants -->
+  <g transform="translate(60, 640)">
+    <rect width="960" height="240" rx="26" fill="#241B35" stroke="#3A2E50"/>
+    <text x="40" y="60" class="card-title">Silence between chants: 1.0s</text>
+    <text x="40" y="105" class="card-sub">Permits quiet breathing space between vocal repetitions.</text>
+
+    <!-- Gap Chips -->
+    <g transform="translate(40, 135)">
+      <rect x="0" y="0" width="190" height="65" rx="16" fill="#352B49" stroke="#4A3C64"/>
+      <text x="95" y="42" text-anchor="middle" fill="#BEB6CA" font-size="26" font-weight="600">0.5s</text>
+
+      <rect x="230" y="0" width="190" height="65" rx="16" fill="#E8C872"/>
+      <text x="325" y="42" text-anchor="middle" fill="#0B0716" font-size="26" font-weight="700">1.0s</text>
+
+      <rect x="460" y="0" width="190" height="65" rx="16" fill="#352B49" stroke="#4A3C64"/>
+      <text x="555" y="42" text-anchor="middle" fill="#BEB6CA" font-size="26" font-weight="600">2.0s</text>
+
+      <rect x="690" y="0" width="190" height="65" rx="16" fill="#352B49" stroke="#4A3C64"/>
+      <text x="785" y="42" text-anchor="middle" fill="#BEB6CA" font-size="26" font-weight="600">3.0s</text>
+    </g>
+  </g>
+
+  <!-- Start Button -->
+  <g transform="translate(60, 940)">
+    <rect width="960" height="100" rx="26" fill="#E8C872"/>
+    <text x="480" y="64" text-anchor="middle" class="btn-text">Start 108 repetitions</text>
+  </g>
+
+
+  <!-- Bottom Navigation Bar (Persistent 3 tabs) -->
+  <g transform="translate(0, 1780)">
+    <rect width="1080" height="140" fill="#140E24" opacity="0.95"/>
+    <line x1="0" y1="0" x2="1080" y2="0" stroke="#2B213F" stroke-width="2"/>
+    
+    <!-- Home Tab -->
+    <g transform="translate(180, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#E8C872"/>
+      <text x="0" y="55" fill="#E8C872" font-size="24" font-weight="600">Home</text>
+    </g>
+
+    <!-- Profiles Tab -->
+    <g transform="translate(540, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#BEB6CA"/>
+      <text x="0" y="55" fill="#BEB6CA" font-size="24" font-weight="500">Profiles</text>
+    </g>
+
+    <!-- Settings Tab -->
+    <g transform="translate(900, 50)" text-anchor="middle">
+      <circle cx="0" cy="15" r="8" fill="#BEB6CA"/>
+      <text x="0" y="55" fill="#BEB6CA" font-size="24" font-weight="500">Settings</text>
+    </g>
+  </g>
+</svg>

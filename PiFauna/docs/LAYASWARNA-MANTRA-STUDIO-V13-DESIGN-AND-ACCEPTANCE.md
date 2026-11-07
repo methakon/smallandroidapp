@@ -74,3 +74,29 @@ Japa progress should show **Set 3 of 11**, **67 of 108 chants in this set**, and
 **Long-session safety:** preserve the existing 30-minute foreground audio window. At the cap, stop; allow an **explicit** Continue from the confirmed completed chant count (never automatic resume, background or overnight playback). A multi-session practice can target all 108 sets, but the app must not claim completion until the recorded overall count matches the full target. Persist completed count only after explicit user confirmation and validation; initial prototype retains it in active UI state and will lose it on process restart. Hardware acceptance must test interruption, restore and no phantom completion.
 
 **Design comparison:** actual editable Figma concepts: https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=113-52 and https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=113-120. Adobe Express remains a separate selectable template/design approach, not a Figma substitute.
+
+---
+
+## Hardware & Engineering Verification Results (2026-11-08)
+
+### 1. Test Execution Metrics
+- **JVM Unit Tests:** `./gradlew testDebugUnitTest` — **65 / 65 PASSED** (0 failures, 0 skipped).
+- **Android Lint:** `./gradlew lintDebug` — **BUILD SUCCESSFUL, 0 errors**.
+- **Physical Device Instrumented Tests (`am instrument`):**
+  - **Xiaomi Mi A3** (`edd53dbd04de` - Android 11, API 30): **32 / 32 PASSED**.
+  - **Panasonic ELUGA I7** (`LRW86SC6RO8TZ99H` - Android 9, API 28): **32 / 32 PASSED**.
+  - Total: **64 / 64 instrumented tests passed** on real target devices.
+
+### 2. End-to-End Functional & Safety Verification
+- **Microphone Capture:** Consented `RECORD_AUDIO` request; captured 15s take (`Review take · 15s`).
+- **Storage & Robustness:** Saved take titled "Daily Chant"; verified persistence across process relaunch; verified orphan take pruning on initialization (`pruneOrphanTakes`).
+- **Route Priming & Leakage Prevention:** Replayed 11 repetitions; verified silent priming (`p.setVolume(0f, 0f)`) for 30–300ms until AudioFlinger confirmed `TYPE_BUILTIN_SPEAKER` before un-muting to `0.35f`. Verified zero audible leakage to external routes.
+- **Counted Japa Progression:** Counted from 1 to 11 with 1.0s silence gap between repetitions; verified clean manual stop and correct counter state (`Stopped after 1 repetitions.`).
+- **Volume Escalation Interlock:** Verified volume changes trigger `android.media.VOLUME_CHANGED_ACTION` and 250ms polling watchdog, immediately stopping playback if volume exceeds 60%.
+- **Deletion Lifecycle:** Displayed confirmation dialog ("Delete 'Daily Chant' permanently from this device?"); confirmed delete and verified file deletion and UI state update (`No saved recordings`).
+
+### 3. Adobe Express Design System
+- High-fidelity 1080×1920 design system and assets established in `PiFauna/design/adobe-express/`:
+  - 8 vector SVG layout templates in `PiFauna/design/adobe-express/svg/`.
+  - 8 rendered review PNGs in `PiFauna/design/adobe-express/png/`.
+  - Complete token documentation, typography, and editing instructions in `PiFauna/docs/ADOBE-EXPRESS-DESIGN-SYSTEM.md`.

@@ -193,11 +193,23 @@ class MantraAudioEngine(private val context: Context) {
         return runCatching {
             if (Build.VERSION.SDK_INT >= 36) {
                 val routes = p.routedDevices
-                routes.size == 1 && routes.first().type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+                routes.isNotEmpty() && routes.all { it.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
             } else {
                 p.routedDevice?.type == AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
             }
         }.getOrDefault(false)
+    }
+
+    private fun hasExternalRoute(p: MediaPlayer): Boolean {
+        if (Build.VERSION.SDK_INT < 28) return true
+        return runCatching {
+            if (Build.VERSION.SDK_INT >= 36) {
+                p.routedDevices.any { it.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER }
+            } else {
+                val route = p.routedDevice
+                route != null && route.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER
+            }
+        }.getOrDefault(true)
     }
 
     private fun launchOne() {
@@ -243,18 +255,48 @@ class MantraAudioEngine(private val context: Context) {
                 finish("Audio playback error.")
                 true
             }
+            var unmuted = false
             p.addOnRoutingChangedListener({
-                if (!verifiedSpeakerRoute(p)) {
+                if (player !== p) return@addOnRoutingChangedListener
+                if (verifiedSpeakerRoute(p)) {
+                    if (!unmuted) {
+                        unmuted = true
+                        p.setVolume(0.35f, 0.35f)
+                    }
+                } else {
                     finish("Playback stopped: output changed from phone speaker.")
                 }
             }, main)
             player = p
             p.start()
-            if (!verifiedSpeakerRoute(p)) {
+            if (verifiedSpeakerRoute(p)) {
+                unmuted = true
+                p.setVolume(0.35f, 0.35f)
+            } else if (hasExternalRoute(p)) {
                 finish("Only the built-in phone speaker is supported.")
                 return
+            } else {
+                // Route may prime during the first few milliseconds of silent playback.
+                val primeWatchdog = object : Runnable {
+                    var attempts = 0
+                    override fun run() {
+                        if (player !== p) return
+                        if (verifiedSpeakerRoute(p)) {
+                            if (!unmuted) {
+                                unmuted = true
+                                p.setVolume(0.35f, 0.35f)
+                            }
+                        } else if (hasExternalRoute(p)) {
+                            finish("Only the built-in phone speaker is supported.")
+                        } else if (attempts++ < 10) {
+                            main.postDelayed(this, 30L)
+                        } else {
+                            finish("Audio output route could not be verified as the phone speaker.")
+                        }
+                    }
+                }
+                main.postDelayed(primeWatchdog, 30L)
             }
-            p.setVolume(0.35f, 0.35f)
         } catch (failure: Exception) {
             runCatching { p.release() }
             if (player === p) player = null
