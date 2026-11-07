@@ -46,7 +46,7 @@ class MainActivityNavigationTest {
     @Test
     fun homeListsProfilesAndOpensThePlayer() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Sound profile regulator").assertIsDisplayed()
+        compose.onNodeWithText("A quieter space for your practice").assertIsDisplayed()
 
         compose.onNodeWithText("Open Mosquito").performScrollTo().performClick()
         compose.waitForIdle()
