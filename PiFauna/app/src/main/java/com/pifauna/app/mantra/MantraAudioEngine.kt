@@ -145,14 +145,14 @@ class MantraAudioEngine(private val context: Context) {
 
     fun startReplay(
         file: File,
-        repetitions: Int,
+        sets: Int,
         betweenMs: Long,
         onProgress: (completed: Int, error: String?) -> Unit
     ) {
-        require(MantraRepetitionPolicy.permitted(repetitions, betweenMs))
+        require(MantraRepetitionPolicy.permitted(sets, betweenMs))
         require(file.isFile)
         stopPlayback()
-        count = repetitions
+        count = MantraRepetitionPolicy.totalRepetitions(sets)
         completed = 0
         gapMs = betweenMs
         currentFile = file
@@ -233,7 +233,7 @@ class MantraAudioEngine(private val context: Context) {
             }, main)
             player = p
             p.start()
-            if (p.routedDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
+            if (!verifiedSpeakerRoute(p)) {
                 finish("Only the built-in phone speaker is supported.")
                 return
             }
