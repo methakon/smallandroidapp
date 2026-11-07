@@ -16,7 +16,7 @@
 - **PlayerController:** Central audio controller coordinating `SoundEngine`/`ToneKernel`, audio focus management (`AudioManager`), safety rule evaluation (`SafetyPolicy`), audio route monitoring (`AudioRouteMonitor`), and reactive state propagation (`StateFlow<PlayerState>`).
 - **TimedPlaybackService:** Android `mediaPlayback` foreground service used exclusively for user-initiated timed locked playback sessions. Shares `PlaybackRuntime`, owns the `MediaSession` and ongoing `MediaStyle` notification with a functioning Stop action, and runs a 1-second safety watchdog.
 - **SoundEngine:** Low-level custom PCM audio synthesis using `AudioTrack` and `ToneKernel`. Manages audio-thread lifecycle, single-owner teardown, `VolumeShaper` linear fade on user stop, queue drain on completion, immediate teardown on safety hazard, and continuous runtime verification of `AudioTrack.routedDevice`.
-- **AudioRouteMonitor:** Observes audio device topology via `AudioDeviceCallback`. Inspects output inventory to identify wired headphones, USB audio, hearing aids, and active Bluetooth A2DP media devices, providing preflight warnings to `PlayerController` while ignoring unconnected or call-only (SCO) Bluetooth peripherals.
+- **AudioRouteMonitor:** Observes audio device topology via `AudioDeviceCallback`. Inspects output inventory for conservative physical-output preflight checks (wired, USB, hearing aids, HDMI). Connected Bluetooth/A2DP alone is never a playback blocker: `isBluetoothA2dpOn` cannot establish the active media route. `SoundEngine` uses the actual `AudioTrack.routedDevice` as the authoritative safety gate.
 
 ---
 
