@@ -31,6 +31,9 @@ class MantraAudioEngine(private val context: Context) {
     private var currentFile: File? = null
     private var recording = false
 
+    @Suppress("DEPRECATION")
+    private fun legacyRecorder(): MediaRecorder = MediaRecorder()
+
     val isRecording: Boolean get() = recording
     val isPlaying: Boolean get() = player != null || pending != null
 
@@ -38,7 +41,7 @@ class MantraAudioEngine(private val context: Context) {
         stopPlayback()
         discardCapture()
         val capture = if (Build.VERSION.SDK_INT >= 31) MediaRecorder(context)
-            else @Suppress("DEPRECATION") MediaRecorder()
+            else legacyRecorder()
         try {
             capture.setAudioSource(MediaRecorder.AudioSource.MIC)
             capture.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -130,7 +133,6 @@ class MantraAudioEngine(private val context: Context) {
             // reports the phone speaker; a connected BT device alone is irrelevant.
             p.setVolume(0f, 0f)
             p.setOnCompletionListener {
-                p.setOnRoutingChangedListener(null, null)
                 runCatching { p.release() }
                 if (player === p) player = null
                 completed++
@@ -147,7 +149,7 @@ class MantraAudioEngine(private val context: Context) {
                 finish("Audio playback error.")
                 true
             }
-            p.setOnRoutingChangedListener({
+            p.addOnRoutingChangedListener({
                 if (p.routedDevice?.type != AudioDeviceInfo.TYPE_BUILTIN_SPEAKER) {
                     finish("Playback stopped: output changed from phone speaker.")
                 }
