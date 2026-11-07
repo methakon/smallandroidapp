@@ -215,3 +215,9 @@ The Android screen layouts are synchronized with the Figma Mystic variants (seve
 - **versionCode 12 / v0.7.0 (current development branch):** Reconciles audit gaps: fixes preflight audio routing warnings, captures and commits authentic physical device screenshots to `store-assets/screenshots/`, and extracts hardcoded UI strings into `res/values/strings.xml` in preparation for future Indic localization.
 
 Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [audio routing spec](docs/LAYASWARNA-AUDIO-ROUTING-V11-SPEC.md), [screen-lock playback](docs/SCREEN-LOCK-PLAYBACK.md), [translations](docs/LOCALIZATION.md), [Cloudflare/legal site](docs/LEGAL-SITE-HOSTING.md), [internal release record](docs/PLAY-INTERNAL-DEPLOYMENT.md).
+
+## Security audit status (v12)
+
+The source security audit dated **2026-11-08** documents safety and robustness findings, including a **high-priority suspected media-volume change monitoring gap**. It is **not** a completed live penetration test or a release security sign-off. **Do not publish versionCode 12** until the P0 investigation/remediation and authorized physical-device regression tests are complete. The published v11 Internal Testing release remains untouched.
+
+Read [Security Audit & Penetration-Test Readiness](docs/SECURITY-AUDIT-V12-2026-11-08.md) for findings, priorities, controlled test procedures and evidence requirements.
