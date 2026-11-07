@@ -24,41 +24,26 @@ class AudioRouteMonitor(context: Context) {
     private var callback: AudioDeviceCallback? = null
 
     /**
-     * Inspects output devices to detect active external media routes for preflight warnings.
-     * Physical outputs (wired headsets, headphones, USB audio, hearing aids, line out, HDMI)
-     * are treated as active when connected.
-     * Bluetooth audio is treated as active only when an A2DP or BLE media sink is present
-     * AND A2DP media audio routing is active.
-     * Unrelated Bluetooth peripherals (smartwatches, BLE sensors, SCO call-only devices)
-     * and inactive Bluetooth connections return null, allowing the built-in speaker to play.
+     * Conservative preflight for PHYSICAL outputs only.
      *
-     * SoundEngine separately enforces AudioTrack.routedDevice == TYPE_BUILTIN_SPEAKER
-     * as the authoritative runtime gate.
+     * AudioManager.getDevices() returns *connected* outputs, not the media route.
+     * In particular, isBluetoothA2dpOn is not proof that this AudioTrack is
+     * routed to Bluetooth; blocking on it can deny the phone speaker even when
+     * the user deliberately selected the phone speaker.
+     *
+     * Wired/USB/HDMI outputs remain conservatively blocked when connected
+     * because preflight cannot prove where media will go. Bluetooth alone
+     * NEVER causes a preflight refusal; SoundEngine independently checks the
+     * specific AudioTrack.routedDevice before writing any nonzero PCM and
+     * stops playback when that route becomes unsafe.
      */
     fun activeExternalRoute(): String? {
         val devices = runCatching {
             audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
         }.getOrNull() ?: return null
 
-        // 1. Check unconditionally routed physical external outputs
         val physicalExternal = devices.firstOrNull { it.type in PHYSICAL_EXTERNAL_TYPES }
-        if (physicalExternal != null) {
-            return formatDeviceName(physicalExternal)
-        }
-
-        // 2. Check Bluetooth media outputs: only active if A2DP media streaming is active
-        val btMediaDevice = devices.firstOrNull { it.type in BT_MEDIA_TYPES }
-        if (btMediaDevice != null) {
-            val isA2dpOn = runCatching {
-                @Suppress("DEPRECATION")
-                audioManager.isBluetoothA2dpOn
-            }.getOrDefault(false)
-            if (isA2dpOn) {
-                return formatDeviceName(btMediaDevice)
-            }
-        }
-
-        return null
+        return physicalExternal?.let(::formatDeviceName)
     }
 
     /** First available external output (compatibility alias for [activeExternalRoute]). */
@@ -159,14 +144,11 @@ class AudioRouteMonitor(context: Context) {
     }
 }
 
-/** Pure helper for unit testing external route preflight classification. */
+/** Pure helper: connected physical outputs are a conservative early refusal.
+ * Bluetooth media sinks are NOT classified as active from device inventory.
+ * Only SoundEngine may decide the actual Bluetooth/phone speaker media route.
+ */
 internal object AudioRoutePreflightClassifier {
-    fun isExternalRouteActive(
-        outputDeviceTypes: Collection<Int>,
-        isA2dpActive: Boolean
-    ): Boolean {
-        if (outputDeviceTypes.any { it in AudioRouteMonitor.PHYSICAL_EXTERNAL_TYPES }) return true
-        if (isA2dpActive && outputDeviceTypes.any { it in AudioRouteMonitor.BT_MEDIA_TYPES }) return true
-        return false
-    }
+    fun isExternalRouteActive(outputDeviceTypes: Collection<Int>): Boolean =
+        outputDeviceTypes.any { it in AudioRouteMonitor.PHYSICAL_EXTERNAL_TYPES }
 }
