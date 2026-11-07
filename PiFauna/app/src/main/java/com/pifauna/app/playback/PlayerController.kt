@@ -97,11 +97,12 @@ class PlayerController(context: Context) {
         return SafetySnapshot(
             batteryPercent = readBatteryPercent(),
             thermalStatus = thermal,
-            // Preflight check: detects wired headphones, USB audio, hearing aids,
-            // and active Bluetooth A2DP audio without falsely blocking unrelated
-            // Bluetooth devices (smartwatches, BLE sensors, call-only SCO).
-            // SoundEngine separately verifies AudioTrack.routedDevice == TYPE_BUILTIN_SPEAKER
-            // as the final runtime authorization gate before writing any nonzero PCM.
+            // Conservative physical-output preflight: a connected wired, USB,
+            // HDMI or hearing-aid output blocks before start. Android's connected
+            // Bluetooth/A2DP state does not prove media routing, so Bluetooth
+            // NEVER blocks on inventory alone. SoundEngine remains the final
+            // gate: only AudioTrack.routedDevice == TYPE_BUILTIN_SPEAKER can emit
+            // synthesized PCM; a Bluetooth-routed track is denied.
             externalAudioRoute = routeMonitor.activeExternalRoute(),
             mediaVolumeRatio = routeMonitor.mediaVolumeRatio()
         )
