@@ -1,4 +1,4 @@
-# Layaswarna — Adobe Express Design System & Modern-Mystic Specification
+> **ARCHIVED — NOT SELECTED FOR LAYASWARNA v13.** On 2026-11-08 the user chose Figma as the exclusive design source. This document and its generated SVG/PNG files are retained as historical artifacts only; they contain superseded japa-count and silence options. Do not import or implement them for v13. Use [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md). No Adobe deliverable or Adobe approval is required for v13.\n\n# Layaswarna — Adobe Express Design System & Modern-Mystic Specification
 
 **Version:** 0.8.0 (v13)  
 **Status:** Approved Specification & Production Asset Library  
