@@ -153,21 +153,24 @@ class MantraAudioEngine(private val context: Context) {
         file: File,
         sets: Int,
         betweenMs: Long,
-        onProgress: (completed: Int, error: String?) -> Unit
+        onProgress: (completed: Int, error: String?) -> Unit,
+        resumeFromCompleted: Int = 0
     ) {
         require(MantraRepetitionPolicy.permitted(sets, betweenMs))
-        startPlaybackCount(file, MantraRepetitionPolicy.totalRepetitions(sets), betweenMs, onProgress)
+        startPlaybackCount(file, MantraRepetitionPolicy.totalRepetitions(sets), betweenMs, onProgress, resumeFromCompleted)
     }
 
     private fun startPlaybackCount(
         file: File, repeats: Int, betweenMs: Long,
-        onProgress: (completed: Int, error: String?) -> Unit
+        onProgress: (completed: Int, error: String?) -> Unit,
+        resumeFromCompleted: Int = 0
     ) {
         require(repeats >= 1 && repeats <= 11_664 && betweenMs >= 0L)
+        require(resumeFromCompleted in 0 until repeats)
         require(file.isFile)
         stopPlayback()
         count = repeats
-        completed = 0
+        completed = resumeFromCompleted
         gapMs = betweenMs
         currentFile = file
         callback = onProgress
