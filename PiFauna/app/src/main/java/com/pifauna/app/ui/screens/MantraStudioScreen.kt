@@ -107,10 +107,11 @@ fun MantraStudioScreen() {
         else requestMicrophone.launch(Manifest.permission.RECORD_AUDIO)
     }
 
-    fun play(file: File, sets: Int? = null) {
+    fun play(file: File, sets: Int? = null, resume: Boolean = false) {
         if (recording) return
         PlaybackRuntime.stop(context, "Stopped before mantra replay.")
-        completed = 0
+        val startingAt = if (sets != null && resume) completed else 0
+        if (sets != null && !resume) completed = 0
         replaying = true
         val target = sets?.let(MantraRepetitionPolicy::totalRepetitions) ?: 1
         val notify: (Int, String?) -> Unit = { done, error ->
@@ -127,7 +128,7 @@ fun MantraStudioScreen() {
         }
         runCatching {
             if (sets == null) engine.startPreview(file, notify)
-            else engine.startReplay(file, sets, gapMs, notify)
+            else engine.startReplay(file, sets, gapMs, notify, startingAt)
         }.onFailure {
             replaying = false
             status = it.message ?: "Could not play the selected recording."
@@ -301,8 +302,8 @@ fun MantraStudioScreen() {
             )
             if (!finishable) {
                 PfTextCard(
-                    heading = "This selection exceeds the 30-minute session limit",
-                    body = "The full set cannot finish in a single session. Automatic background or overnight playback is not supported. Reduce the number of sets or save your plan for a future explicitly started session."
+                    heading = "This practice needs more than one session",
+                    body = "Each session stops after 30 minutes. You may explicitly resume from your completed chant count using the Continue action. Playback never restarts automatically."
                 )
             }
             if (replaying) {
@@ -317,11 +318,24 @@ fun MantraStudioScreen() {
                     status = "Stopped after $completed of $total repetitions."
                 }, modifier = Modifier.fillMaxWidth()) { Text("Stop practice") }
             } else {
-                Button(
-                    onClick = { play(store.recordingFile(item), selectedSets) },
-                    enabled = !recording && finishable,
-                    modifier = Modifier.fillMaxWidth()
-                ) { Text("Start $selectedSets sets · $total chants") }
+                if (completed in 1 until total) {
+                    Button(
+                        onClick = { play(store.recordingFile(item), selectedSets, resume = true) },
+                        enabled = !recording,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Continue from chant ${completed + 1} of $total") }
+                    OutlinedButton(
+                        onClick = { completed = 0; status = "Practice progress reset." },
+                        enabled = !recording,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Start over") }
+                } else {
+                    Button(
+                        onClick = { play(store.recordingFile(item), selectedSets) },
+                        enabled = !recording,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Start $selectedSets sets · $total chants") }
+                }
             }
         }
         Spacer(Modifier.height(8.dp))
