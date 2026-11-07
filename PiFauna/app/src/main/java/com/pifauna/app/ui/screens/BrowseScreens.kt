@@ -1,6 +1,7 @@
 package com.pifauna.app.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -98,17 +100,18 @@ private fun profileOptions(): List<RadialOption> = SpeciesProfiles.all.map { pro
     )
 }
 
-/** Figma 02 · One regulator, selected item highlight and optional alternate action. */
+/** Figma v13 master artboard 01: quiet landing page. Radial regulator remains in Profiles. */
 @Composable
 fun HomeScreen(
     hourOfDay: Int = LocalTime.now().hour,
     onProfileSelected: (SpeciesProfile) -> Unit,
     selectedProfileId: String,
-    onSelectProfile: (String) -> Unit,
+    @Suppress("UNUSED_PARAMETER") onSelectProfile: (String) -> Unit,
     onOpenLibrary: () -> Unit,
     onOpenChakras: () -> Unit,
     onOpenAnahata: () -> Unit,
-    onOpenMantra: () -> Unit
+    onOpenMantra: () -> Unit,
+    onOpenCustomSound: () -> Unit
 ) {
     val greeting = when (hourOfDay) {
         in 5..11 -> "Good morning"
@@ -117,54 +120,95 @@ fun HomeScreen(
         else -> "Good night"
     }
     val profile = SpeciesProfiles.byId(selectedProfileId)
+
     PfScreen(
-        title = "Sound profile regulator",
-        subtitle = "$greeting · Tap or rotate to select a sound"
+        title = "A quieter space for your practice",
+        subtitle = "$greeting · Explore sound and your own recorded chants."
     ) {
-        LayaswarnaRadialSelector(
-            options = profileOptions(),
-            selectedId = selectedProfileId,
-            onSelect = onSelectProfile,
-            onActivate = { onProfileSelected(SpeciesProfiles.byId(it)) },
-            actionLabel = "Open ${profileLabel(profile)}",
-            showActionButton = false
-        )
-        Spacer(Modifier.height(16.dp))
-        MysticInsightCard(
-            title = "Selected sound profile",
-            sections = listOf(
-                profile.name to profile.summary,
-                "Experimental frequency" to TimeFormat.band(profile.firstHz, profile.lastHz),
-                "About this profile" to profile.detail
+        Spacer(Modifier.height(18.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(PiFaunaColors.Hero, RoundedCornerShape(20.dp))
+                .border(1.dp, PiFaunaColors.Divider.copy(alpha = 0.55f), RoundedCornerShape(20.dp))
+                .padding(17.dp)
+        ) {
+            Text("FEATURED / PERSONAL PRACTICE", color = PiFaunaColors.Accent,
+                fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Spacer(Modifier.height(10.dp))
+            Text("Mantra Studio", color = PiFaunaColors.Accent, fontWeight = FontWeight.Bold,
+                fontSize = 22.sp)
+            Spacer(Modifier.height(7.dp))
+            Text("Record your voice, keep your favorite take, and practice in sets of 108 chants.",
+                color = PiFaunaColors.BodyText, fontSize = 14.sp)
+            Spacer(Modifier.height(14.dp))
+            MysticActionButton("Open Mantra Studio", onClick = onOpenMantra)
+        }
+
+        SectionLabel("EXPLORE YOUR PRACTICE")
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            HomeFeatureTile(
+                title = "Sound Profiles",
+                detail = "Experimental tone library",
+                modifier = Modifier.weight(1f),
+                onClick = onOpenLibrary
             )
-        )
-        MysticActionButton("Open ${profileLabel(profile)}") { onProfileSelected(profile) }
+            HomeFeatureTile(
+                title = "Chakra Library",
+                detail = "Symbolic chakra tones",
+                modifier = Modifier.weight(1f),
+                onClick = onOpenChakras
+            )
+        }
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            HomeFeatureTile(
+                title = "Anahata Nada",
+                detail = "Mindful sound exploration",
+                modifier = Modifier.weight(1f),
+                onClick = onOpenAnahata
+            )
+            HomeFeatureTile(
+                title = "Custom Sound",
+                detail = "Choose frequencies & timer",
+                modifier = Modifier.weight(1f),
+                onClick = onOpenCustomSound
+            )
+        }
+
+        SectionLabel("LAST EXPLORED SOUND")
         PfCard(
-            title = "All profiles and saved sounds",
-            subtitle = "Browse preset library",
-            onClick = onOpenLibrary
+            title = "Open ${profileLabel(profile)}",
+            subtitle = "Selected experimental profile · ${TimeFormat.band(profile.firstHz, profile.lastHz)}",
+            onClick = { onProfileSelected(profile) }
         )
-        SectionLabel("MEDITATION")
-        PfCard(
-            title = "Seven Chakra Library",
-            subtitle = "Symbolic tone associations and listening insights",
-            onClick = onOpenChakras
-        )
-        PfCard(
-            title = "Anahata Nada",
-            subtitle = "Experimental relaxation sound studio",
-            onClick = onOpenAnahata
-        )
-        PfCard(
-            title = "Mantra Studio",
-            subtitle = "Record, retry and save your chant · repeat 11, 21, 58 or 108 times",
-            onClick = onOpenMantra
-        )
-        Text(
-            "Experimental audio: no proven repellency or medical effects.",
-            color = PiFaunaColors.Muted,
-            fontSize = 14.sp
-        )
+        Text("Offline by design · Local voice recordings · Timed listening",
+            color = PiFaunaColors.Muted, fontSize = 12.sp)
+        Spacer(Modifier.height(12.dp))
+        Text("Experimental tones have no proven medical or animal-repellent effects.",
+            color = PiFaunaColors.Muted, fontSize = 12.sp)
+    }
+}
+
+@Composable
+private fun HomeFeatureTile(
+    title: String,
+    detail: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = modifier
+            .defaultMinSize(minHeight = 104.dp)
+            .background(PiFaunaColors.Card, RoundedCornerShape(16.dp))
+            .border(1.dp, PiFaunaColors.Divider.copy(alpha = 0.45f), RoundedCornerShape(16.dp))
+            .clickable(role = Role.Button, onClick = onClick)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(title, color = PiFaunaColors.BodyText,
+            fontSize = 14.sp, fontWeight = FontWeight.Bold)
+        Text(detail, color = PiFaunaColors.Muted, fontSize = 12.sp)
     }
 }
 
