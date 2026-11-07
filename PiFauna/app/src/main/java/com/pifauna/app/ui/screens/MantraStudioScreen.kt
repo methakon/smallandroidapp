@@ -115,7 +115,8 @@ fun MantraStudioScreen() {
         replaying = true
         val target = sets?.let(MantraRepetitionPolicy::totalRepetitions) ?: 1
         val notify: (Int, String?) -> Unit = { done, error ->
-            completed = done
+            // One-play previews must never mutate a long japa practice checkpoint.
+            if (sets != null) completed = done
             if (error != null || done >= target) {
                 replaying = false
                 status = error ?: if (sets == null) "Preview finished."
