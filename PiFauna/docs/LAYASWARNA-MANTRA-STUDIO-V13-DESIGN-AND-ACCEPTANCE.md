@@ -60,3 +60,7 @@ Style: near-black violet **#0B0716** background; muted violet **#241B35** cards;
 - Finish complete design in Adobe Express only after Adobe connection, or using authorized user desktop Adobe workflow; keep original editable source and delivery evidence.
 
 **No Play upload, no merge into production/main and no alterations to v11 unless explicitly authorized.**
+
+### Minimum Android version / verified replay route
+
+The main app continues to support API 26. Voice **recording** is available from API 26 with permission, but `MediaPlayer`'s actual route verification was introduced in API 28. The v13 prototype therefore **fails closed for voice replay on API 26–27**, explaining that verified voice replay requires Android 9 or newer, rather than playing to an unverified output. Antigravity should provide an API 26–27 audio implementation with equivalent verified routing if release requirements demand replay on Android 8. On API 36+, route evaluation checks all reported simultaneous MediaPlayer routes, not just the first.
