@@ -5,107 +5,74 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+/** Unit tests for conservative preflight. The live AudioTrack routing gate
+ * is separately covered by ActiveOutputRoutePolicyTest and device acceptance.
+ */
 class AudioRoutePreflightClassifierTest {
 
-    @Test
-    fun builtInSpeakerAloneIsAllowed() {
-        val types = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
-        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(types, isA2dpActive = false))
-        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(types, isA2dpActive = true))
+    @Test fun builtInSpeakerAloneIsAllowed() {
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(
+            listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)))
     }
 
-    @Test
-    fun connectedButUnroutedBluetoothDoesNotBlockPreflight() {
-        // Bluetooth SCO (calls/watch) without active media streaming
-        val scoOnly = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_BLUETOOTH_SCO)
-        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(scoOnly, isA2dpActive = false))
-
-        // Bluetooth A2DP device is paired, but A2DP media audio is inactive/off
-        val a2dpOff = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_BLUETOOTH_A2DP)
-        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(a2dpOff, isA2dpActive = false))
+    @Test fun connectedA2dpAndSpeakerNeverCausePreflightRefusal() {
+        // Critically, an A2DP connection says nothing about the current AudioTrack
+        // media route. This catches the v12 regression caused by isBluetoothA2dpOn.
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(
+            listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
+                AudioDeviceInfo.TYPE_BLUETOOTH_A2DP)))
     }
 
-    @Test
-    fun activeBluetoothMediaRouteBlocksPreflight() {
-        val a2dpOn = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_BLUETOOTH_A2DP)
-        assertTrue(AudioRoutePreflightClassifier.isExternalRouteActive(a2dpOn, isA2dpActive = true))
-
-        val bleHeadsetOn = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_BLE_HEADSET)
-        assertTrue(AudioRoutePreflightClassifier.isExternalRouteActive(bleHeadsetOn, isA2dpActive = true))
+    @Test fun bluetoothMediaOutputsRequireActualTrackVerification() {
+        for (type in listOf(
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+            AudioDeviceInfo.TYPE_BLE_HEADSET,
+            AudioDeviceInfo.TYPE_BLE_SPEAKER,
+            AudioDeviceInfo.TYPE_BLE_BROADCAST
+        )) {
+            assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(
+                listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, type)))
+        }
+        // Not a safety bypass: SoundEngine verifies each actual routed device
+        // before writing PCM, and refuses Bluetooth for every one of these types.
     }
 
-    @Test
-    fun physicalExternalOutputsAlwaysBlockPreflight() {
-        // Wired headphones and headsets
-        assertTrue(
-            AudioRoutePreflightClassifier.isExternalRouteActive(
-                listOf(AudioDeviceInfo.TYPE_WIRED_HEADPHONES),
-                isA2dpActive = false
-            )
-        )
-        assertTrue(
-            AudioRoutePreflightClassifier.isExternalRouteActive(
-                listOf(AudioDeviceInfo.TYPE_WIRED_HEADSET),
-                isA2dpActive = false
-            )
-        )
-
-        // USB audio
-        assertTrue(
-            AudioRoutePreflightClassifier.isExternalRouteActive(
-                listOf(AudioDeviceInfo.TYPE_USB_HEADSET),
-                isA2dpActive = false
-            )
-        )
-        assertTrue(
-            AudioRoutePreflightClassifier.isExternalRouteActive(
-                listOf(AudioDeviceInfo.TYPE_USB_DEVICE),
-                isA2dpActive = false
-            )
-        )
-
-        // Hearing aids
-        assertTrue(
-            AudioRoutePreflightClassifier.isExternalRouteActive(
-                listOf(AudioDeviceInfo.TYPE_HEARING_AID),
-                isA2dpActive = false
-            )
-        )
-
-        // Line out and HDMI
-        assertTrue(
-            AudioRoutePreflightClassifier.isExternalRouteActive(
-                listOf(AudioDeviceInfo.TYPE_LINE_ANALOG),
-                isA2dpActive = false
-            )
-        )
-        assertTrue(
-            AudioRoutePreflightClassifier.isExternalRouteActive(
-                listOf(AudioDeviceInfo.TYPE_HDMI),
-                isA2dpActive = false
-            )
-        )
+    @Test fun bluetoothScoCallOnlyAndConnectedWatchDoNotBlock() {
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(
+            listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER,
+                AudioDeviceInfo.TYPE_BLUETOOTH_SCO)))
     }
 
-    @Test
-    fun routeTransitionsReflectedAccurately() {
-        // State 1: Built-in speaker only -> allowed
-        var deviceList = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
-        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(deviceList, isA2dpActive = false))
+    @Test fun physicalOutputsAreConservativelyBlockedWhenConnected() {
+        for (type in listOf(
+            AudioDeviceInfo.TYPE_WIRED_HEADSET,
+            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+            AudioDeviceInfo.TYPE_USB_DEVICE,
+            AudioDeviceInfo.TYPE_USB_HEADSET,
+            AudioDeviceInfo.TYPE_HEARING_AID,
+            AudioDeviceInfo.TYPE_HDMI,
+            AudioDeviceInfo.TYPE_LINE_ANALOG,
+            AudioDeviceInfo.TYPE_LINE_DIGITAL,
+            AudioDeviceInfo.TYPE_DOCK
+        )) {
+            assertTrue("physical output $type must block preflight",
+                AudioRoutePreflightClassifier.isExternalRouteActive(listOf(type)))
+        }
+    }
 
-        // State 2: User plugs in wired headphones -> blocked
-        deviceList = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_WIRED_HEADPHONES)
-        assertTrue(AudioRoutePreflightClassifier.isExternalRouteActive(deviceList, isA2dpActive = false))
+    @Test fun bluetoothTransitionOnlyIsNotAFalsePreflightBlock() {
+        val speaker = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+        val bluetoothConnected = speaker + AudioDeviceInfo.TYPE_BLUETOOTH_A2DP
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(speaker))
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(bluetoothConnected))
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(speaker))
+    }
 
-        // State 3: User unplugs headphones -> allowed again
-        deviceList = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
-        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(deviceList, isA2dpActive = false))
-
-        // State 4: Bluetooth connects but media audio is disabled -> allowed
-        deviceList = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER, AudioDeviceInfo.TYPE_BLUETOOTH_A2DP)
-        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(deviceList, isA2dpActive = false))
-
-        // State 5: Media audio is enabled for Bluetooth -> blocked
-        assertTrue(AudioRoutePreflightClassifier.isExternalRouteActive(deviceList, isA2dpActive = true))
+    @Test fun physicalTransitionIsAnEarlyRefusal() {
+        val speaker = listOf(AudioDeviceInfo.TYPE_BUILTIN_SPEAKER)
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(speaker))
+        assertTrue(AudioRoutePreflightClassifier.isExternalRouteActive(
+            speaker + AudioDeviceInfo.TYPE_WIRED_HEADPHONES))
+        assertFalse(AudioRoutePreflightClassifier.isExternalRouteActive(speaker))
     }
 }
