@@ -90,30 +90,30 @@ Delete confirmation: **Delete recording?** / *“{title}” will be permanently 
 Empty state: **Make your first recording** / *Record a chant to begin your library.*  
 Error: *This recording can't be opened. You can delete it or try again.*
 
-### M-07 Configure repetitions
+### M-07 Configure sets of 108
 
-Title: **Set your repetitions**  
+Title: **Set your japa cycle**  
 Selected label: **Selected recording**  
-Section: **Number of repetitions**  
-Choices: **11 · 21 · 58 · 108**  
-Section: **Quiet pause between repeats**  
+Section: **Outer circle · Sets of 108**  
+Choices: **1 · 11 · 21 · 58 · 108**  
+Section: **Inner circle · Silence between individual chants**  
 Choices: **0.5 s · 1 s · 2 s · 3 s**  
-Estimate: **Estimated time: {duration}**  
-Caution: *Sessions stop after 30 minutes. Long chants might finish before the selected count.*  
-Primary: **Start repetitions**  
+Estimate: **{sets} sets × 108 = {totalRepetitions} chants · Estimated time: {duration}**  
+Caution: *Each session stops after 30 minutes. For long practices, choose Continue to resume from the completed count. Playback never automatically resumes.*  
+Primary: **Start practice**  
 Secondary: **Change recording**  
 Avoid saying "continuous" without explaining this is a finite counted practice.
 
 ### M-08 Active counted playback
 
 Title: **Your mantra practice**  
-Subtitle: **{recording title}**  
-Progress: **{completed} of {target} completed**  
+Subtitle: **{recording title} · Set {currentSet} of {selectedSets}**  
+Progress: **{completedWithinSet} of 108 in this set · {completedOverall} of {selectedSets × 108} overall**  
 Status: **Playing chant {current}** / **Quiet pause** / **Stopped** / **Completed**  
 Primary: **Stop**  
 Pause/resume: only display if implemented and tested.  
 Footer: *Phone-speaker playback only. Keep volume at a comfortable level.*  
-Completion: **Practice complete** / *You finished {count} repetitions.* / **Done** / **Repeat the set** (only explicit start)
+Completion: **Practice complete** / *You finished {selectedSets} sets of 108 chants.* / **Done** / **Repeat the set** (only explicit start)
 
 ### M-09 Feedback and interruptions
 
@@ -164,10 +164,10 @@ Completion: **Practice complete** / *You finished {count} repetitions.* / **Done
 
 ### B4. Playback and japa timing
 
-- Distinguish user-selected `targetCount` (11,21,58,108), `completedCount`, current segment state and `gapMs`.
+- Distinguish user-selected `selectedSets` (1,11,21,58,108), derived `totalRepetitions = selectedSets * 108`, `completedOverall`, `completedWithinSet`, `currentSet` and `gapMs`.
 - For each repetition, play exactly the saved audio content, on completion schedule the next after 500/1000/2000/3000 ms; gaps must not count as repetitions.
 - Stop immediately on explicit user Stop, activity background, output route changes, focus loss, thermal limits, battery cutoff, or media-volume threshold.
-- Enforce 30-minute session cap, surface an estimate before starting and clear partial-completion state explicitly.
+- Enforce a 30-minute per-start session cap, surface the *full practice* estimate before starting and let the user explicitly resume, never automatically restart.
 - Use real audio routing from the active player, not Bluetooth connection state. Test platform restrictions on API26–27 and API36 simultaneous routes.
 - No infinite replay and no screen-lock continuation in this initial version; an opt-in foreground service would require separate review.
 
@@ -182,3 +182,9 @@ Completion: **Practice complete** / *You finished {count} repetitions.* / **Done
 ## Adobe Express editor direction
 
 Start with a *design concept* based on the sober palette and the home copy here. Editable Adobe templates may help with branded marketing/layout presentations, but **do not assume Express exports structured Compose source or fully editable multiframe product prototypes**. Any Adobe output must be reviewed and then implemented as actual Compose screens. Keep original design links and exports in the PR documentation.
+
+### M-07/M-08 original concentric yantra design specification
+
+Create a dual independently selectable circular control inspired by abstract sacred geometry and cosmic orbits, **not a reproduction of Doctor Strange film artwork**. Outer ring: 1, 11, 21, 58, 108 **sets**. Inner ring: 0.5s, 1s, 2s, 3s silence. Center: selected sets × 108. Ring segments must have labels that are readable without relying on color; add ordinary accessible buttons/chips with equivalent functions. Live progress uses outer-ring set completion and inner-ring progress through the current 108 chants, plus text counters. Long sets are allowed only as separate user-started 30-minute sessions with explicit Continue.
+
+**Figma editable screens:** https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=113-52 and https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=113-120 . **Android prototype:** `ConcentricJapaDial.kt`, `MantraRepetitionPolicy`, `MantraAudioEngine` and `MantraStudioScreen`. **Adobe alternative:** the separately committed Adobe prompt in `LAYASWARNA-V13-YANTRA-COMPARISON-PROMPTS.md` should be used to create an independently editable concept for comparison.
