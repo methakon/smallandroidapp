@@ -1,6 +1,6 @@
 # Safety contract and claims policy
 
-PiFauna is an acoustic experiment. This document states what the code enforces,
+Layaswarna is an acoustic experiment with an additional optional private voice-recording mode in v13. This document states what the code enforces,
 what it cannot enforce, and what the product is not allowed to claim.
 
 ## 1. What the code enforces
@@ -16,8 +16,8 @@ what it cannot enforce, and what the product is not allowed to claim.
 | Speaker only (preflight & runtime) | Conservative preflight checks via `AudioRouteMonitor` block connected physical outputs (wired headphones, USB audio, hearing aids, HDMI); connected Bluetooth/A2DP is never used to authorize or refuse playback because it does not prove the track's active route. Runtime verification via `AudioTrack.routedDevice` strictly enforces `TYPE_BUILTIN_SPEAKER` before writing PCM and aborts on route changes. | `SafetyPolicyTest.external audio routes are refused`, `ActiveOutputRoutePolicyTest`, device validation |
 | Volume ceiling | Blocked above 60% of maximum media volume | `SafetyPolicyTest.media volume above the limit is refused` |
 | Screen-lock opt-in (default OFF) | Normal sessions stop at `Activity.onStop`; explicit opt-in uses an Android `mediaPlayback` foreground service (`TimedPlaybackService`) with ongoing lock-screen Stop control | Verified on Xiaomi Mi A3 (API 30) & Panasonic ELUGA (API 28); CI on API 30 & API 36 |
-| Interruption handling | Any audio-focus loss immediately stops playback | Verified in instrumented test suite |
-| Offline with narrow FGS permissions | `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MEDIA_PLAYBACK` only; no `INTERNET`, camera, contacts, or location; the **unreleased v13** Mantra Studio prototype additionally requests `RECORD_AUDIO` only when the user explicitly starts capture | Manifest inspection; release verification |
+| Interruption handling | **Post-merge audit fix:** negative Android audio-focus changes (-1 permanent, -2 transient, -3 duck) all request immediate Stop via `AudioFocusInterruptionPolicy` in synth and mantra controllers | New unit tests committed; fresh CI and physical focus-injection acceptance pending |
+| Offline with declared microphone access | `RECORD_AUDIO` is requested only at user-started mantra capture; `FOREGROUND_SERVICE`/`FOREGROUND_SERVICE_MEDIA_PLAYBACK` apply to opt-in synthesized tone screen-lock playback. No `INTERNET`, camera, contacts or location; `allowBackup=false` | Manifest/source inspection; Play Data Safety review still pending |
 
 ## 2. What the code cannot enforce
 
@@ -80,7 +80,7 @@ Do not publish as a pest-control or health product. Treat these as blockers:
 - any efficacy or ultrasound claim;
 - a signed release build without a signing configuration.
 
-## Opt-in screen-lock sessions (versionCode 10 — not yet released)
+## Opt-in screen-lock sessions (introduced in v10 candidate; released to Play Internal in v11)
 
 - Default **OFF**; toggling does not start audio, and the setting is disabled during a live session.
 - Explicit user Start while the Activity is visible begins a bounded `mediaPlayback` foreground service; locking may continue playback until the 5/10/15/30-minute limit, notification Stop, safety interruption or process termination.
@@ -92,3 +92,13 @@ Do not publish as a pest-control or health product. Treat these as blockers:
 ## Unreleased v13 voice-recording safety addendum
 
 Mantra Studio is a **development prototype**. The user must explicitly tap Record and grant Android microphone permission. Voice takes are private app files, never uploaded; discard/retry requires explicit acceptance before saving. Finite 11/21/58/108 repetition sets have 0.5–3-second silence gaps, a user-visible Stop action, foreground-only playback, a 30-minute maximum and an actual built-in-speaker routing check. The app must stop capture/playback on Activity stop; no background voice recording or automatically restarted loops. Device QA, microphone privacy, routing races, volume changes and Play Data Safety disclosures are required before publishing.
+
+## v13 final safety addendum — 2026-11-09
+
+The [final v13 audit](FINAL-AUDIT-V13-2026-11-09.md) reconciles the earlier v12 security findings with current code. **The v13 development PR was merged, but versionCode13 was not verified as published on Google Play.** A subsequent static audit discovered the focus-loss comparison defect in both playback controllers and missing mantra-specific API29+ thermal enforcement; source fixes and a shared negative-focus-code unit test are committed on the feature branch. **These fixes have not yet been accepted on physical devices.**
+
+- **Synthesized tone vs chant playback:** ToneKernel's 0.08 peak fraction applies to synthesized PCM only; user-recorded MediaPlayer voice uses a distinct volume factor, media-volume ceiling and phone-speaker routing checks. Neither is a calibrated dB SPL measure.
+- **Mantra only:** microphone requires runtime grant; voice recording and replay stop when app goes to background; no indefinite, overnight or automatic resume. Android 8/API26–27 voice replay is denied as actual MediaPlayer speaker routing cannot be verified there. Thermal status is checked when API29+ supplies it; Android 9/API28 does not supply this API.
+- **Counting:** one set means 108 recorded chants; choices are 1, 11, 21, 58, 108 sets; silence between individual chants is 0.1/0.25/0.5/0.75/1/2/3 seconds; the application stops after 30 minutes per explicit start and can offer an explicit manual Continue.
+- **Do not claim zero external voice leakage, clinical safety, inaudibility or guaranteed sound pressure.** Route-change timing has not been independently acoustically characterized in this audit.
+- **Critical release gate:** test interrupted focus, route and thermal behavior on real Mi A3/ELUGA, complete Figma accessibility review, verify private checkpoint recovery across relaunch, and approve privacy/Play declarations and a signed v13 artifact before Play Internal upload.
