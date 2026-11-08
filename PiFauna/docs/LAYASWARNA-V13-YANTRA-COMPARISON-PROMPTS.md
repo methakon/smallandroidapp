@@ -1,4 +1,6 @@
-> **DESIGN DECISION (2026-11-08): FIGMA ONLY.** This Adobe/Figma comparison is historical. The selected live editable artboards and Android implementation mapping are in [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md). Do not generate or request Adobe Express designs for this release.\n\n# Layaswarna v13 — Side-by-side Figma and Adobe Express japa dial comparison
+> **DESIGN DECISION (2026-11-08): FIGMA ONLY.** This Adobe/Figma comparison is historical. The selected live editable artboards and Android implementation mapping are in [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md). Do not generate or request Adobe Express designs for this release.
+
+# Layaswarna v13 — Side-by-side Figma and Adobe Express japa dial comparison
 
 **Design status:** Figma concept screens are written in the connected Layaswarna Figma file. Adobe Express alternative requires a selected editable template/document; its template gallery has been opened for selection. This is not evidence that an Adobe document was generated. All designs must represent the corrected sets-of-108 mathematics.
 
