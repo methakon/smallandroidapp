@@ -14,22 +14,41 @@ data class MantraRecording(
     val createdAt: Long
 )
 
+/** Durable checkpoint for long japa sessions. Keyed and validated by recording UUID and selection. */
+data class JapaCheckpoint(
+    val recordingId: String,
+    val selectedSets: Int,
+    val gapMs: Long,
+    val completed: Int,
+    val updatedAt: Long
+)
+
 class MantraStore(
     context: Context? = null,
     baseDir: File? = null
 ) {
     private val root = (baseDir ?: File(requireNotNull(context) { "Either context or baseDir is required" }.filesDir, "mantras")).apply { mkdirs() }
     private val index = File(root, "recordings.json")
+    private val checkpointFile = File(root, "checkpoint.json")
 
     init {
         pruneOrphanTakes()
     }
 
-    /** Cleans up uncommitted temporary takes from previous crashes or interrupted takes. */
+    /** Cleans up uncommitted temporary takes from previous crashes and invalid checkpoints. */
     fun pruneOrphanTakes() {
         runCatching {
             root.listFiles { file -> file.name.startsWith("take-") && file.name.endsWith(".m4a") }
                 ?.forEach { it.delete() }
+        }
+        runCatching {
+            if (checkpointFile.isFile) {
+                val obj = JSONObject(checkpointFile.readText())
+                val id = obj.optString("recordingId")
+                if (!file(id).isFile) {
+                    checkpointFile.delete()
+                }
+            }
         }
     }
 
@@ -78,8 +97,71 @@ class MantraStore(
     }
 
     fun delete(item: MantraRecording) {
+        clearCheckpoint(item.id)
         writeIndex(list().filterNot { it.id == item.id })
         file(item.id).delete()
+    }
+
+    /** Retrieves the saved checkpoint for [recordingId], failing closed if missing or invalid. */
+    fun getCheckpoint(recordingId: String): JapaCheckpoint? {
+        if (!checkpointFile.isFile) return null
+        return runCatching {
+            val obj = JSONObject(checkpointFile.readText())
+            val id = obj.optString("recordingId")
+            if (id != recordingId) return null
+            if (!file(id).isFile) {
+                clearCheckpoint()
+                return null
+            }
+            val sets = obj.optInt("selectedSets")
+            val gap = obj.optLong("gapMs")
+            val completed = obj.optInt("completed")
+            if (!MantraRepetitionPolicy.permitted(sets, gap)) return null
+            val total = MantraRepetitionPolicy.totalRepetitions(sets)
+            if (completed !in 0..total) return null
+            JapaCheckpoint(id, sets, gap, completed, obj.optLong("updatedAt"))
+        }.getOrNull()
+    }
+
+    /** Saves an ongoing japa practice checkpoint atomically. */
+    fun saveCheckpoint(recordingId: String, selectedSets: Int, gapMs: Long, completed: Int): JapaCheckpoint? {
+        if (!file(recordingId).isFile) {
+            clearCheckpoint(recordingId)
+            return null
+        }
+        if (!MantraRepetitionPolicy.permitted(selectedSets, gapMs)) return null
+        val total = MantraRepetitionPolicy.totalRepetitions(selectedSets)
+        if (completed !in 0..total) return null
+        return runCatching {
+            val now = System.currentTimeMillis()
+            val obj = JSONObject().apply {
+                put("recordingId", recordingId)
+                put("selectedSets", selectedSets)
+                put("gapMs", gapMs)
+                put("completed", completed)
+                put("updatedAt", now)
+            }
+            val tmp = File(root, "checkpoint.json.tmp")
+            tmp.writeText(obj.toString())
+            check(tmp.renameTo(checkpointFile)) { "Could not write checkpoint" }
+            JapaCheckpoint(recordingId, selectedSets, gapMs, completed, now)
+        }.getOrNull()
+    }
+
+    /** Clears checkpoint for a specific recording, or unconditionally if [recordingId] is null. */
+    fun clearCheckpoint(recordingId: String? = null) {
+        runCatching {
+            if (checkpointFile.isFile) {
+                if (recordingId == null) {
+                    checkpointFile.delete()
+                } else {
+                    val obj = JSONObject(checkpointFile.readText())
+                    if (obj.optString("recordingId") == recordingId) {
+                        checkpointFile.delete()
+                    }
+                }
+            }
+        }
     }
 
     fun recordingFile(item: MantraRecording): File {

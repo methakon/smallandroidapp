@@ -144,4 +144,59 @@ class MantraStoreTest {
         val list = store.list()
         assertTrue(list.isEmpty())
     }
+
+    @Test
+    fun `checkpoint save and get round trip`() {
+        val (store, _) = createStore()
+        val take = createDummyTake(store)
+        val saved = store.save(take, "Daily Japa", 4_000L)
+
+        val cp = store.saveCheckpoint(saved.id, selectedSets = 11, gapMs = 1000L, completed = 42)
+        assertTrue(cp != null)
+        assertEquals(42, cp!!.completed)
+        assertEquals(11, cp.selectedSets)
+        assertEquals(1000L, cp.gapMs)
+
+        val retrieved = store.getCheckpoint(saved.id)
+        assertTrue(retrieved != null)
+        assertEquals(42, retrieved!!.completed)
+        assertEquals(11, retrieved.selectedSets)
+        assertEquals(1000L, retrieved.gapMs)
+    }
+
+    @Test
+    fun `delete recording invalidates checkpoint`() {
+        val (store, _) = createStore()
+        val take = createDummyTake(store)
+        val saved = store.save(take, "Temporary Japa", 3_000L)
+
+        store.saveCheckpoint(saved.id, selectedSets = 1, gapMs = 500L, completed = 50)
+        assertTrue(store.getCheckpoint(saved.id) != null)
+
+        store.delete(saved)
+        assertTrue(store.getCheckpoint(saved.id) == null)
+    }
+
+    @Test
+    fun `checkpoint fails closed on invalid parameters or out-of-range completion`() {
+        val (store, _) = createStore()
+        val take = createDummyTake(store)
+        val saved = store.save(take, "Safe Japa", 3_000L)
+
+        // Invalid sets (e.g. 5 sets, not in 1, 11, 21, 58, 108)
+        val invalidSets = store.saveCheckpoint(saved.id, selectedSets = 5, gapMs = 1000L, completed = 10)
+        assertTrue(invalidSets == null)
+
+        // Invalid gap (e.g. 1500L, not supported)
+        val invalidGap = store.saveCheckpoint(saved.id, selectedSets = 1, gapMs = 1500L, completed = 10)
+        assertTrue(invalidGap == null)
+
+        // Out of range completion (> 108 for 1 set)
+        val outOfRange = store.saveCheckpoint(saved.id, selectedSets = 1, gapMs = 1000L, completed = 109)
+        assertTrue(outOfRange == null)
+
+        // Negative completion
+        val negative = store.saveCheckpoint(saved.id, selectedSets = 1, gapMs = 1000L, completed = -1)
+        assertTrue(negative == null)
+    }
 }

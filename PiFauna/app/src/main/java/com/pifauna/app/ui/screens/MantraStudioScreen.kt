@@ -68,6 +68,25 @@ fun MantraStudioScreen() {
     var completed by remember { mutableIntStateOf(0) }
     var replaying by remember { mutableStateOf(false) }
     var deleteCandidate by remember { mutableStateOf<MantraRecording?>(null) }
+    var showPermissionExplainer by remember { mutableStateOf(false) }
+
+    LaunchedEffect(selected?.id) {
+        val currentId = selected?.id
+        if (currentId != null) {
+            val cp = store.getCheckpoint(currentId)
+            if (cp != null && cp.completed > 0) {
+                selectedSets = cp.selectedSets
+                gapMs = cp.gapMs
+                completed = cp.completed
+                val total = MantraRepetitionPolicy.totalRepetitions(cp.selectedSets)
+                status = "Resumable session: chant ${cp.completed + 1} of $total."
+            } else {
+                completed = 0
+            }
+        } else {
+            completed = 0
+        }
+    }
 
     fun finishTake() {
         runCatching { engine.finishCapture() }
@@ -104,8 +123,11 @@ fun MantraStudioScreen() {
         if (recording) return
         if (context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) ==
             PackageManager.PERMISSION_GRANTED
-        ) beginTake()
-        else requestMicrophone.launch(Manifest.permission.RECORD_AUDIO)
+        ) {
+            beginTake()
+        } else {
+            showPermissionExplainer = true
+        }
     }
 
     fun play(file: File, sets: Int? = null, resume: Boolean = false) {
@@ -117,7 +139,17 @@ fun MantraStudioScreen() {
         val target = sets?.let(MantraRepetitionPolicy::totalRepetitions) ?: 1
         val notify: (Int, String?) -> Unit = { done, error ->
             // One-play previews must never mutate a long japa practice checkpoint.
-            if (sets != null) completed = done
+            if (sets != null) {
+                completed = done
+                val currentRec = selected
+                if (currentRec != null) {
+                    if (done in 1 until target) {
+                        store.saveCheckpoint(currentRec.id, sets, gapMs, done)
+                    } else if (done >= target) {
+                        store.clearCheckpoint(currentRec.id)
+                    }
+                }
+            }
             if (error != null || done >= target) {
                 replaying = false
                 status = error ?: if (sets == null) "Preview finished."
@@ -272,8 +304,26 @@ fun MantraStudioScreen() {
                     selectedSets = selectedSets,
                     selectedGapMs = gapMs,
                     enabled = !recording && !replaying,
-                    onSetsChanged = { selectedSets = it },
-                    onGapChanged = { gapMs = it }
+                    onSetsChanged = {
+                        if (selectedSets != it) {
+                            selectedSets = it
+                            if (completed > 0) {
+                                completed = 0
+                                selected?.id?.let { id -> store.clearCheckpoint(id) }
+                                status = "Target sets changed. Progress reset."
+                            }
+                        }
+                    },
+                    onGapChanged = {
+                        if (gapMs != it) {
+                            gapMs = it
+                            if (completed > 0) {
+                                completed = 0
+                                selected?.id?.let { id -> store.clearCheckpoint(id) }
+                                status = "Silence gap changed. Progress reset."
+                            }
+                        }
+                    }
                 )
             }
             SectionLabel("OUTER RING · SETS")
@@ -282,7 +332,16 @@ fun MantraStudioScreen() {
                     FilterChip(
                         selected = selectedSets == sets,
                         enabled = !recording && !replaying,
-                        onClick = { selectedSets = sets },
+                        onClick = {
+                            if (selectedSets != sets) {
+                                selectedSets = sets
+                                if (completed > 0) {
+                                    completed = 0
+                                    selected?.id?.let { id -> store.clearCheckpoint(id) }
+                                    status = "Target sets changed. Progress reset."
+                                }
+                            }
+                        },
                         label = { Text("$sets") }
                     )
                 }
@@ -299,7 +358,16 @@ fun MantraStudioScreen() {
                         FilterChip(
                             selected = gapMs == gap,
                             enabled = !recording && !replaying,
-                            onClick = { gapMs = gap },
+                            onClick = {
+                                if (gapMs != gap) {
+                                    gapMs = gap
+                                    if (completed > 0) {
+                                        completed = 0
+                                        selected?.id?.let { id -> store.clearCheckpoint(id) }
+                                        status = "Silence gap changed. Progress reset."
+                                    }
+                                }
+                            },
                             modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp),
                             label = { Text("${MantraRepetitionPolicy.gapLabel(gap)}s") }
                         )
@@ -325,7 +393,12 @@ fun MantraStudioScreen() {
                 Button(onClick = {
                     engine.stopPlayback()
                     replaying = false
-                    status = "Stopped after $completed of $total repetitions."
+                    selected?.let { rec ->
+                        if (completed in 1 until total) {
+                            store.saveCheckpoint(rec.id, selectedSets, gapMs, completed)
+                        }
+                    }
+                    status = "Stopped after $completed of $total repetitions. Progress saved."
                 }, modifier = Modifier.fillMaxWidth()) { Text("Stop practice") }
             } else {
                 if (completed in 1 until total) {
@@ -335,7 +408,11 @@ fun MantraStudioScreen() {
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Continue from chant ${completed + 1} of $total") }
                     OutlinedButton(
-                        onClick = { completed = 0; status = "Practice progress reset." },
+                        onClick = {
+                            completed = 0
+                            selected?.id?.let { id -> store.clearCheckpoint(id) }
+                            status = "Practice progress reset."
+                        },
                         enabled = !recording,
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Start over") }
@@ -357,6 +434,29 @@ fun MantraStudioScreen() {
                 "There is no endless loop or automatic restart. Keep volume low; " +
                 "record other people only with their consent. The microphone is used " +
                 "only after you tap Record and grant Android permission."
+        )
+    }
+
+    if (showPermissionExplainer) {
+        AlertDialog(
+            onDismissRequest = { showPermissionExplainer = false },
+            title = { Text("Microphone Access") },
+            text = {
+                Text(
+                    "Layaswarna needs microphone access only while you actively record your voice. " +
+                        "Your recordings stay private on this device and are never shared, uploaded, " +
+                        "or accessed in the background."
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showPermissionExplainer = false
+                    requestMicrophone.launch(Manifest.permission.RECORD_AUDIO)
+                }) { Text("Allow Microphone") }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showPermissionExplainer = false }) { Text("Not Now") }
+            }
         )
     }
 
