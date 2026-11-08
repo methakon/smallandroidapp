@@ -24,6 +24,7 @@ import com.pifauna.app.data.SpeciesProfiles
 import com.pifauna.app.safety.BlockCode
 import com.pifauna.app.safety.SafetyDecision
 import com.pifauna.app.safety.SafetyLimits
+import com.pifauna.app.safety.AudioFocusInterruptionPolicy
 import com.pifauna.app.safety.SafetyPolicy
 import com.pifauna.app.safety.SafetySnapshot
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -378,7 +379,7 @@ class PlayerController(context: Context) {
 
     private fun onFocusChanged(change: Int) {
         if (!_state.value.isPlaying) return
-        if (change <= AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+        if (AudioFocusInterruptionPolicy.mustStop(change)) {
             stopForSafety("Stopped: another app took over audio output.")
         }
     }
