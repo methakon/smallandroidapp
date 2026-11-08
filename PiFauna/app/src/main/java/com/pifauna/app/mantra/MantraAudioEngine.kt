@@ -12,6 +12,9 @@ import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import android.os.BatteryManager
+import android.os.PowerManager
+import com.pifauna.app.safety.AudioFocusInterruptionPolicy
+import com.pifauna.app.safety.SafetyLimits
 import android.content.Intent
 import android.content.IntentFilter
 import java.io.File
@@ -36,6 +39,18 @@ class MantraAudioEngine(private val context: Context) {
     private var recording = false
     private val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     private var focusRequest: AudioFocusRequest? = null
+    private val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
+
+    /**
+     * Android thermal status reporting is available only from API 29.
+     * If this API exists but cannot be read, deny rather than assume safe.
+     */
+    private fun isThermallyUnsafe(): Boolean {
+        if (Build.VERSION.SDK_INT < 29) return false
+        return runCatching {
+            powerManager.currentThermalStatus >= SafetyLimits.THERMAL_BLOCK_STATUS
+        }.getOrDefault(true)
+    }
     private val safetyPoll = object : Runnable {
         override fun run() {
             if (callback == null) return
@@ -51,6 +66,10 @@ class MantraAudioEngine(private val context: Context) {
             val scale = battery?.getIntExtra(BatteryManager.EXTRA_SCALE, -1) ?: -1
             if (level < 0 || scale <= 0 || level * 100 / scale <= 15) {
                 finish("Stopped: battery status unknown or at 15% or less.")
+                return
+            }
+            if (isThermallyUnsafe()) {
+                finish("Stopped: phone is too hot or thermal safety status is unavailable.")
                 return
             }
             val active = player
@@ -73,7 +92,7 @@ class MantraAudioEngine(private val context: Context) {
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
             .setWillPauseWhenDucked(true)
             .setOnAudioFocusChangeListener({ change ->
-                if (change <= AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK) {
+                if (AudioFocusInterruptionPolicy.mustStop(change)) {
                     finish("Stopped: audio focus was lost.")
                 }
             }, main)
@@ -219,6 +238,10 @@ class MantraAudioEngine(private val context: Context) {
         }
         if (SystemClock.elapsedRealtime() - sessionStart >= MantraRepetitionPolicy.MAX_SESSION_MS) {
             finish("Session reached the 30-minute safety limit.")
+            return
+        }
+        if (isThermallyUnsafe()) {
+            finish("Playback blocked: phone thermal status is severe or cannot be checked.")
             return
         }
         val file = currentFile ?: return
