@@ -1,8 +1,10 @@
-> **AUTHORITATIVE DESIGN CHANGE: Figma only.** The Adobe sections below document superseded historical ideas, not active deliverables or release conditions. For the v13 home and Mantra Studio, use [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md) and its 11 editable Figma screen links.\n\n# Layaswarna — Mantra Studio v13 / 0.8.0: UX, privacy and implementation contract
+> **AUTHORITATIVE DESIGN CHANGE: Figma only.** The Adobe sections below document superseded historical ideas, not active deliverables or release conditions. For the v13 home and Mantra Studio, use [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md) and its 12 editable Figma screen links.
 
-**Status:** Development prototype on `feat/layaswarna-mantra-studio-v13`. Not a released feature and not a substitute for physical-device or Play policy review.  
+# Layaswarna — Mantra Studio v13 / 0.8.0: UX, privacy and implementation contract
+
+**Status:** PR #3 merged into the development base on 2026-11-08; **not published to Google Play**. Current follow-up safety fixes require fresh validation and not a substitute for physical-device or Play policy review.  
 **Published release untouched:** Internal Testing v11 / 0.6.0.  
-**Design direction:** More sober, feature-rich, calm and legible—not neon-heavy or cluttered. This document is a design/developer brief for Adobe Express and Antigravity; no claim that Adobe has generated editable designs.
+**Design direction:** More sober, feature-rich, calm and legible—not neon-heavy or cluttered. The Adobe section below is **archived only**; active v13 design and Android mapping is [Figma-only](FIGMA-V13-SOURCE-OF-TRUTH.md).
 
 ## User flows
 
