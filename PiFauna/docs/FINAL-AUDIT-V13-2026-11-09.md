@@ -96,7 +96,7 @@ CI lint/build passes at `f4d9b86`; Kotlin emitted nonfatal warnings in `SoundEng
 
 ## Branch policy following the historical merge
 
-PR #3 is already merged into **development base** `feat/pifauna-phone-audio`, not Google Play. This audit report and new audio-focus/thermal changes were developed on `feat/layaswarna-mantra-studio-v13` *after* that merge. A **separate follow-up pull request** is required to transfer audit remediation to the development base. Keep that PR in draft until verification; do not automatically merge or release.
+PR #3 is already merged into **development base** `feat/pifauna-phone-audio`, not Google Play. This audit report and new audio-focus/thermal changes were developed on `feat/layaswarna-mantra-studio-v13` *after* that merge. A **separate follow-up draft pull request [#5](https://github.com/methakon/smallandroidapp/pull/5)** now proposes transferring the post-merge safety fixes and these audit documents to the development base. Keep it in draft until verification; do not automatically merge or release.
 
 ## Related documents
 
@@ -104,4 +104,4 @@ PR #3 is already merged into **development base** `feat/pifauna-phone-audio`, no
 - [Figma v13 source of truth](FIGMA-V13-SOURCE-OF-TRUTH.md)
 - [Historical v12 security audit](SECURITY-AUDIT-V12-2026-11-08.md)
 - [Play Internal deployment record](PLAY-INTERNAL-DEPLOYMENT.md)
-- [Antigravity issue #4](https://github.com/methakon/smallandroidapp/issues/4)
+- [Antigravity issue #4](https://github.com/methakon/smallandroidapp/issues/4) · [Audit remediation draft PR #5](https://github.com/methakon/smallandroidapp/pull/5)
