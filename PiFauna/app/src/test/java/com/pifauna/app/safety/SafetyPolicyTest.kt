@@ -28,6 +28,10 @@ class SafetyPolicyTest {
         val below = SafetyPolicy.evaluate(snapshot(battery = 4))
         assertEquals(BlockCode.LOW_BATTERY, (below as SafetyDecision.Blocked).code)
 
+        val unknownNegative = SafetyPolicy.evaluate(snapshot(battery = -1))
+        assertEquals(BlockCode.LOW_BATTERY, (unknownNegative as SafetyDecision.Blocked).code)
+        assertEquals(BlockCode.LOW_BATTERY, SafetyPolicy.mustStop(snapshot(battery = -1)))
+
         val above = SafetyPolicy.evaluate(snapshot(battery = SafetyLimits.BATTERY_CUTOFF_PERCENT + 1))
         assertEquals(SafetyDecision.Allowed, above)
     }
@@ -60,9 +64,14 @@ class SafetyPolicyTest {
             snapshot(volume = SafetyLimits.MEDIA_VOLUME_RATIO_LIMIT + 0.01f)
         )
         assertEquals(BlockCode.VOLUME_TOO_HIGH, (loud as SafetyDecision.Blocked).code)
+        assertEquals(
+            BlockCode.VOLUME_TOO_HIGH,
+            SafetyPolicy.mustStop(snapshot(volume = SafetyLimits.MEDIA_VOLUME_RATIO_LIMIT + 0.01f))
+        )
 
         val atLimit = SafetyPolicy.evaluate(snapshot(volume = SafetyLimits.MEDIA_VOLUME_RATIO_LIMIT))
         assertEquals(SafetyDecision.Allowed, atLimit)
+        assertNull(SafetyPolicy.mustStop(snapshot(volume = SafetyLimits.MEDIA_VOLUME_RATIO_LIMIT)))
     }
 
     @Test

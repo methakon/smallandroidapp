@@ -34,11 +34,16 @@ sealed interface SafetyDecision {
 object SafetyPolicy {
 
     fun evaluate(snapshot: SafetySnapshot): SafetyDecision {
-        if (snapshot.batteryPercent in 0..SafetyLimits.BATTERY_CUTOFF_PERCENT) {
-            return SafetyDecision.Blocked(
-                BlockCode.LOW_BATTERY,
+        if (snapshot.batteryPercent in 0..SafetyLimits.BATTERY_CUTOFF_PERCENT || snapshot.batteryPercent < 0) {
+            val message = if (snapshot.batteryPercent < 0) {
+                "Playback blocked: battery status unknown or unreadable. Charge the phone first."
+            } else {
                 "Playback blocked: battery at ${snapshot.batteryPercent}% " +
                     "(limit ${SafetyLimits.BATTERY_CUTOFF_PERCENT}%). Charge the phone first."
+            }
+            return SafetyDecision.Blocked(
+                BlockCode.LOW_BATTERY,
+                message
             )
         }
 

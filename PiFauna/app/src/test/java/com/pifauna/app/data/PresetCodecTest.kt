@@ -72,6 +72,37 @@ class PresetCodecTest {
         assertThrows(PresetRejected::class.java) {
             PresetCodec.add(emptyList(), preset(gain = SafetyLimits.MAX_GAIN + 0.01f))
         }
+        assertThrows(PresetRejected::class.java) {
+            PresetCodec.add(emptyList(), preset(gain = 0f))
+        }
+        assertThrows(PresetRejected::class.java) {
+            PresetCodec.add(emptyList(), preset(gain = -0.05f))
+        }
+        assertThrows(PresetRejected::class.java) {
+            PresetCodec.add(emptyList(), preset(gain = Float.NaN))
+        }
+        assertThrows(PresetRejected::class.java) {
+            PresetCodec.add(emptyList(), preset(gain = Float.POSITIVE_INFINITY))
+        }
+    }
+
+    @Test
+    fun `decode rejects malformed or duplicate corrupted records`() {
+        // start > end record dropped
+        val badRange = "1\u001EInvalid\u001F5000\u001F1000\u001FSWEEP\u001F0.05"
+        assertTrue(PresetCodec.decode(badRange).isEmpty())
+
+        // Non-positive or NaN gain dropped
+        val badGain = "1\u001EBadGain\u001F1000\u001F4000\u001FSWEEP\u001F-0.05"
+        assertTrue(PresetCodec.decode(badGain).isEmpty())
+        val nanGain = "1\u001ENanGain\u001F1000\u001F4000\u001FSWEEP\u001FNaN"
+        assertTrue(PresetCodec.decode(nanGain).isEmpty())
+
+        // Duplicate names deduplicated case-insensitively
+        val duplicates = "1\u001EEvening\u001F1000\u001F4000\u001FSWEEP\u001F0.05\u001Eevening\u001F2000\u001F5000\u001FSWEEP\u001F0.05"
+        val decoded = PresetCodec.decode(duplicates)
+        assertEquals(1, decoded.size)
+        assertEquals("Evening", decoded.first().name)
     }
 
     @Test

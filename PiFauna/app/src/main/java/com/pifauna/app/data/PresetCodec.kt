@@ -58,8 +58,8 @@ object PresetCodec {
     fun add(existing: List<Preset>, preset: Preset): List<Preset> {
         val name = validateName(preset.name)
         validateRange(preset.startHz, preset.endHz)
-        if (preset.gain > SafetyLimits.MAX_GAIN) {
-            throw PresetRejected("Gain above ${SafetyLimits.MAX_GAIN} is not allowed.")
+        if (preset.gain <= 0f || !preset.gain.isFinite() || preset.gain > SafetyLimits.MAX_GAIN) {
+            throw PresetRejected("Gain must be positive and at most ${SafetyLimits.MAX_GAIN}.")
         }
         if (existing.size >= SafetyLimits.MAX_PRESETS) {
             throw PresetRejected("Only ${SafetyLimits.MAX_PRESETS} presets can be stored. Delete one first.")
@@ -87,17 +87,27 @@ object PresetCodec {
         val records = raw.split(RECORD)
         if (records.firstOrNull() != FORMAT_VERSION) return emptyList()
 
-        return records.drop(1).mapNotNull { record ->
+        val decoded = mutableListOf<Preset>()
+        val seenNames = mutableSetOf<String>()
+
+        for (record in records.drop(1)) {
+            if (decoded.size >= SafetyLimits.MAX_PRESETS) break
             val parts = record.split(FIELD)
-            if (parts.size != 5) return@mapNotNull null
-            val start = parts[1].toIntOrNull() ?: return@mapNotNull null
-            val end = parts[2].toIntOrNull() ?: return@mapNotNull null
-            val mode = runCatching { ToneMode.valueOf(parts[3]) }.getOrNull() ?: return@mapNotNull null
-            val gain = parts[4].toFloatOrNull() ?: return@mapNotNull null
-            if (start !in SafetyLimits.MIN_HZ..SafetyLimits.MAX_HZ) return@mapNotNull null
-            if (end !in SafetyLimits.MIN_HZ..SafetyLimits.MAX_HZ) return@mapNotNull null
-            if (gain <= 0f || gain > SafetyLimits.MAX_GAIN) return@mapNotNull null
-            Preset(parts[0], start, end, mode, gain)
+            if (parts.size != 5) continue
+            val rawName = parts[0]
+            val name = runCatching { validateName(rawName) }.getOrNull() ?: continue
+            if (seenNames.contains(name.lowercase())) continue
+            val start = parts[1].toIntOrNull() ?: continue
+            val end = parts[2].toIntOrNull() ?: continue
+            if (start !in SafetyLimits.MIN_HZ..SafetyLimits.MAX_HZ) continue
+            if (end !in SafetyLimits.MIN_HZ..SafetyLimits.MAX_HZ) continue
+            if (start > end) continue
+            val mode = runCatching { ToneMode.valueOf(parts[3]) }.getOrNull() ?: continue
+            val gain = parts[4].toFloatOrNull() ?: continue
+            if (gain <= 0f || !gain.isFinite() || gain > SafetyLimits.MAX_GAIN) continue
+            seenNames.add(name.lowercase())
+            decoded.add(Preset(name, start, end, mode, gain))
         }
+        return decoded
     }
 }

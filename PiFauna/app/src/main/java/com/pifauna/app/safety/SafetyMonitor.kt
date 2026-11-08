@@ -46,20 +46,23 @@ class SafetyMonitor(context: Context, private val onChanged: () -> Unit) {
         if (active) return
         active = true
 
-        val batteryReceiver = object : BroadcastReceiver() {
+        val safetyReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 onChanged()
             }
         }
-        val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_BATTERY_CHANGED)
+            addAction("android.media.VOLUME_CHANGED_ACTION")
+        }
         val registered = runCatching {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                appContext.registerReceiver(batteryReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
+                appContext.registerReceiver(safetyReceiver, filter, Context.RECEIVER_NOT_EXPORTED)
             } else {
-                appContext.registerReceiver(batteryReceiver, filter)
+                appContext.registerReceiver(safetyReceiver, filter)
             }
-        }.onFailure { Log.w(TAG, "battery receiver not registered", it) }.isSuccess
-        if (registered) receiver = batteryReceiver
+        }.onFailure { Log.w(TAG, "safety receiver not registered", it) }.isSuccess
+        if (registered) receiver = safetyReceiver
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             val watcher = ThermalWatcher(powerManager, mainExecutor, onChanged)

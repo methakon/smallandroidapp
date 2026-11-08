@@ -17,7 +17,7 @@ what it cannot enforce, and what the product is not allowed to claim.
 | Volume ceiling | Blocked above 60% of maximum media volume | `SafetyPolicyTest.media volume above the limit is refused` |
 | Screen-lock opt-in (default OFF) | Normal sessions stop at `Activity.onStop`; explicit opt-in uses an Android `mediaPlayback` foreground service (`TimedPlaybackService`) with ongoing lock-screen Stop control | Verified on Xiaomi Mi A3 (API 30) & Panasonic ELUGA (API 28); CI on API 30 & API 36 |
 | Interruption handling | Any audio-focus loss immediately stops playback | Verified in instrumented test suite |
-| Offline with narrow FGS permissions | `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MEDIA_PLAYBACK` only; no `INTERNET`, microphone, camera, contacts, or location | Manifest inspection; release verification |
+| Offline with narrow FGS permissions | `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MEDIA_PLAYBACK` only; no `INTERNET`, camera, contacts, or location; the **unreleased v13** Mantra Studio prototype additionally requests `RECORD_AUDIO` only when the user explicitly starts capture | Manifest inspection; release verification |
 
 ## 2. What the code cannot enforce
 
@@ -85,6 +85,10 @@ Do not publish as a pest-control or health product. Treat these as blockers:
 - Default **OFF**; toggling does not start audio, and the setting is disabled during a live session.
 - Explicit user Start while the Activity is visible begins a bounded `mediaPlayback` foreground service; locking may continue playback until the 5/10/15/30-minute limit, notification Stop, safety interruption or process termination.
 - Switching apps on an unlocked display ends the audio. Removing the app task, audio-focus loss and unsafe output route stop. No boot/process-death automatic restart.
-- Android normal permissions are `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MEDIA_PLAYBACK` only; no INTERNET, microphone, camera or location. A platform MediaSession backs the notification.
+- Android normal permissions are `FOREGROUND_SERVICE` and `FOREGROUND_SERVICE_MEDIA_PLAYBACK` only; no INTERNET, camera or location; unreleased v13 adds optional runtime-gated `RECORD_AUDIO` for user-chosen mantra capture. A platform MediaSession backs the notification.
 - 8% digital gain is not a calibrated sound-pressure guarantee. The Android OS or OEM may interrupt even opted-in playback.
 - Lock-screen, notification, thermal, battery, route, volume and timer behavior must pass physical-device validation before versionCode 10 is uploaded.
+
+## Unreleased v13 voice-recording safety addendum
+
+Mantra Studio is a **development prototype**. The user must explicitly tap Record and grant Android microphone permission. Voice takes are private app files, never uploaded; discard/retry requires explicit acceptance before saving. Finite 11/21/58/108 repetition sets have 0.5–3-second silence gaps, a user-visible Stop action, foreground-only playback, a 30-minute maximum and an actual built-in-speaker routing check. The app must stop capture/playback on Activity stop; no background voice recording or automatically restarted loops. Device QA, microphone privacy, routing races, volume changes and Play Data Safety disclosures are required before publishing.

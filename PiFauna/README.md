@@ -31,7 +31,7 @@ tells you plainly what that does and does not mean.
 - Up to 20 locally saved custom presets.
 - Digital peak capped at 8% of full scale, with 25 ms fades in and out.
 
-Everything remains offline, without account, internet or analytics. The upcoming screen-lock opt-in uses Android foreground-service/media-playback permissions; no INTERNET, microphone, camera or location access.
+Everything remains offline, without account, internet or analytics. The upcoming screen-lock opt-in uses Android foreground-service/media-playback permissions; no INTERNET, camera or location access. The unreleased v13 Mantra Studio prototype requests microphone permission only when the user explicitly taps Record, and stores accepted voice recordings only in private local app storage.
 
 ## Build prerequisites
 
@@ -212,7 +212,7 @@ The Android screen layouts are synchronized with the Figma Mystic variants (seve
 - **versionCode 9 / v0.5.0 (historical):** Initial Google Play Internal testing release featuring Mystic UI update, SoundEngine single-owner teardown, VolumeShaper fade, and device safety checks.
 - **versionCode 10 (candidate, historical):** Local prototype branch introducing screen-lock timed playback with `TimedPlaybackService`.
 - **versionCode 11 / v0.6.0 (active Play Internal release):** Combined release integrating screen-lock foreground media playback and reactive built-in speaker routing verification. Successfully deployed and active on Google Play Internal testing (`edit_id: 11456912848494461374`).
-- **versionCode 12 / v0.7.0 (current development branch):** Reconciles audit gaps: fixes preflight audio routing warnings, captures and commits authentic physical device screenshots to `store-assets/screenshots/`, and extracts hardcoded UI strings into `res/values/strings.xml` in preparation for future Indic localization.
+- **versionCode 12 / v0.7.0 (prior development branch):** Reconciles audit gaps: fixes preflight audio routing warnings, captures and commits authentic physical device screenshots to `store-assets/screenshots/`, and extracts hardcoded UI strings into `res/values/strings.xml` in preparation for future Indic localization.
 
 Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [audio routing spec](docs/LAYASWARNA-AUDIO-ROUTING-V11-SPEC.md), [screen-lock playback](docs/SCREEN-LOCK-PLAYBACK.md), [translations](docs/LOCALIZATION.md), [Cloudflare/legal site](docs/LEGAL-SITE-HOSTING.md), [internal release record](docs/PLAY-INTERNAL-DEPLOYMENT.md).
 
@@ -221,3 +221,8 @@ Documentation: [Google Play listing](docs/PLAY-STORE-LISTING.md), [audio routing
 The source security audit dated **2026-11-08** documents safety and robustness findings, including a **high-priority suspected media-volume change monitoring gap**. It is **not** a completed live penetration test or a release security sign-off. **Do not publish versionCode 12** until the P0 investigation/remediation and authorized physical-device regression tests are complete. The published v11 Internal Testing release remains untouched.
 
 Read [Security Audit & Penetration-Test Readiness](docs/SECURITY-AUDIT-V12-2026-11-08.md) for findings, priorities, controlled test procedures and evidence requirements.
+
+## Unreleased Mantra Studio prototype — versionCode 13 / 0.8.0
+
+On the isolated branch `feat/layaswarna-mantra-studio-v13`, Mantra Studio adds explicit-permission microphone capture, as-many-as-needed retries, locally titled AAC recordings and counted replay (11, 21, 58, 108) with adjustable quiet gaps (0.5–3 seconds). Playback remains finite (30-minute cap), foreground-only and phone-speaker-routed. This prototype is **not** released or fully device validated. See [Mantra Studio design and QA gates](docs/LAYASWARNA-MANTRA-STUDIO-V13-DESIGN-AND-ACCEPTANCE.md). Published Play Internal v11 is unchanged.
+\n### Layaswarna v13 — Figma-only design authority\n\nThe user selected the [editable Figma v13 Master](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=121-48) as the single source of UI design truth for the new Home and Mantra Studio. The source-to-screen mapping, 108 chants per set, seven inter-chant gaps, and remaining safety/QA gates are documented in [Figma v13 implementation contract](docs/FIGMA-V13-SOURCE-OF-TRUTH.md). The older Adobe SVG/PNG exports are historical archives only, not production release assets or mandatory deliverables. PR #3 remains draft and v11 Play Internal remains untouched.\n

@@ -71,7 +71,7 @@ class AudioRouteMonitor(context: Context) {
     /** Ratio of current media volume to maximum, 0.0..1.0. */
     fun mediaVolumeRatio(): Float {
         val max = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        if (max <= 0) return 0f
+        if (max <= 0) return 1f
         val current = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         return (current.toFloat() / max).coerceIn(0f, 1f)
     }

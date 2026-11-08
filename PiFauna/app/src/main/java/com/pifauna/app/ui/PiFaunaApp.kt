@@ -25,6 +25,7 @@ import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.playback.PlayerController
 import com.pifauna.app.playback.PlaybackRuntime
 import androidx.compose.ui.platform.LocalContext
+import com.pifauna.app.ui.screens.MantraStudioScreen
 import com.pifauna.app.ui.screens.AnahataNadaScreen
 import com.pifauna.app.ui.screens.AboutPrivacyScreen
 import com.pifauna.app.ui.screens.ChakraConsoleScreen
@@ -57,6 +58,7 @@ enum class Route(val tab: Tab?) {
     ChakraLibrary(null),
     ChakraConsole(null),
     AnahataNada(null),
+    MantraStudio(null),
     AboutPrivacy(null)
 }
 
@@ -136,7 +138,9 @@ fun PiFaunaApp(
                     onSelectProfile = { selectedSpecies = it },
                     onOpenLibrary = { stack = listOf(Route.Profiles) },
                     onOpenChakras = { push(Route.ChakraLibrary) },
-                    onOpenAnahata = { push(Route.AnahataNada) }
+                    onOpenAnahata = { push(Route.AnahataNada) },
+                    onOpenMantra = { push(Route.MantraStudio) },
+                    onOpenCustomSound = { push(Route.CustomSound) }
                 )
 
                 Route.Player -> PlayerScreen(
@@ -249,6 +253,8 @@ fun PiFaunaApp(
                     },
                     enabled = !state.isPlaying
                 )
+
+                Route.MantraStudio -> MantraStudioScreen()
 
                 Route.AnahataNada -> AnahataNadaScreen(
                     selectedId = selectedRelaxation,

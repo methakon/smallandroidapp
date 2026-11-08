@@ -46,7 +46,7 @@ class MainActivityNavigationTest {
     @Test
     fun homeListsProfilesAndOpensThePlayer() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Sound profile regulator").assertIsDisplayed()
+        compose.onNodeWithText("A quieter space for your practice").assertIsDisplayed()
 
         compose.onNodeWithText("Open Mosquito").performScrollTo().performClick()
         compose.waitForIdle()
@@ -105,7 +105,7 @@ class MainActivityNavigationTest {
     @Test
     fun chakraLibraryIsReachableAndDoesNotStartSound() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Seven Chakra Library").performScrollTo().performClick()
+        compose.onNodeWithText("Chakra Library").performScrollTo().performClick()
         compose.waitForIdle()
         compose.onNodeWithText("Open Anahata").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("CHAKRA INSIGHTS · ANAHATA").performScrollTo().assertIsDisplayed()
@@ -128,6 +128,16 @@ class MainActivityNavigationTest {
         compose.onNodeWithText("OFFLINE COPY").assertIsDisplayed()
         // Verify the published link exists in the hierarchy
         compose.onNodeWithText("Open the published copy").assertExists()
+    }
+
+    @Test
+    fun mantraStudioIsReachableWithoutRequestingMicrophone() {
+        dismissWelcomeIfShown()
+        compose.onNodeWithText("Open Mantra Studio").performScrollTo().performClick()
+        compose.waitForIdle()
+        compose.onNodeWithText("Record a mantra").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("MY RECORDINGS").performScrollTo().assertIsDisplayed()
+        // Navigation/reading the library must not trigger Android RECORD_AUDIO.
     }
 
 }
