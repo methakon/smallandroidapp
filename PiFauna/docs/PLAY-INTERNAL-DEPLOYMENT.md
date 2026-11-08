@@ -1,13 +1,27 @@
 # Google Play internal testing — current release and historical deployment record
 
-## Active development branch — versionCode 12 (2026-11-07)
+## Current Google Play release — versionCode 13 (2026-11-08, Antigravity verified)
 
-Branch: `feat/layaswarna-audit-reconciliation-v12`
-Application ID: `in.berhampore.dhar.layaswarna`
-Version: `0.7.0` (versionCode `12`)
-Status: Development & audit reconciliation. Under release protection: published versionCode 11 remains active on Google Play; versionCode 12 is never automatically uploaded.
+Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.8.0 (v13) - Mantra Studio**, versionCodes: **["13"]**. No Production, Closed, or Open track was touched.
 
-## Current Google Play release — versionCode 11 (2026-11-07, Antigravity verified)
+| Field | VersionCode 13 |
+|---|---|
+| App ID | `in.berhampore.dhar.layaswarna` |
+| Track | `internal` |
+| Version name | 0.8.0 |
+| Version code | 13 |
+| Android SDK | minSdk 26, targetSdk 36, compileSdk 36 |
+| Signed AAB | 6,368,799 bytes |
+| SHA-256 (local & Play validated) | `178d7f3bc80524175bc00ef1a32430ba39d19203eb4003ebcb59951f98601fbb` |
+| SHA-1 (Play reported) | `f58568495fed0e107fc1b467421f96c86055f3ad` |
+| Upload Signer | `CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN` (4096-bit RSA) |
+| Edit ID | `00499665439987334124` (committed), fresh verified via `12019888605315512456` |
+| Status | `completed` |
+| Verification | Unit tests: 71/71 passed; Android lint: 0 errors; Instrumentation: 32/32 passed on Xiaomi Mi A3 (API 30) & 32/32 passed on Panasonic ELUGA (API 28) (64/64 total); Mantra Studio recording, checkpoint recovery across process kill, and confirmed delete physically verified. |
+| Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
+| Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` |
+
+## Superseded release — versionCode 11 (2026-11-07, Antigravity verified)
 
 Authenticated upload, track update, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.6.0 — Combined Internal Test**, versionCodes: **["11"]**. No Production, Closed, or Open track was touched.
 
@@ -99,8 +113,10 @@ published is byte-for-byte the artifact that was tested here.
 |---|---|---|
 | 6 | accepted for processing | blocked — targeted API 35, Play requires 36 |
 | 7 | Internal Test 2 | published, then superseded the same day by 8 |
-| **8** | **Internal Test 3** | superseded by 9 |
-| **9** | **Internal Test 4** | current internal release (reported) |
+| 8 | Internal Test 3 | superseded by 9 |
+| 9 | Internal Test 4 | superseded by 11 |
+| 11 | Combined Internal Test | superseded by 13 |
+| **13** | **Layaswarna 0.8.0 (v13) - Mantra Studio** | **current internal release (verified)** |
 
 Version 7 was the API 36 build made before the Figma Mystic interface landed.
 Eight commits arrived on the branch afterwards, so 7 was replaced rather than
