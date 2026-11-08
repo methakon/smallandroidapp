@@ -105,7 +105,7 @@ class MainActivityNavigationTest {
     @Test
     fun chakraLibraryIsReachableAndDoesNotStartSound() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Seven Chakra Library").performScrollTo().performClick()
+        compose.onNodeWithText("Chakra Library").performScrollTo().performClick()
         compose.waitForIdle()
         compose.onNodeWithText("Open Anahata").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("CHAKRA INSIGHTS · ANAHATA").performScrollTo().assertIsDisplayed()
@@ -133,7 +133,7 @@ class MainActivityNavigationTest {
     @Test
     fun mantraStudioIsReachableWithoutRequestingMicrophone() {
         dismissWelcomeIfShown()
-        compose.onNodeWithText("Mantra Studio").performScrollTo().performClick()
+        compose.onNodeWithText("Open Mantra Studio").performScrollTo().performClick()
         compose.waitForIdle()
         compose.onNodeWithText("Record a mantra").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("MY RECORDINGS").performScrollTo().assertIsDisplayed()
