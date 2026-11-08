@@ -1,6 +1,22 @@
 # Google Play internal testing — current release and historical deployment record
 
-## Active development branch — versionCode 12 (2026-11-07)
+## Current v13 audit status — 2026-11-09
+
+**No v13 upload is verified or authorized by this audit.** VersionCode **13** / versionName **0.8.0** was merged into the *development* branch `feat/pifauna-phone-audio` through [PR #3](https://github.com/methakon/smallandroidapp/pull/3) on 2026-11-08. The merge is **not a Play Console release**.
+
+The last Play Internal release documented below is **versionCode 11 / 0.6.0**, based on the earlier worker's authenticated Android Publisher API read-back. This 2026-11-09 audit did **not** independently access the Google Play Console to reconfirm the live track. It also found no verifiable new v13 upload, signed release AAB, bundletool/jarsigner evidence or full v13 Data Safety approval.
+
+The merged v13 development head `f4d9b86` passed the [Android debug CI](https://github.com/methakon/smallandroidapp/actions/runs/42450085563) (JVM tests, lint, API30 and API36 emulator 32/32 each). A subsequent static audit identified audio-focus-loss and mantra thermal bugs and committed source fixes on the feature branch **after PR #3 was merged**. Those fixes need a separate reviewed PR, fresh CI and safe device retesting. See [Final v13 audit](FINAL-AUDIT-V13-2026-11-09.md).
+
+**Before any new internal release:**
+1. Merge **only after review** of safety-remediation follow-up PR, prove latest code CI and explicit device acceptance.
+2. Review `RECORD_AUDIO` rationale, offline private recordings, public/bundled policy text, and Google Play Data Safety/app-content declarations.
+3. Build versionCode13 signed AAB using the existing Play upload key; verify signing certificate, bundletool, manifest/permissions and SHA-256.
+4. Check current Play Internal track in a **fresh Android Publisher API edit**; upload only with explicit user authorization.
+5. Commit and read back the internal track; record exact versionCodes, edit ID, date, AAB hash and tester link. Do **not** touch open/closed/production tracks without separate approval.
+
+
+## Historical development branch — versionCode 12 (2026-11-07)
 
 Branch: `feat/layaswarna-audit-reconciliation-v12`
 Application ID: `in.berhampore.dhar.layaswarna`
