@@ -1,6 +1,27 @@
 # Google Play internal testing — current release and historical deployment record
 
-## Current Google Play release — versionCode 13 (2026-11-08, Antigravity verified)
+## Current Google Play release — versionCode 14 (2026-11-17, Antigravity verified)
+
+Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.8.1 (v14) - Safety & Mantra Studio**, versionCodes: **["14"]**. No Production, Closed, or Open track was touched.
+
+| Field | VersionCode 14 |
+|---|---|
+| App ID | `in.berhampore.dhar.layaswarna` |
+| Track | `internal` |
+| Version name | 0.8.1 |
+| Version code | 14 |
+| Android SDK | minSdk 26, targetSdk 36, compileSdk 36 |
+| Signed AAB | 6,370,121 bytes |
+| SHA-256 (local & Play validated) | `dcfe207e32cd51529bd2873398671657827ad542b5ae28a21780e6c62e5b53cf` |
+| SHA-1 (Play reported) | `f4253bc6b18e7dd3bbc1bd5af9fffe392a867a54` |
+| Upload Signer | `CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN` (4096-bit RSA) |
+| Edit ID | `03935253920639435345` (committed), fresh verified via `04160831683432821645` |
+| Status | `completed` |
+| Verification | Unit tests: 73/73 passed; Android lint: 0 errors; Fail-safe focus-loss policy (`-1`, `-2`, `-3`) & API 29+ thermal monitoring cutoff verified. |
+| Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
+| Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` |
+
+## Superseded release — versionCode 13 (2026-11-08, Antigravity verified)
 
 Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.8.0 (v13) - Mantra Studio**, versionCodes: **["13"]**. No Production, Closed, or Open track was touched.
 
@@ -20,13 +41,6 @@ Authenticated upload, track update, validation, and commit completed via Android
 | Verification | Unit tests: 71/71 passed; Android lint: 0 errors; Instrumentation: 32/32 passed on Xiaomi Mi A3 (API 30) & 32/32 passed on Panasonic ELUGA (API 28) (64/64 total); Mantra Studio recording, checkpoint recovery across process kill, and confirmed delete physically verified. |
 | Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
 | Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` |
-
-## v13 Audit Remediation & Follow-up (PR #5)
-
-Post-merge static audit identified:
-- `AudioFocusInterruptionPolicy`: handling all Android negative focus change values (`-1`, `-2`, `-3`).
-- `MantraAudioEngine`: thermal throttling check for API 29+.
-Merged via PR #5 to be prepared and released as versionCode 14.
 
 ## Historical development branch — versionCode 12 (2026-11-07)
 
@@ -125,7 +139,8 @@ published is byte-for-byte the artifact that was tested here.
 | 8 | Internal Test 3 | superseded by 9 |
 | 9 | Internal Test 4 | superseded by 11 |
 | 11 | Combined Internal Test | superseded by 13 |
-| **13** | **Layaswarna 0.8.0 (v13) - Mantra Studio** | **current internal release (verified)** |
+| 13 | Mantra Studio (v13) | superseded by 14 |
+| **14** | **Layaswarna 0.8.1 (v14) - Safety & Mantra Studio** | **current internal release (verified)** |
 
 Version 7 was the API 36 build made before the Figma Mystic interface landed.
 Eight commits arrived on the branch afterwards, so 7 was replaced rather than
