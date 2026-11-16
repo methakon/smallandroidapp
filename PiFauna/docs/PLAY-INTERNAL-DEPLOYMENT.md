@@ -1,13 +1,14 @@
-# Google Play internal testing — current release and historical deployment record
+# Google Play deployment record — Internal & Open Testing
 
 ## Current Google Play release — versionCode 14 (2026-11-17, Antigravity verified)
 
-Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.8.1 (v14) - Safety & Mantra Studio**, versionCodes: **["14"]**. No Production, Closed, or Open track was touched.
+Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`) for both **Internal Testing (`internal`)** and **Open Testing (`beta`)**. Verified by opening a subsequent fresh edit and reading back all tracks. Status: **completed**, release name: **Layaswarna 0.8.1 (v14) - Safety & Mantra Studio**, versionCodes: **["14"]**. Production track was untouched.
 
 | Field | VersionCode 14 |
 |---|---|
 | App ID | `in.berhampore.dhar.layaswarna` |
-| Track | `internal` |
+| Tracks | `internal` & `beta` (Open Testing) |
+| Country Targeting | **India only (`IN`)** (verified via `edits/countryAvailability/beta`) |
 | Version name | 0.8.1 |
 | Version code | 14 |
 | Android SDK | minSdk 26, targetSdk 36, compileSdk 36 |
@@ -15,8 +16,8 @@ Authenticated upload, track update, validation, and commit completed via Android
 | SHA-256 (local & Play validated) | `dcfe207e32cd51529bd2873398671657827ad542b5ae28a21780e6c62e5b53cf` |
 | SHA-1 (Play reported) | `f4253bc6b18e7dd3bbc1bd5af9fffe392a867a54` |
 | Upload Signer | `CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN` (4096-bit RSA) |
-| Edit ID | `03935253920639435345` (committed), fresh verified via `04160831683432821645` |
-| Status | `completed` |
+| Edit IDs | `03935253920639435345` (internal), `10873916812664933520` (beta / open testing) |
+| Status | `completed` (both tracks) |
 | Verification | Unit tests: 73/73 passed; Android lint: 0 errors; Fail-safe focus-loss policy (`-1`, `-2`, `-3`) & API 29+ thermal monitoring cutoff verified. |
 | Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
 | Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` |
