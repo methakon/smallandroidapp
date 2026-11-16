@@ -1,5 +1,7 @@
 # Layaswarna (formerly PiFauna)
 
+> **v13 status (2026-11-09):** versionCode 13 / 0.8.0 was **merged into the development branch** via [PR #3](https://github.com/methakon/smallandroidapp/pull/3) on 2026-11-08; this is **not** a Google Play release. The latest verified pre-audit-fix debug CI at `f4d9b86` passed. A follow-up audit identified and patched audio-focus and mantra-thermal safety gaps, which need fresh CI/device retests. See [Final v13 audit](docs/FINAL-AUDIT-V13-2026-11-09.md) before considering a signed upload. **Figma only** is the UI design authority; Adobe assets are archived.
+
 An offline Android tone generator for short, supervised listening experiments.
 Kotlin + Jetpack Compose, minSdk 26, targetSdk 36.
 
@@ -11,7 +13,7 @@ tells you plainly what that does and does not mean.
 
 ## What the app does
 
-- Fifteen navigable screens: the original eleven routes, About & Privacy, plus Chakra Sound Console,
+- Sixteen navigable routes, including Mantra Studio: the original eleven routes, About & Privacy, plus Chakra Sound Console,
   Seven Chakra Library and Anahata Nada. Navigation uses separate Material 3
   targets; selection screens share one circular regulator with original vector icons.
 - Wheel gestures: single tap or drag/rotate to select, stationary long-press or
@@ -222,7 +224,31 @@ The source security audit dated **2026-11-08** documents safety and robustness f
 
 Read [Security Audit & Penetration-Test Readiness](docs/SECURITY-AUDIT-V12-2026-11-08.md) for findings, priorities, controlled test procedures and evidence requirements.
 
-## Unreleased Mantra Studio prototype — versionCode 13 / 0.8.0
+## v13 / 0.8.0 — merged development, not published
 
-On the isolated branch `feat/layaswarna-mantra-studio-v13`, Mantra Studio adds explicit-permission microphone capture, as-many-as-needed retries, locally titled AAC recordings and counted replay (11, 21, 58, 108) with adjustable quiet gaps (0.5–3 seconds). Playback remains finite (30-minute cap), foreground-only and phone-speaker-routed. This prototype is **not** released or fully device validated. See [Mantra Studio design and QA gates](docs/LAYASWARNA-MANTRA-STUDIO-V13-DESIGN-AND-ACCEPTANCE.md). Published Play Internal v11 is unchanged.
-\n### Layaswarna v13 — Figma-only design authority\n\nThe user selected the [editable Figma v13 Master](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=121-48) as the single source of UI design truth for the new Home and Mantra Studio. The source-to-screen mapping, 108 chants per set, seven inter-chant gaps, and remaining safety/QA gates are documented in [Figma v13 implementation contract](docs/FIGMA-V13-SOURCE-OF-TRUTH.md). The older Adobe SVG/PNG exports are historical archives only, not production release assets or mandatory deliverables. PR #3 remains draft and v11 Play Internal remains untouched.\n
+Mantra Studio includes explicit runtime microphone consent, user-selected AAC/M4A chant capture with retry/preview, named private recordings and deletion, bounded counted japa and an explicit manual continuation checkpoint. A **set is 108 full chants**, never a single repetition:
+
+| Sets chosen | Full chants |
+|---:|---:|
+| 1 | 108 |
+| 11 | 1,188 |
+| 21 | 2,268 |
+| 58 | 6,264 |
+| 108 | 11,664 |
+
+The independently controlled **inner silence dial** offers **0.1, 0.25, 0.5, 0.75, 1, 2 or 3 seconds** *between* chants. Sessions stop after **30 minutes per explicit foreground start**; a user must manually Continue. Voice replay requires **Android 9 / API 28+**, even though the app itself has `minSdk 26`. These are functional limits, **not calibrated acoustic hearing safety guarantees**.
+
+[PR #3](https://github.com/methakon/smallandroidapp/pull/3) merged on 2026-11-08 into `feat/pifauna-phone-audio`. The latest published Play Internal version in the repository's evidence remains **v11 / 0.6.0**; the audit did not directly read Play Console. New post-merge audit fixes to audio-focus and thermal behavior require a separate reviewed integration, CI and physical QA before any v13 upload.
+
+### Figma-only design authority
+
+Use the [editable Figma v13 Master](https://www.figma.com/design/oPIHDBtBn2H7xcbPmjq2PX?node-id=121-48) and [Figma-to-Compose contract](docs/FIGMA-V13-SOURCE-OF-TRUTH.md). Historical Adobe SVG/PNG files are archives, not current UI or release deliverables. Twelve Figma screen designs exist; full Android visual/state parity still requires validation.
+
+### Acceptance and release gates
+
+- [Final v13 independent audit — 2026-11-09](docs/FINAL-AUDIT-V13-2026-11-09.md)
+- [Test evidence and history](docs/TESTING.md)
+- [Safety policy and non-claims](docs/SAFETY.md)
+- [Google Play Internal deployment chronology](docs/PLAY-INTERNAL-DEPLOYMENT.md)
+
+**Do not mistake a merged development PR for signed AAB, physical feature acceptance, or Google Play publication.**

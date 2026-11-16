@@ -21,6 +21,15 @@ Authenticated upload, track update, validation, and commit completed via Android
 | Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
 | Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` |
 
+## v13 Audit Remediation & Follow-up (PR #5)
+
+Post-merge static audit identified:
+- `AudioFocusInterruptionPolicy`: handling all Android negative focus change values (`-1`, `-2`, `-3`).
+- `MantraAudioEngine`: thermal throttling check for API 29+.
+Merged via PR #5 to be prepared and released as versionCode 14.
+
+## Historical development branch — versionCode 12 (2026-11-07)
+
 ## Superseded release — versionCode 11 (2026-11-07, Antigravity verified)
 
 Authenticated upload, track update, and commit completed via Android Publisher API v3 (`layaswarna-play`). Verified by opening a subsequent fresh edit and reading back `tracks/internal`. Track status: **completed**, release name: **Layaswarna 0.6.0 — Combined Internal Test**, versionCodes: **["11"]**. No Production, Closed, or Open track was touched.

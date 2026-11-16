@@ -1,5 +1,8 @@
 # Layaswarna v12 — Security audit and penetration-test readiness
 
+> **Historical audit notice (2026-11-09):** This document preserves the v12 static audit and earlier worker-reported v13 remediation claims. It is **not** the final v13 release sign-off. Later independent code review identified an audio-focus-loss defect and incomplete mantra thermal enforcement, both patched after the original v13 PR merge; fresh CI/device acceptance is necessary. See [Final v13 audit](FINAL-AUDIT-V13-2026-11-09.md). The statement “zero external leakage” cannot be certified by code review or uninstrumented device smoke tests.
+
+
 **Assessment date:** 2026-11-08  
 **Scope:** `methakon/smallandroidapp`, merged development branch `feat/pifauna-phone-audio`, commit `ba1753f06bcee23ec183f8bb79adf970c3e0acf0`, versionCode 12 / versionName 0.7.0.  
 **Method:** Manual source-code review via GitHub. **No live exploitation, ADB testing, APK dynamic scanning, dependency CVE scanning or network penetration testing was performed.** These are audit findings and proposed controlled tests, **not a penetration-test pass certificate**.
@@ -13,7 +16,7 @@
 | ID | Severity | Finding | Evidence and status |
 |---|---|---|---|
 | LY-SEC-01 | **HIGH — audio safety** | Foreground-unlocked sessions actively monitor volume-key changes. Raising media volume above 60% immediately stops playback. | **RESOLVED in v13.** Registered `android.media.VOLUME_CHANGED_ACTION` in `SafetyMonitor.kt` + added 250ms polling watchdog in `PlayerController.kt`. Verified on Xiaomi Mi A3 and Panasonic ELUGA I7. |
-| LY-SEC-02 | **MEDIUM — audio safety** | Time-of-check/time-of-use gap between audio route verification and buffer write; risk of acoustic leakage to external routes. | **RESOLVED in v13 for Mantra & Synths.** `MantraAudioEngine.kt` primes playback muted at `(0f, 0f)` for up to 300ms until `verifiedSpeakerRoute()` confirms `TYPE_BUILTIN_SPEAKER` before un-muting to `0.35f`. Verified zero external leakage. |
+| LY-SEC-02 | **MEDIUM — audio safety** | Time-of-check/time-of-use gap between audio route verification and buffer write; risk of acoustic leakage to external routes. | **Source-level mitigation in v13 for Mantra & Synths; controlled route-transition measurements pending.** `MantraAudioEngine.kt` primes playback muted at `(0f, 0f)` for up to 300ms until `verifiedSpeakerRoute()` confirms `TYPE_BUILTIN_SPEAKER` before un-muting to `0.35f`. An absence of external leakage was **reported**, but not independently acoustically measured/certified. |
 | LY-SEC-03 | **MEDIUM — local robustness** | Preset decode input validation limits: nonfinite, zero, or negative gains; unbounded names. | **RESOLVED in v13.** `PresetCodec.kt` enforces `gain > 0f && gain.isFinite() && gain <= MAX_GAIN`, validates name bounds (1..32 chars), filters delimiter chars, caps presets to 20, and verifies `start <= end`. Tested with 9 JVM unit tests. |
 | LY-SEC-04 | **LOW/MEDIUM — fail-open state** | Missing battery broadcast or maximum media volume ratio could treat unavailable state as safe. | **RESOLVED in v13.** `PlayerController.kt` returns `-1` (unknown) on missing battery broadcast; `SafetyPolicy.kt` treats `batteryPercent < 0` as `BlockCode.LOW_BATTERY` fail-closed. `AudioRouteMonitor.kt` returns `1f` (100% fail-closed) when max volume is invalid. |
 | LY-SEC-05 | **LOW — repository privacy** | Wrangler transient cache files disclosed cloud account metadata. | **RESOLVED in v13.** Untracked `legal-site/.wrangler/cache/` from git index; added `.wrangler/` and `legal-site/.wrangler/` to root `.gitignore`. |
@@ -22,7 +25,7 @@
 
 ## Source-verified defensive controls
 
-- Manifest does not request Internet, microphone, camera, location, contacts, SMS, or storage permission; it requests foreground-service media playback permissions.
+- **Within the original v12 snapshot**, the manifest did not request microphone. The current v13 manifest **does request `RECORD_AUDIO`** (optional, runtime-gated user recording), alongside media-playback foreground-service permissions. It still does not request `INTERNET`, camera, location, contacts, SMS, or external-storage permissions.
 - `TimedPlaybackService` is `android:exported="false"` with no binder, limiting third-party service invocation.
 - Exported launcher activity accepts only a checked enum-like `route` extra for navigation; no untrusted URL/file/command execution was observed.
 - App declares `allowBackup=false`; local settings use private SharedPreferences; signing materials are configured outside the Git repository.
@@ -55,3 +58,7 @@
 - **No live penetration test has been completed by this audit.** Prior passing functional CI is not a security sign-off.
 - Have Antigravity run the controlled Android device tests above and attach raw evidence, test/CI URLs and exact SHA; then review fixes before authorizing any v12 AAB upload.
 - No publication or alteration of versionCode 11 is authorized by documenting these findings.
+
+## Post-v12 safety issue: LY-V13-01 and LY-V13-02
+
+The `AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK` constant equals **−3**, so `change <= -3` was the wrong test to stop on all focus losses; `-2` and `-1` remained unhandled in the earlier v13 source. The [final v13 audit](FINAL-AUDIT-V13-2026-11-09.md) documents this newly discovered defect, the shared `AudioFocusInterruptionPolicy` regression fix, and missing mantra-specific API29+ thermal checks. The new source fixes do **not** retroactively validate prior device results. Follow-up Android CI and physical-device checks are required before any v13 release upload.

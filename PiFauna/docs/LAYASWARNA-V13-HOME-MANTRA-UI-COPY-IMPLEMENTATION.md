@@ -1,4 +1,6 @@
-> **Current design master: Figma only**, selected 2026-11-08. For current editable screen designs, see [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md). Any legacy Adobe alternatives below are archived and not to be implemented.\n\n# Layaswarna v13 — UI copy deck and implementation plan
+> **Current design master: Figma only**, selected 2026-11-08. For current editable screen designs, see [FIGMA-V13-SOURCE-OF-TRUTH.md](FIGMA-V13-SOURCE-OF-TRUTH.md). Any legacy Adobe alternatives below are archived and not to be implemented.
+
+# Layaswarna v13 — UI copy deck and implementation plan
 
 **Status:** Proposed wording and engineering specification; not a declaration that every screen or behavior is implemented.  
 **Branch:** `feat/layaswarna-mantra-studio-v13`  
@@ -23,7 +25,7 @@ Four feature cards:
 - **Anahata Nada** — *Discover guided choices for mindful sound exploration.*
 - **Custom Sound** — *Choose a frequency and a timed session.*
 Footer: *Offline by design. Recordings stay on this phone. Keep listening comfortable.*  
-Bottom tabs: **Home · Library · Player · Settings**.  
+Bottom tabs currently implemented: **Home · Profiles · Settings** (do not invent Library/Player tabs).  
 Use a sober, low-glow design. Keep safety language visible, and never suggest health treatment or proven repellent effects.
 
 ### M-01 Mantra Studio — landing

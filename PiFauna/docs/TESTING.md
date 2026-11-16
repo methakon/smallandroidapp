@@ -1,5 +1,36 @@
 # Testing and recorded results
 
+> **Latest audit — 2026-11-09.** See [FINAL-AUDIT-V13-2026-11-09.md](FINAL-AUDIT-V13-2026-11-09.md). PR #3 has **already merged** into development; v13 was **not** verified as shipped to Play Internal. History below remains intact and scoped to its original commit.
+
+## v13 / 0.8.0 — final-audit baseline
+
+- **Reference commit:** `f4d9b86bfc072d38a7190073e137d1acd8b860a7` (November 8, 2026), prior to follow-up audit fixes.
+- **GitHub Actions:** [run #42450085563](https://github.com/methakon/smallandroidapp/actions/runs/42450085563) and [run #42450081906](https://github.com/methakon/smallandroidapp/actions/runs/42450081906) completed successfully.
+- **Android Gradle job:** `:app:testDebugUnitTest`, `:app:assembleDebug`, `:app:assembleDebugAndroidTest`, `:app:lintDebug` passed. Commit history reports 71 JVM tests, but the exact total was **not independently derived from the unit XML** in this audit.
+- **API30 emulator:** `connectedDebugAndroidTest` **32/32 passed** (per CI log; zero skipped/failed).
+- **API36 emulator:** `connectedDebugAndroidTest` **32/32 passed** (per CI log; zero skipped/failed).
+- **Physical hardware:** the older Antigravity `ab2a3e6` report states Mi A3 API30 **32/32** and ELUGA API28 **32/32**, plus 15-second captured audio, preview/title/storage/relaunch/delete and 11 single chant replays. These are **historical worker claims**, not new physical results for `f4d9b86`, the merged development commit or newer fixes.
+- **Cautions:** 11 replays ≠ one full japa set of 108. Exact 108-boundary, 11/21/58/108-set progress, all seven subsecond/second gaps, multi-session 30-minute continuation and actual route leakage remain explicit acceptance work.
+
+### Newly introduced post-merge safety fixes — pending acceptance
+
+The final source audit found that both `PlayerController` and `MantraAudioEngine` compared focus-change codes incorrectly, stopping only for −3 (CAN_DUCK), not −2 (TRANSIENT) or −1 (LOSS). Both now use shared `AudioFocusInterruptionPolicy.mustStop(change)` with new tests covering all three values. Mantra engine also adds API29+ `PowerManager.currentThermalStatus` checks before and during replay.
+
+The new source must pass **fresh JVM/build/lint/emulator CI and physical negative-focus/thermal tests** before release; the prior green baseline does not certify these changes. No signed versionCode13 release AAB or Google Play upload was verified.
+
+### Minimum final Android / audio test checklist
+
+1. Run all JVM tests/lint/debug assembly and API30/API36 emulator instrumentation at the **exact final SHA**.
+2. Repeat on Mi A3 API30 and ELUGA API28 with real route change/focus-loss callbacks; verify permanent/transient/can-duck and Bluetooth/wired/USB output transitions safely.
+3. Measure 100/250/500/750/1000/2000/3000ms *silence after recording completion*, including Stop during a gap.
+4. Use deterministic multi-set counting test harness for 108/1188/2268/6264/11664 completions plus real-speaker spot checks; do not claim all hours ran physically if they did not.
+5. Kill/restart app with private checkpoint, change gap/sets, delete a recording and verify invalidation, missing-media recovery and **explicit-only** Continue.
+6. Test 360dp layouts, font scaling, TalkBack, 48dp selections and microphone denial/revocation; validate against the Figma-only 12-screen Master.
+7. Validate a signed release build, bundletool/jarsigner/manifest, AAB hash and required Play Console disclosures **only after authorization**.
+
+---
+
+
 ## Verified Release Candidate — versionCode 11 (0.6.0) (recorded 2026-11-07)
 
 **Branch:** `feat/layaswarna-audio-route-v11`  
