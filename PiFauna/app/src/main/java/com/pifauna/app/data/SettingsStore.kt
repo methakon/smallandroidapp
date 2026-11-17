@@ -48,13 +48,22 @@ class SettingsStore(context: Context) {
             .putFloat(KEY_GAIN, value.coerceIn(0.01f, SafetyLimits.MAX_GAIN))
             .apply()
 
+    init {
+        if (!prefs.getBoolean(KEY_SCREEN_LOCK_V15_MIGRATED, false)) {
+            prefs.edit()
+                .putBoolean(KEY_SCREEN_LOCK_PLAYBACK, true)
+                .putBoolean(KEY_SCREEN_LOCK_V15_MIGRATED, true)
+                .apply()
+        }
+    }
+
     var welcomeSeen: Boolean
         get() = prefs.getBoolean(KEY_WELCOME, false)
         set(value) = prefs.edit().putBoolean(KEY_WELCOME, value).apply()
 
-    /** Explicit opt-in, OFF by default. Never auto-starts audio. */
+    /** Enabled by default so timed sessions survive screen lock without continuous tapping. */
     var continueWhenScreenLocked: Boolean
-        get() = prefs.getBoolean(KEY_SCREEN_LOCK_PLAYBACK, false)
+        get() = prefs.getBoolean(KEY_SCREEN_LOCK_PLAYBACK, true)
         set(value) = prefs.edit().putBoolean(KEY_SCREEN_LOCK_PLAYBACK, value).apply()
 
     var playbackSafetyAcknowledged: Boolean
@@ -76,6 +85,7 @@ class SettingsStore(context: Context) {
         private const val KEY_WELCOME = "welcome_seen"
         private const val KEY_SAFETY_ACK = "safety_acknowledged"
         private const val KEY_SCREEN_LOCK_PLAYBACK = "screen_lock_playback_opt_in"
+        private const val KEY_SCREEN_LOCK_V15_MIGRATED = "screen_lock_v15_migrated"
     }
 }
 

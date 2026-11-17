@@ -32,9 +32,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pifauna.app.mantra.MantraAudioEngine
 import com.pifauna.app.mantra.MantraRecording
 import com.pifauna.app.mantra.MantraRepetitionPolicy
+import com.pifauna.app.mantra.MantraRuntime
 import com.pifauna.app.mantra.MantraStore
 import com.pifauna.app.playback.PlaybackRuntime
 import com.pifauna.app.ui.ConcentricJapaDial
@@ -54,7 +56,9 @@ fun MantraStudioScreen() {
     val context = LocalContext.current
     val lifecycle = LocalLifecycleOwner.current
     val store = remember(context) { MantraStore(context) }
-    val engine = remember(context) { MantraAudioEngine(context) }
+    val engine = remember(context) { MantraRuntime.engine(context) }
+    val isMantraPlaying by MantraRuntime.isPlaying.collectAsStateWithLifecycle()
+    val activeSession by MantraRuntime.sessionState.collectAsStateWithLifecycle()
     var recordings by remember { mutableStateOf(store.list()) }
     var take by remember { mutableStateOf<Pair<File, Long>?>(null) }
     val latestTake by rememberUpdatedState(take)
@@ -88,6 +92,24 @@ fun MantraStudioScreen() {
         }
     }
 
+    LaunchedEffect(isMantraPlaying, activeSession) {
+        if (isMantraPlaying && activeSession != null) {
+            val session = activeSession!!
+            replaying = true
+            completed = session.completedChants
+            selectedSets = session.sets
+            gapMs = session.gapMs
+            if (session.statusText != null) {
+                status = session.statusText
+            } else {
+                val total = session.totalChants
+                status = "Set ${session.currentSet} of ${session.sets} · ${session.completedChants}/$total chants completed."
+            }
+        } else if (!isMantraPlaying && replaying) {
+            replaying = false
+        }
+    }
+
     fun finishTake() {
         runCatching { engine.finishCapture() }
             .onSuccess {
@@ -102,7 +124,7 @@ fun MantraStudioScreen() {
     }
 
     fun beginTake() {
-        engine.stopPlayback()
+        MantraRuntime.stop(context, "Stopped before microphone recording.")
         replaying = false
         PlaybackRuntime.stop(context, "Stopped before microphone recording.")
         take?.first?.delete()
@@ -132,40 +154,34 @@ fun MantraStudioScreen() {
 
     fun play(file: File, sets: Int? = null, resume: Boolean = false) {
         if (recording) return
-        PlaybackRuntime.stop(context, "Stopped before mantra replay.")
         val startingAt = if (sets != null && resume) completed else 0
         if (sets != null && !resume) completed = 0
         replaying = true
         val target = sets?.let(MantraRepetitionPolicy::totalRepetitions) ?: 1
-        val notify: (Int, String?) -> Unit = { done, error ->
-            // One-play previews must never mutate a long japa practice checkpoint.
-            if (sets != null) {
-                completed = done
-                val currentRec = selected
-                if (currentRec != null) {
-                    if (done in 1 until target) {
-                        store.saveCheckpoint(currentRec.id, sets, gapMs, done)
-                    } else if (done >= target) {
-                        store.clearCheckpoint(currentRec.id)
-                    }
-                }
-            }
-            if (error != null || done >= target) {
+        if (sets == null) {
+            MantraRuntime.startPreview(context, file) { _, error ->
                 replaying = false
-                status = error ?: if (sets == null) "Preview finished."
-                    else "Completed $done of $target chants."
-            } else {
-                val progress = MantraRepetitionPolicy.progress(done, sets ?: 1)
-                status = if (sets == null) "Previewing…"
-                    else "Set ${progress.currentSet} of $sets · ${progress.completedWithinSet}/108 chants completed."
+                status = error ?: "Preview finished."
             }
-        }
-        runCatching {
-            if (sets == null) engine.startPreview(file, notify)
-            else engine.startReplay(file, sets, gapMs, notify, startingAt)
-        }.onFailure {
-            replaying = false
-            status = it.message ?: "Could not play the selected recording."
+        } else {
+            val currentRec = selected
+            if (currentRec != null) {
+                MantraRuntime.startReplay(
+                    context = context,
+                    file = file,
+                    recordingId = currentRec.id,
+                    title = currentRec.title,
+                    sets = sets,
+                    gapMs = gapMs,
+                    resumeFrom = startingAt,
+                    store = store,
+                    onCompletion = { done, error ->
+                        completed = done
+                        replaying = false
+                        status = error ?: "Completed $done of $target chants."
+                    }
+                )
+            }
         }
     }
 
@@ -182,20 +198,18 @@ fun MantraStudioScreen() {
         }
     }
 
-    DisposableEffect(lifecycle, engine) {
+    DisposableEffect(lifecycle) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_STOP) {
-                // No recording or voice replay while the app is backgrounded.
-                engine.close()
-                recording = false
-                replaying = false
-                status = "Stopped when the app left the foreground."
+                if (recording) {
+                    finishTake()
+                    status = "Recording cancelled when app left the foreground."
+                }
             }
         }
         lifecycle.lifecycle.addObserver(observer)
         onDispose {
             lifecycle.lifecycle.removeObserver(observer)
-            engine.close()
             latestTake?.first?.delete()
         }
     }
@@ -391,7 +405,7 @@ fun MantraStudioScreen() {
                     subtitle = "Completed within current set: ${progress.completedWithinSet} / 108 · Overall: $completed / $total"
                 )
                 Button(onClick = {
-                    engine.stopPlayback()
+                    MantraRuntime.stop(context, "Stopped by user.")
                     replaying = false
                     selected?.let { rec ->
                         if (completed in 1 until total) {

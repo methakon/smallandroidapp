@@ -252,6 +252,7 @@ class MantraAudioEngine(private val context: Context) {
             return
         }
         val p = MediaPlayer()
+        p.setWakeMode(context, PowerManager.PARTIAL_WAKE_LOCK)
         try {
             p.setAudioAttributes(AudioAttributes.Builder()
                 .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -334,7 +335,31 @@ class MantraAudioEngine(private val context: Context) {
         callbackNow?.invoke(total, message)
     }
 
+    private var paused = false
+    val isPaused: Boolean get() = paused
+
+    fun pausePlayback() {
+        if (!isPlaying || paused) return
+        paused = true
+        main.removeCallbacks(safetyPoll)
+        pending?.let(main::removeCallbacks)
+        player?.let { if (it.isPlaying) runCatching { it.pause() } }
+    }
+
+    fun resumePlayback() {
+        if (!paused) return
+        paused = false
+        main.postDelayed(safetyPoll, 250L)
+        val p = player
+        if (p != null) {
+            runCatching { p.start() }
+        } else if (completed < count) {
+            launchOne()
+        }
+    }
+
     fun stopPlayback() {
+        paused = false
         pending?.let(main::removeCallbacks)
         pending = null
         main.removeCallbacks(safetyPoll)

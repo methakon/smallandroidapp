@@ -301,7 +301,7 @@ fun PiFaunaApp(
                     onClearData = {
                         if (state.isPlaying) PlaybackRuntime.stop(context, "Stopped to clear saved settings.")
                         settings.clearAll()
-                        continueWhenLocked = false
+                        continueWhenLocked = true
                         presetStore.save(emptyList())
                         presets = emptyList()
                         selectedSpecies = SpeciesProfiles.all.first().id

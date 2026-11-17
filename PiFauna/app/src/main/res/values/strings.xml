@@ -118,8 +118,8 @@
     <string name="settings_audio_output_title">Audio output</string>
     <string name="settings_audio_output_subtitle">Built-in speaker only. External routes are refused by policy.</string>
     <string name="settings_lock_title">Continue timed playback with screen locked</string>
-    <string name="settings_lock_subtitle_on">ON — explicitly allowed for this device until toggled off.</string>
-    <string name="settings_lock_subtitle_off">OFF (default) — sound stops when the screen locks.</string>
+    <string name="settings_lock_subtitle_on">ON (default) — allowed for this device until toggled off.</string>
+    <string name="settings_lock_subtitle_off">OFF — sound stops when the screen locks.</string>
     <string name="settings_lock_safety_title">Screen-lock session safety</string>
     <string name="settings_lock_safety_body">Only an explicitly started timed session continues when locked. A persistent playback notification provides Stop. All battery, thermal, volume, audio-route and focus safeguards remain active. Switching apps while the display is on still stops playback. Never leave sound unattended around children or animals.</string>
     <string name="settings_about_privacy_title">About &amp; privacy</string>

@@ -124,9 +124,9 @@ fun PlayerScreen(
         PfCard(
             title = "Continue timed playback with screen locked",
             subtitle = if (continueWhenLocked) {
-                "ON — keeps this explicitly started session running until its timer or Stop."
+                "ON (default) — keeps this timed session running until its timer or Stop."
             } else {
-                "OFF — automatic screen lock stops the audio (default)."
+                "OFF — automatic screen lock stops the audio."
             },
             enabled = !state.isPlaying,
             trailing = {

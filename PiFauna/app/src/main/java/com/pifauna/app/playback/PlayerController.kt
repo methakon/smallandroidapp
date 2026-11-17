@@ -31,7 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-enum class PlaybackPhase { Idle, Playing, Completed, Refused }
+enum class PlaybackPhase { Idle, Playing, Paused, Completed, Refused }
 
 data class PlayerState(
     val phase: PlaybackPhase = PlaybackPhase.Idle,
@@ -43,14 +43,17 @@ data class PlayerState(
     val gain: Float = SettingsStore.DEFAULT_GAIN,
     val durationMinutes: Int = 10,
     val startedAtElapsed: Long = 0L,
+    val pausedRemainingMs: Long = 0L,
     val statusMessage: String = "Ready — nothing is playing.",
     val snapshot: SafetySnapshot = SafetySnapshot()
 ) {
     val isPlaying: Boolean get() = phase == PlaybackPhase.Playing
+    val isPaused: Boolean get() = phase == PlaybackPhase.Paused
     val durationMs: Long get() = durationMinutes * 60_000L
 
     /** Milliseconds left, evaluated against the monotonic clock. */
     fun remainingMs(nowElapsed: Long = SystemClock.elapsedRealtime()): Long {
+        if (isPaused) return pausedRemainingMs
         if (!isPlaying) return 0L
         return (startedAtElapsed + durationMs - nowElapsed).coerceAtLeast(0L)
     }
@@ -269,6 +272,82 @@ class PlayerController(context: Context) {
                     snapshot = snapshot,
                     statusMessage = "Audio output unavailable; phone speaker route must be verified."
                 )
+            }
+        }
+    }
+
+    fun pause() {
+        val current = _state.value
+        if (!current.isPlaying) return
+        val remaining = current.remainingMs()
+        teardownAudio(graceful = true)
+        _state.value = current.copy(
+            phase = PlaybackPhase.Paused,
+            startedAtElapsed = 0L,
+            pausedRemainingMs = remaining,
+            statusMessage = "Paused (${remaining / 1000}s remaining). Tap Play or Stop."
+        )
+    }
+
+    fun resume() {
+        val current = _state.value
+        if (current.phase != PlaybackPhase.Paused) return
+        val remaining = current.pausedRemainingMs
+        if (remaining <= 0L) {
+            stop("Session completed.")
+            return
+        }
+
+        val snapshot = snapshot()
+        val decision = SafetyPolicy.evaluate(snapshot)
+        if (decision is SafetyDecision.Blocked) {
+            refuse(decision)
+            return
+        }
+
+        if (!requestAudioFocus()) {
+            refuse(
+                SafetyDecision.Blocked(
+                    BlockCode.INVALID_REQUEST,
+                    "Playback blocked: another app is using audio output."
+                )
+            )
+            return
+        }
+
+        val config = try {
+            ToneConfig(
+                startHz = current.startHz,
+                endHz = current.endHz,
+                mode = current.mode,
+                gain = current.gain,
+                durationMs = remaining
+            )
+        } catch (error: IllegalArgumentException) {
+            abandonAudioFocus()
+            refuse(SafetyDecision.Blocked(BlockCode.INVALID_REQUEST, error.message ?: "Invalid request."))
+            return
+        }
+
+        when (val result = engine.start(config) { reason, token -> onEngineFinished(reason, token) }) {
+            is StartResult.Started -> {
+                activeToken = result.token
+                monitoringRoute = true
+                routeMonitor.start { refreshSnapshot() }
+                mainHandler.removeCallbacks(safetyWatchdog)
+                mainHandler.postDelayed(safetyWatchdog, 250L)
+                _state.value = current.copy(
+                    phase = PlaybackPhase.Playing,
+                    startedAtElapsed = SystemClock.elapsedRealtime(),
+                    durationMinutes = ((remaining + 59_999L) / 60_000L).toInt(),
+                    pausedRemainingMs = 0L,
+                    snapshot = snapshot,
+                    statusMessage = "Resumed playback through built-in speaker."
+                )
+            }
+            else -> {
+                abandonAudioFocus()
+                stop("Playback could not be resumed.")
             }
         }
     }

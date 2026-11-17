@@ -1,6 +1,34 @@
 # Google Play deployment record — Internal, Closed & Open Testing
 
-## Current Google Play release — versionCode 14 (2026-11-17, Antigravity verified)
+## Current Google Play release — versionCode 15 (2026-11-17, Antigravity verified)
+
+Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`) across all active testing tracks:
+- **Internal Testing (`internal`)**: `completed`
+- **Closed Testing (`alpha`)**: `completed` (ready for 20-tester 14-day requirement)
+- **Open Testing (`beta`)**: `completed`
+
+Verified by opening a subsequent fresh edit (`00278137809976973945`) and reading back all tracks. Status: **completed**, release name: **Layaswarna 0.8.2 (v15) - Screen-Lock Playback**, versionCodes: **["15"]**. Production track was untouched.
+
+| Field | VersionCode 15 |
+|---|---|
+| App ID | `in.berhampore.dhar.layaswarna` |
+| Tracks | `internal`, `alpha` (Closed Testing) & `beta` (Open Testing) |
+| Version name | 0.8.2 |
+| Version code | 15 |
+| Android SDK | minSdk 26, targetSdk 36, compileSdk 36 |
+| Signed AAB | 6,352,978 bytes |
+| SHA-256 (local & Play validated) | `7e6096f72328db4ec88f649222ab1006f1dc5a71d60754f3d351ef580886b745` |
+| SHA-1 (Play reported) | `81adc73c64ae1c48def0d01dce19085aacebca32` |
+| Upload Signer | `CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN` (4096-bit RSA) |
+| Edit Commit ID | `14936790217875107682` |
+| Fresh Verified Edit ID | `00278137809976973945` |
+| Status | `completed` (all three tracks) |
+| Verification | Unit tests: passed; Android lint: 0 errors; Lock-screen playback verified; MediaSession Play, Pause, and Stop actions verified; FLAG_KEEP_SCREEN_ON verified on device `LRW86SC6RO8TZ99H`. |
+| Closed Tester Opt-in Link | `https://play.google.com/apps/testing/in.berhampore.dhar.layaswarna` |
+| Internal Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
+| Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` |
+
+## Superseded release — versionCode 14 (2026-11-17, Antigravity verified)
 
 Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`) across all active testing tracks:
 - **Internal Testing (`internal`)**: `completed`

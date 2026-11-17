@@ -181,9 +181,9 @@ fun SettingsScreen(
         PfCard(
             title = "Continue timed playback with screen locked",
             subtitle = if (continueWhenLocked) {
-                "ON — your next user-started 5–30 min session can continue while locked."
+                "ON (default) — your next user-started session can continue while locked."
             } else {
-                "OFF (default) — sound stops when the screen locks."
+                "OFF — sound stops when the screen locks."
             },
             enabled = allowPlaybackModeChange,
             trailing = {

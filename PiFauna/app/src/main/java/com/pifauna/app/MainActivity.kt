@@ -4,16 +4,23 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.os.Bundle
 import android.os.PowerManager
+import android.view.WindowManager
 import androidx.activity.SystemBarStyle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.pifauna.app.data.PresetStore
 import com.pifauna.app.data.SettingsStore
+import com.pifauna.app.mantra.MantraRuntime
 import com.pifauna.app.playback.PlaybackRuntime
 import com.pifauna.app.ui.PiFaunaApp
 import com.pifauna.app.ui.PiFaunaTheme
 import com.pifauna.app.ui.Route
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 
 /**
  * Foreground UI owner, not the owner of an opted-in screen-lock audio session.
@@ -44,6 +51,23 @@ class MainActivity : ComponentActivity() {
                     presetStore = presets,
                     startRoute = startRoute
                 )
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                combine(
+                    PlaybackRuntime.controller(this@MainActivity).state,
+                    MantraRuntime.isPlaying
+                ) { playerState, mantraPlaying ->
+                    playerState.isPlaying || mantraPlaying
+                }.collect { isAudioActive ->
+                    if (isAudioActive) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                    }
+                }
             }
         }
     }

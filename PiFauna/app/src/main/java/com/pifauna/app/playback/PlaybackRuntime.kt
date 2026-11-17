@@ -81,6 +81,14 @@ object PlaybackRuntime {
         }
     }
 
+    fun pause(context: Context) {
+        controller(context).pause()
+    }
+
+    fun resume(context: Context) {
+        controller(context).resume()
+    }
+
     fun stop(context: Context, reason: String = "Stopped by user.") {
         controller(context).stop(reason)
         lockedSessionRequested = false

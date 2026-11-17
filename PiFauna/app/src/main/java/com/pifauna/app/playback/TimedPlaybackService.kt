@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.Icon
 import android.media.MediaMetadata
 import android.media.session.MediaSession
 import android.media.session.PlaybackState
@@ -32,8 +33,13 @@ class TimedPlaybackService : Service() {
         override fun run() {
             val player = PlaybackRuntime.controller(this@TimedPlaybackService)
             val current = player.state.value
-            if (!current.isPlaying) {
+            if (!current.isPlaying && !current.isPaused) {
                 finishSession()
+                return
+            }
+            if (current.isPaused) {
+                // When paused, maintain session and check in every second
+                handler.postDelayed(this, 1_000L)
                 return
             }
             // Extra watchdog; ToneKernel independently enforces totalFrames.
@@ -57,14 +63,21 @@ class TimedPlaybackService : Service() {
                 CHANNEL, "Layaswarna timed playback",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Active, user-started sound session with Stop control"
+                description = "Active, user-started sound session with Play, Pause, and Stop controls"
                 setSound(null, null)
             }
         )
         session = MediaSession(this, "Layaswarna timed playback").apply {
             setCallback(object : MediaSession.Callback() {
                 override fun onStop() { stopNow("Stopped from lock screen.") }
-                // Play and resume are intentionally not exposed.
+                override fun onPause() {
+                    PlaybackRuntime.pause(this@TimedPlaybackService)
+                    updateNotification()
+                }
+                override fun onPlay() {
+                    PlaybackRuntime.resume(this@TimedPlaybackService)
+                    updateNotification()
+                }
             }, handler)
             isActive = true
         }
@@ -75,6 +88,16 @@ class TimedPlaybackService : Service() {
         when (intent?.action) {
             ACTION_STOP -> {
                 stopNow("Stopped from notification.")
+                return START_NOT_STICKY
+            }
+            ACTION_PAUSE -> {
+                PlaybackRuntime.pause(this)
+                updateNotification()
+                return START_NOT_STICKY
+            }
+            ACTION_PLAY -> {
+                PlaybackRuntime.resume(this)
+                updateNotification()
                 return START_NOT_STICKY
             }
             ACTION_START -> {
@@ -104,7 +127,7 @@ class TimedPlaybackService : Service() {
         val state = PlaybackRuntime.controller(this).state.value
         val title = state.displayName ?: "Layaswarna timed audio"
         val remaining = TimeFormat.clock(
-            if (state.isPlaying) state.remainingMs()
+            if (state.isPlaying || state.isPaused) state.remainingMs()
             else state.durationMinutes * 60_000L
         )
         val stopIntent = Intent(this, TimedPlaybackService::class.java)
@@ -119,24 +142,48 @@ class TimedPlaybackService : Service() {
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
+
+        val playPauseAction = if (state.isPaused) {
+            val playIntent = Intent(this, TimedPlaybackService::class.java).setAction(ACTION_PLAY)
+            val playPending = PendingIntent.getService(
+                this, 3, playIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            Notification.Action.Builder(
+                Icon.createWithResource(this, R.drawable.ic_media_play), "Play", playPending
+            ).build()
+        } else {
+            val pauseIntent = Intent(this, TimedPlaybackService::class.java).setAction(ACTION_PAUSE)
+            val pausePending = PendingIntent.getService(
+                this, 4, pauseIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            Notification.Action.Builder(
+                Icon.createWithResource(this, R.drawable.ic_media_pause), "Pause", pausePending
+            ).build()
+        }
+
+        val stopAction = Notification.Action.Builder(
+            Icon.createWithResource(this, R.drawable.ic_media_stop), "Stop", stopPending
+        ).build()
+
+        val statusSuffix = if (state.isPaused) " (Paused)" else ""
+
         return Notification.Builder(this, CHANNEL)
             .setSmallIcon(R.drawable.ic_stat_audio)
             .setContentTitle(title)
-            .setContentText(remaining + " remaining · built-in speaker only")
+            .setContentText(remaining + " remaining · built-in speaker only" + statusSuffix)
             .setContentIntent(openPending)
             .setOnlyAlertOnce(true)
-            .setOngoing(true)
+            .setOngoing(state.isPlaying)
             .setCategory(Notification.CATEGORY_TRANSPORT)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
-            .addAction(
-                Notification.Action.Builder(
-                    R.drawable.ic_stat_audio, "Stop", stopPending
-                ).build()
-            )
+            .addAction(playPauseAction)
+            .addAction(stopAction)
             .setStyle(
                 Notification.MediaStyle()
                     .setMediaSession(session.sessionToken)
-                    .setShowActionsInCompactView(0)
+                    .setShowActionsInCompactView(0, 1)
             ).build()
     }
 
@@ -147,19 +194,25 @@ class TimedPlaybackService : Service() {
     @SuppressLint("NotificationPermission")
     private fun updateNotification() {
         val state = PlaybackRuntime.controller(this).state.value
-        if (!state.isPlaying) return
+        if (!state.isPlaying && !state.isPaused) return
         session.setMetadata(
             MediaMetadata.Builder().putString(
                 MediaMetadata.METADATA_KEY_TITLE,
                 state.displayName ?: "Layaswarna timed audio"
             ).build()
         )
-        session.setPlaybackState(
+        val playbackState = if (state.isPaused) {
             PlaybackState.Builder()
-                .setActions(PlaybackState.ACTION_STOP)
-                .setState(PlaybackState.STATE_PLAYING, 0L, 1f)
+                .setActions(PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_STOP)
+                .setState(PlaybackState.STATE_PAUSED, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 0f)
                 .build()
-        )
+        } else {
+            PlaybackState.Builder()
+                .setActions(PlaybackState.ACTION_PLAY or PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_STOP)
+                .setState(PlaybackState.STATE_PLAYING, PlaybackState.PLAYBACK_POSITION_UNKNOWN, 1f)
+                .build()
+        }
+        session.setPlaybackState(playbackState)
         notifications.notify(NOTIFICATION_ID, notification())
     }
 
@@ -201,6 +254,8 @@ class TimedPlaybackService : Service() {
     companion object {
         const val ACTION_START = "in.berhampore.dhar.layaswarna.START_TIMED_LOCK_AUDIO"
         const val ACTION_STOP = "in.berhampore.dhar.layaswarna.STOP_TIMED_LOCK_AUDIO"
+        const val ACTION_PAUSE = "in.berhampore.dhar.layaswarna.PAUSE_TIMED_LOCK_AUDIO"
+        const val ACTION_PLAY = "in.berhampore.dhar.layaswarna.PLAY_TIMED_LOCK_AUDIO"
         private const val CHANNEL = "layaswarna_timed_audio"
         private const val NOTIFICATION_ID = 1027
     }
