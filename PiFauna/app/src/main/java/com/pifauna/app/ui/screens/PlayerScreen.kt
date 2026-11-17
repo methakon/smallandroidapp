@@ -25,6 +25,7 @@ import com.pifauna.app.playback.PlaybackPhase
 import com.pifauna.app.playback.PlayerState
 import com.pifauna.app.safety.SafetyLimits
 import com.pifauna.app.ui.LayaswarnaSessionDial
+import com.pifauna.app.ui.MysticActionButton
 import com.pifauna.app.ui.PfCard
 import com.pifauna.app.ui.PfScreen
 import com.pifauna.app.ui.PfTextCard
@@ -44,7 +45,8 @@ fun PlayerScreen(
     onContinueWhenLockedChange: (Boolean) -> Unit,
     onStartFrequencyChange: (Int) -> Unit,
     onEndFrequencyChange: (Int) -> Unit,
-    onOpenTimer: () -> Unit
+    onOpenTimer: () -> Unit,
+    onOpenLockScreen: () -> Unit = {}
 ) {
     val profile = SpeciesProfiles.byId(state.profileId)
     val needsRange = state.mode == ToneMode.SWEEP || state.mode == ToneMode.HOP
@@ -154,6 +156,13 @@ fun PlayerScreen(
             isPlaying = state.isPlaying,
             onClick = if (state.isPlaying) onStop else onStart
         )
+
+        Spacer(Modifier.height(12.dp))
+        MysticActionButton(
+            label = "Open Lock-Screen Player View (Amethyst)"
+        ) {
+            onOpenLockScreen()
+        }
 
         if (state.isPlaying) {
             Spacer(Modifier.height(14.dp))

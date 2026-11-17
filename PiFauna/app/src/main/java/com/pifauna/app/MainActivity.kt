@@ -2,6 +2,8 @@ package com.pifauna.app
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.view.WindowManager
@@ -58,15 +60,56 @@ class MainActivity : ComponentActivity() {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 combine(
                     PlaybackRuntime.controller(this@MainActivity).state,
-                    MantraRuntime.isPlaying
-                ) { playerState, mantraPlaying ->
-                    playerState.isPlaying || mantraPlaying
+                    MantraRuntime.isPlaying,
+                    MantraRuntime.isPaused
+                ) { playerState, mantraPlaying, mantraPaused ->
+                    playerState.isPlaying || playerState.isPaused || mantraPlaying || mantraPaused
                 }.collect { isAudioActive ->
                     if (isAudioActive) {
                         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                            setShowWhenLocked(true)
+                            setTurnScreenOn(true)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            window.addFlags(
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                            )
+                        }
                     } else {
                         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+                            setShowWhenLocked(false)
+                            setTurnScreenOn(false)
+                        } else {
+                            @Suppress("DEPRECATION")
+                            window.clearFlags(
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                            )
+                        }
                     }
+                }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val routeExtra = intent.getStringExtra("route")?.let {
+            runCatching { Route.valueOf(it) }.getOrNull()
+        }
+        if (routeExtra != null) {
+            setContent {
+                PiFaunaTheme {
+                    PiFaunaApp(
+                        controller = PlaybackRuntime.controller(this),
+                        settings = settings,
+                        presetStore = presets,
+                        startRoute = routeExtra
+                    )
                 }
             }
         }

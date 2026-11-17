@@ -103,7 +103,7 @@ class MantraPlaybackService : Service() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val openIntent = Intent(this, MainActivity::class.java).apply {
-            putExtra("route", "MantraStudio")
+            putExtra("route", "LockScreenPlayer")
             addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         }
         val openPending = PendingIntent.getActivity(

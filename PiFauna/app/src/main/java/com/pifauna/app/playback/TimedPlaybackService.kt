@@ -139,6 +139,7 @@ class TimedPlaybackService : Service() {
         val openPending = PendingIntent.getActivity(
             this, 2,
             Intent(this, MainActivity::class.java)
+                .putExtra("route", "LockScreenPlayer")
                 .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )

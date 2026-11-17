@@ -1,6 +1,33 @@
 # Google Play deployment record — Internal, Closed & Open Testing
 
-## Current Google Play release — versionCode 15 (2026-11-17, Antigravity verified)
+## Current Google Play release — versionCode 16 (2026-11-17, Antigravity verified)
+
+Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`) across all active testing tracks:
+- **Internal Testing (`internal`)**: `completed`
+- **Closed Testing (`alpha`)**: `completed` (ready for 20-tester 14-day requirement)
+- **Open Testing (`beta`)**: `completed`
+
+Verified by opening a subsequent fresh edit (`12733417035811914929`) and reading back all tracks. Status: **completed**, release name: **Layaswarna 0.8.3 (v16) - Amethyst Glass Player**, versionCodes: **["16"]**. Production track was untouched.
+
+| Field | VersionCode 16 |
+|---|---|
+| App ID | `in.berhampore.dhar.layaswarna` |
+| Tracks | `internal`, `alpha` (Closed Testing) & `beta` (Open Testing) |
+| Version name | 0.8.3 |
+| Version code | 16 |
+| Android SDK | minSdk 26, targetSdk 36, compileSdk 36 |
+| Signed AAB | 6,370,766 bytes |
+| SHA-256 (local & Play validated) | `da44b008a0fea25c196676379f2ac48d839aa44e9c4e36a87c56710a6f21596c` |
+| Upload Signer | `CN=Layaswarna, OU=Android, O=Berhampore Dhar, L=Berhampore, ST=West Bengal, C=IN` (4096-bit RSA) |
+| Edit Commit ID | `01564875063874657873` |
+| Fresh Verified Edit ID | `12733417035811914929` |
+| Status | `completed` (all three tracks) |
+| Verification | Unit tests: passed; Android lint: 0 errors; Amethyst Glass Lock-Screen Player (Figma 279:48) fully implemented and verified on physical device `LRW86SC6RO8TZ99H`; showWhenLocked and turnScreenOn active. |
+| Closed Tester Opt-in Link | `https://play.google.com/apps/testing/in.berhampore.dhar.layaswarna` |
+| Internal Tester Opt-in Link | `https://play.google.com/apps/internaltest/4701529429609024021` |
+| Live Legal Safety | `https://layaswarna-legal.pages.dev/safety/` |
+
+## Superseded release — versionCode 15 (2026-11-17, Antigravity verified)
 
 Authenticated upload, track update, validation, and commit completed via Android Publisher API v3 (`layaswarna-play`) across all active testing tracks:
 - **Internal Testing (`internal`)**: `completed`

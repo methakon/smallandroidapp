@@ -25,6 +25,7 @@ import com.pifauna.app.data.SpeciesProfile
 import com.pifauna.app.playback.PlayerController
 import com.pifauna.app.playback.PlaybackRuntime
 import androidx.compose.ui.platform.LocalContext
+import com.pifauna.app.ui.screens.LockScreenPlayerScreen
 import com.pifauna.app.ui.screens.MantraStudioScreen
 import com.pifauna.app.ui.screens.AnahataNadaScreen
 import com.pifauna.app.ui.screens.AboutPrivacyScreen
@@ -59,6 +60,7 @@ enum class Route(val tab: Tab?) {
     ChakraConsole(null),
     AnahataNada(null),
     MantraStudio(null),
+    LockScreenPlayer(null),
     AboutPrivacy(null)
 }
 
@@ -113,8 +115,10 @@ fun PiFaunaApp(
     Scaffold(
         containerColor = PiFaunaColors.Background,
         bottomBar = {
-            val tab = stack.asReversed().firstNotNullOfOrNull { it.tab } ?: Tab.Home
-            PfBottomBar(selected = tab, onSelect = ::openTab)
+            if (current != Route.LockScreenPlayer && current != Route.Welcome) {
+                val tab = stack.asReversed().firstNotNullOfOrNull { it.tab } ?: Tab.Home
+                PfBottomBar(selected = tab, onSelect = ::openTab)
+            }
         }
     ) { innerPadding ->
         Box(
@@ -173,7 +177,8 @@ fun PiFaunaApp(
                     onOpenTimer = {
                         settings.lastDurationMinutes = state.durationMinutes
                         push(Route.Timer)
-                    }
+                    },
+                    onOpenLockScreen = { push(Route.LockScreenPlayer) }
                 )
 
                 Route.Profiles -> ProfilesScreen(
@@ -313,6 +318,10 @@ fun PiFaunaApp(
                 Route.DeviceProtection -> DeviceProtectionScreen()
                 Route.BatterySaver -> BatterySaverScreen()
                 Route.PlaybackSafety -> PlaybackSafetyScreen()
+                Route.LockScreenPlayer -> LockScreenPlayerScreen(
+                    controller = controller,
+                    onUnlock = ::pop
+                )
             }
         }
     }
